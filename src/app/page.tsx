@@ -6,11 +6,25 @@ import { DecaneLogo } from "@/components/DecaneLogo";
 
 // ─── types ───────────────────────────────────────────────────────────────────
 
-interface Vec2 { x: number; y: number }
-interface Particle { x: number; y: number; vx: number; vy: number; r: number; a: number; gold: boolean }
+interface Vec2 {
+  x: number;
+  y: number;
+}
+interface Particle {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  r: number;
+  a: number;
+  gold: boolean;
+}
 interface ChainNode {
-  label: string; color: string;
-  angle: number; dist: number; phase: number;
+  label: string;
+  color: string;
+  angle: number;
+  dist: number;
+  phase: number;
 }
 
 // ─── Decane mascot logo ───────────────────────────────────────────────────────
@@ -50,11 +64,35 @@ function Scene({ mouse }: { mouse: Vec2 }) {
   }>({ particles: [], time: 0, raf: 0, mouse: { x: 0.5, y: 0.5 }, images: {} });
 
   const NODES: ChainNode[] = [
-    { label: "EVM",     color: "#627EEA", angle: 0,              dist: 200, phase: 0 },
-    { label: "Solana",  color: "#66F9A1", angle: Math.PI * 2/5,  dist: 200, phase: 1.3 },
-    { label: "Tron",    color: "#EF0027", angle: Math.PI * 4/5,  dist: 200, phase: 2.6 },
-    { label: "Bitcoin", color: "#F7931A", angle: Math.PI * 6/5,  dist: 200, phase: 3.9 },
-    { label: "Social",  color: "#F5C800", angle: Math.PI * 8/5,  dist: 200, phase: 5.2 },
+    { label: "EVM", color: "#627EEA", angle: 0, dist: 200, phase: 0 },
+    {
+      label: "Solana",
+      color: "#66F9A1",
+      angle: (Math.PI * 2) / 5,
+      dist: 200,
+      phase: 1.3,
+    },
+    {
+      label: "Tron",
+      color: "#EF0027",
+      angle: (Math.PI * 4) / 5,
+      dist: 200,
+      phase: 2.6,
+    },
+    {
+      label: "Bitcoin",
+      color: "#F7931A",
+      angle: (Math.PI * 6) / 5,
+      dist: 200,
+      phase: 3.9,
+    },
+    {
+      label: "Social",
+      color: "#F5C800",
+      angle: (Math.PI * 8) / 5,
+      dist: 200,
+      phase: 5.2,
+    },
   ];
 
   useEffect(() => {
@@ -102,7 +140,14 @@ function Scene({ mouse }: { mouse: Vec2 }) {
       ctx.clearRect(0, 0, W, H);
 
       // background radial
-      const bg = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(W, H) * 0.75);
+      const bg = ctx.createRadialGradient(
+        cx,
+        cy,
+        0,
+        cx,
+        cy,
+        Math.max(W, H) * 0.75,
+      );
       bg.addColorStop(0, "rgba(30,24,5,0.4)");
       bg.addColorStop(1, "transparent");
       ctx.fillStyle = bg;
@@ -127,8 +172,8 @@ function Scene({ mouse }: { mouse: Vec2 }) {
       const rows = 12;
       for (let r = 0; r <= rows; r++) {
         const yt = r / rows;
-        const y = horizon + (H - horizon) * (yt ** 2);
-        const spread = (yt ** 1.5) * W * 0.5;
+        const y = horizon + (H - horizon) * yt ** 2;
+        const spread = yt ** 1.5 * W * 0.5;
         ctx.beginPath();
         ctx.moveTo(cx - spread, y);
         ctx.lineTo(cx + spread, y);
@@ -138,12 +183,17 @@ function Scene({ mouse }: { mouse: Vec2 }) {
 
       // floating particles
       for (const p of s.particles) {
-        p.x += p.vx; p.y += p.vy;
-        if (p.x < 0) p.x = 1; if (p.x > 1) p.x = 0;
-        if (p.y < 0) p.y = 1; if (p.y > 1) p.y = 0;
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.x < 0) p.x = 1;
+        if (p.x > 1) p.x = 0;
+        if (p.y < 0) p.y = 1;
+        if (p.y > 1) p.y = 0;
         ctx.beginPath();
         ctx.arc(p.x * W, p.y * H, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = p.gold ? `rgba(245,200,0,${p.a})` : `rgba(255,255,255,${p.a * 0.4})`;
+        ctx.fillStyle = p.gold
+          ? `rgba(245,200,0,${p.a})`
+          : `rgba(255,255,255,${p.a * 0.4})`;
         ctx.fill();
       }
 
@@ -153,7 +203,15 @@ function Scene({ mouse }: { mouse: Vec2 }) {
 
       // outer orbit track
       ctx.beginPath();
-      ctx.ellipse(cx, cy, ringR + 40, (ringR + 40) * 0.35, tilt.x, 0, Math.PI * 2);
+      ctx.ellipse(
+        cx,
+        cy,
+        ringR + 40,
+        (ringR + 40) * 0.35,
+        tilt.x,
+        0,
+        Math.PI * 2,
+      );
       ctx.strokeStyle = "rgba(245,200,0,0.08)";
       ctx.lineWidth = 1;
       ctx.setLineDash([4, 8]);
@@ -193,12 +251,14 @@ function Scene({ mouse }: { mouse: Vec2 }) {
         ctx.moveTo(cx, cy);
         ctx.lineTo(nx, ny);
         const lineAlpha = 0.12 + 0.1 * Math.sin(now * 0.0015 + node.phase);
-        ctx.strokeStyle = `${node.color}${Math.round(lineAlpha * 255).toString(16).padStart(2, "0")}`;
+        ctx.strokeStyle = `${node.color}${Math.round(lineAlpha * 255)
+          .toString(16)
+          .padStart(2, "0")}`;
         ctx.lineWidth = 0.8;
         ctx.stroke();
 
         // data packet on line
-        const pt = ((now * 0.0008 + node.phase * 0.3) % 1);
+        const pt = (now * 0.0008 + node.phase * 0.3) % 1;
         const px = cx + (nx - cx) * pt;
         const py2 = cy + (ny - cy) * pt;
         ctx.beginPath();
@@ -300,9 +360,16 @@ function Scene({ mouse }: { mouse: Vec2 }) {
     };
   }, []);
 
-  useEffect(() => { state.current.mouse = mouse; }, [mouse]);
+  useEffect(() => {
+    state.current.mouse = mouse;
+  }, [mouse]);
 
-  return <canvas ref={ref} style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }} />;
+  return (
+    <canvas
+      ref={ref}
+      style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
+    />
+  );
 }
 
 // ─── animated counter ─────────────────────────────────────────────────────────
@@ -311,28 +378,50 @@ function Counter({ to, label }: { to: number; label: string }) {
   const [val, setVal] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    const io = new IntersectionObserver(([e]) => {
-      if (!e.isIntersecting) return;
-      io.disconnect();
-      const dur = 1200;
-      const start = performance.now();
-      function tick(now: number) {
-        const p = Math.min((now - start) / dur, 1);
-        const ease = 1 - (1 - p) ** 3;
-        setVal(Math.round(ease * to));
-        if (p < 1) requestAnimationFrame(tick);
-      }
-      requestAnimationFrame(tick);
-    }, { threshold: 0.5 });
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (!e.isIntersecting) return;
+        io.disconnect();
+        const dur = 1200;
+        const start = performance.now();
+        function tick(now: number) {
+          const p = Math.min((now - start) / dur, 1);
+          const ease = 1 - (1 - p) ** 3;
+          setVal(Math.round(ease * to));
+          if (p < 1) requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+      },
+      { threshold: 0.5 },
+    );
     if (ref.current) io.observe(ref.current);
     return () => io.disconnect();
   }, [to]);
   return (
     <div ref={ref} style={{ textAlign: "center" }}>
-      <div style={{ fontSize: 44, fontWeight: 900, letterSpacing: "-0.04em", color: "#F5C800", lineHeight: 1, fontFamily: "'Geist', system-ui" }}>
-        {val}<span style={{ fontSize: 28 }}>+</span>
+      <div
+        style={{
+          fontSize: 44,
+          fontWeight: 900,
+          letterSpacing: "-0.04em",
+          color: "#F5C800",
+          lineHeight: 1,
+          fontFamily: "'Geist', system-ui",
+        }}
+      >
+        {val}
+        <span style={{ fontSize: 28 }}>+</span>
       </div>
-      <div style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", marginTop: 4, fontFamily: "'Geist Mono', monospace", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+      <div
+        style={{
+          fontSize: 13,
+          color: "rgba(255,255,255,0.4)",
+          marginTop: 4,
+          fontFamily: "'Geist Mono', monospace",
+          textTransform: "uppercase",
+          letterSpacing: "0.1em",
+        }}
+      >
         {label}
       </div>
     </div>
@@ -351,21 +440,31 @@ function hlLine(line: string): string {
   // Full-line comment
   const cm = line.match(/^(\s*)(\/\/.*)$/);
   if (cm) {
-    return cm[1] + `<span style="color:#636d83;font-style:italic">${escHtml(cm[2])}</span>`;
+    return (
+      cm[1] +
+      `<span style="color:#636d83;font-style:italic">${escHtml(cm[2])}</span>`
+    );
   }
 
   // Collect coloured fragments via placeholders so regexes never collide
   const parts: string[] = [];
-  function ph(html: string): string { parts.push(html); return `\x01${parts.length - 1}\x01`; }
+  function ph(html: string): string {
+    parts.push(html);
+    return `\x01${parts.length - 1}\x01`;
+  }
 
   let s = line;
 
   // 1. String literals first
-  s = s.replace(/"[^"]*"/g, m => ph(`<span style="color:#c3e88d">${escHtml(m)}</span>`));
+  s = s.replace(/"[^"]*"/g, (m) =>
+    ph(`<span style="color:#c3e88d">${escHtml(m)}</span>`),
+  );
 
   // 2. JSX closing tag (includes trailing >)
   s = s.replace(/(<\/)([A-Z][A-Za-z0-9]*)(>)/g, (_, a, name, c) =>
-    ph(`<span style="color:#89ddff">&lt;/</span><span style="color:#ffcb6b">${name}</span><span style="color:#89ddff">&gt;</span>`)
+    ph(
+      `<span style="color:#89ddff">&lt;/</span><span style="color:#ffcb6b">${name}</span><span style="color:#89ddff">&gt;</span>`,
+    ),
   );
 
   // 3. Self-closing />
@@ -373,37 +472,46 @@ function hlLine(line: string): string {
 
   // 4. JSX opening <Tag
   s = s.replace(/(<)([A-Z][A-Za-z0-9]*)/g, (_, a, name) =>
-    ph(`<span style="color:#89ddff">&lt;</span><span style="color:#ffcb6b">${name}</span>`)
+    ph(
+      `<span style="color:#89ddff">&lt;</span><span style="color:#ffcb6b">${name}</span>`,
+    ),
   );
 
   // 5. '}}>  pattern — JSX attribute close
   s = s.replace(/\}\}>/g, ph(`<span style="color:#89ddff">}}&gt;</span>`));
 
   // 6. Standalone > at end of line (remaining JSX close)
-  s = s.replace(/>(\s*)$/, (_, trail) => ph(`<span style="color:#89ddff">&gt;</span>`) + trail);
+  s = s.replace(
+    />(\s*)$/,
+    (_, trail) => ph(`<span style="color:#89ddff">&gt;</span>`) + trail,
+  );
 
   // 7. Keywords
-  s = s.replace(/\b(import|export|from|const|let|const|return|async|await|default)\b/g,
-    (_, kw) => ph(`<span style="color:#c792ea">${kw}</span>`)
+  s = s.replace(
+    /\b(import|export|from|const|let|const|return|async|await|default)\b/g,
+    (_, kw) => ph(`<span style="color:#c792ea">${kw}</span>`),
   );
 
   // 8. Prop / object key names we know about
-  s = s.replace(/\b(mode|social|apiKey|config)\b(?=\s*[=:{])/g,
-    (_, p) => ph(`<span style="color:#a6dbfd">${p}</span>`)
+  s = s.replace(/\b(mode|social|apiKey|config)\b(?=\s*[=:{])/g, (_, p) =>
+    ph(`<span style="color:#a6dbfd">${p}</span>`),
   );
 
   // 9. SDK exports / components
-  s = s.replace(/\b(DecaneKit|useSocialWallet|App)\b/g,
-    (_, id) => ph(`<span style="color:#82aaff">${id}</span>`)
+  s = s.replace(/\b(DecaneKit|useSocialWallet|App)\b/g, (_, id) =>
+    ph(`<span style="color:#82aaff">${id}</span>`),
   );
 
   // 10. Destructured identifiers
-  s = s.replace(/\b(signMessage|sendTransaction|openModal|addresses)\b/g,
-    (_, id) => ph(`<span style="color:#89ddff">${id}</span>`)
+  s = s.replace(
+    /\b(signMessage|sendTransaction|openModal|addresses)\b/g,
+    (_, id) => ph(`<span style="color:#89ddff">${id}</span>`),
   );
 
   // 11. Punctuation
-  s = s.replace(/([{};,])/g, m => ph(`<span style="color:#89ddff">${escHtml(m)}</span>`));
+  s = s.replace(/([{};,])/g, (m) =>
+    ph(`<span style="color:#89ddff">${escHtml(m)}</span>`),
+  );
 
   // Restore placeholders
   s = s.replace(/\x01(\d+)\x01/g, (_, i) => parts[Number(i)]);
@@ -432,16 +540,19 @@ function TypingCode() {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const io = new IntersectionObserver(([e]) => {
-      if (!e.isIntersecting) return;
-      io.disconnect();
-      let i = 0;
-      const id = setInterval(() => {
-        i += 2;
-        setShown(i);
-        if (i >= CODE.length) clearInterval(id);
-      }, 14);
-    }, { threshold: 0.4 });
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (!e.isIntersecting) return;
+        io.disconnect();
+        let i = 0;
+        const id = setInterval(() => {
+          i += 2;
+          setShown(i);
+          if (i >= CODE.length) clearInterval(id);
+        }, 14);
+      },
+      { threshold: 0.4 },
+    );
     if (ref.current) io.observe(ref.current);
     return () => io.disconnect();
   }, []);
@@ -449,55 +560,92 @@ function TypingCode() {
   const lines = CODE.slice(0, shown).split("\n");
 
   return (
-    <div ref={ref} style={{
-      background: "#0d0f14",
-      border: "1px solid rgba(137,221,255,0.12)",
-      borderRadius: 14,
-      overflow: "hidden",
-      fontFamily: "'Geist Mono', 'JetBrains Mono', ui-monospace, monospace",
-      boxShadow: "0 0 0 1px rgba(0,0,0,0.4), 0 24px 48px -16px rgba(0,0,0,0.7)",
-    }}>
+    <div
+      ref={ref}
+      style={{
+        background: "#0d0f14",
+        border: "1px solid rgba(137,221,255,0.12)",
+        borderRadius: 14,
+        overflow: "hidden",
+        fontFamily: "'Geist Mono', 'JetBrains Mono', ui-monospace, monospace",
+        boxShadow:
+          "0 0 0 1px rgba(0,0,0,0.4), 0 24px 48px -16px rgba(0,0,0,0.7)",
+      }}
+    >
       {/* Window chrome */}
-      <div style={{
-        background: "#161921",
-        borderBottom: "1px solid rgba(255,255,255,0.06)",
-        padding: "10px 14px",
-        display: "flex",
-        alignItems: "center",
-        gap: 8,
-      }}>
+      <div
+        style={{
+          background: "#161921",
+          borderBottom: "1px solid rgba(255,255,255,0.06)",
+          padding: "10px 14px",
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+        }}
+      >
         <div style={{ display: "flex", gap: 6 }}>
           {["#FF5F57", "#FEBC2E", "#28C840"].map((c, i) => (
-            <div key={i} style={{ width: 10, height: 10, borderRadius: "50%", background: c }} />
+            <div
+              key={i}
+              style={{
+                width: 10,
+                height: 10,
+                borderRadius: "50%",
+                background: c,
+              }}
+            />
           ))}
         </div>
         {/* File tab */}
-        <div style={{
-          marginLeft: 10,
-          display: "flex",
-          alignItems: "center",
-          gap: 6,
-          background: "#0d0f14",
-          border: "1px solid rgba(255,255,255,0.08)",
-          borderBottom: "1px solid #0d0f14",
-          borderRadius: "6px 6px 0 0",
-          padding: "3px 12px 4px",
-          fontSize: 12,
-          color: "rgba(255,255,255,0.55)",
-        }}>
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
-            <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" stroke="#82aaff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            <polyline points="13 2 13 9 20 9" stroke="#82aaff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        <div
+          style={{
+            marginLeft: 10,
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            background: "#0d0f14",
+            border: "1px solid rgba(255,255,255,0.08)",
+            borderBottom: "1px solid #0d0f14",
+            borderRadius: "6px 6px 0 0",
+            padding: "3px 12px 4px",
+            fontSize: 12,
+            color: "rgba(255,255,255,0.55)",
+          }}
+        >
+          <svg
+            width="10"
+            height="10"
+            viewBox="0 0 24 24"
+            fill="none"
+            style={{ flexShrink: 0 }}
+          >
+            <path
+              d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"
+              stroke="#82aaff"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <polyline
+              points="13 2 13 9 20 9"
+              stroke="#82aaff"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
           </svg>
           app.tsx
         </div>
       </div>
 
       {/* Top accent line */}
-      <div style={{
-        height: 1,
-        background: "linear-gradient(90deg, transparent, rgba(137,221,255,0.2), transparent)",
-      }} />
+      <div
+        style={{
+          height: 1,
+          background:
+            "linear-gradient(90deg, transparent, rgba(137,221,255,0.2), transparent)",
+        }}
+      />
 
       {/* Code lines */}
       <div style={{ padding: "14px 0 18px" }}>
@@ -507,23 +655,33 @@ function TypingCode() {
             ? `<span style="display:inline-block;width:2px;height:0.85em;background:#89ddff;margin-left:1px;animation:blink 1s steps(1) infinite;vertical-align:text-bottom"></span>`
             : "";
           return (
-            <div key={i} style={{ display: "flex", lineHeight: 1.75, fontSize: 13 }}>
+            <div
+              key={i}
+              style={{ display: "flex", lineHeight: 1.75, fontSize: 13 }}
+            >
               {/* Line number */}
-              <div style={{
-                width: 44,
-                paddingRight: 16,
-                textAlign: "right",
-                flexShrink: 0,
-                color: "rgba(255,255,255,0.14)",
-                fontSize: 12,
-                userSelect: "none",
-                fontVariantNumeric: "tabular-nums",
-              }}>
+              <div
+                style={{
+                  width: 44,
+                  paddingRight: 16,
+                  textAlign: "right",
+                  flexShrink: 0,
+                  color: "rgba(255,255,255,0.14)",
+                  fontSize: 12,
+                  userSelect: "none",
+                  fontVariantNumeric: "tabular-nums",
+                }}
+              >
                 {i + 1}
               </div>
               {/* Code */}
               <div
-                style={{ flex: 1, paddingRight: 20, color: "rgba(255,255,255,0.82)", whiteSpace: "pre" }}
+                style={{
+                  flex: 1,
+                  paddingRight: 20,
+                  color: "rgba(255,255,255,0.82)",
+                  whiteSpace: "pre",
+                }}
                 dangerouslySetInnerHTML={{ __html: hlLine(line) + cursor }}
               />
             </div>
@@ -537,26 +695,35 @@ function TypingCode() {
 // ─── chain marquee ───────────────────────────────────────────────────────────
 
 const MARQUEE_CHAINS = [
-  { name: "Ethereum",   slug: "ethereum" },
-  { name: "Solana",     svg: `data:image/svg+xml,${encodeURIComponent(CHAIN_SVGS.Solana)}` },
-  { name: "Base",       slug: "base" },
-  { name: "Arbitrum",   slug: "arbitrum" },
-  { name: "Optimism",   slug: "optimism" },
-  { name: "BNB Chain",  slug: "bsc" },
-  { name: "Polygon",    slug: "polygon" },
-  { name: "Avalanche",  slug: "avax" },
-  { name: "Bitcoin",    svg: `data:image/svg+xml,${encodeURIComponent(CHAIN_SVGS.Bitcoin)}` },
-  { name: "Tron",       svg: `data:image/svg+xml,${encodeURIComponent(CHAIN_SVGS.Tron)}` },
-  { name: "Blast",      slug: "blast" },
+  { name: "Ethereum", slug: "ethereum" },
+  {
+    name: "Solana",
+    svg: `data:image/svg+xml,${encodeURIComponent(CHAIN_SVGS.Solana)}`,
+  },
+  { name: "Base", slug: "base" },
+  { name: "Arbitrum", slug: "arbitrum" },
+  { name: "Optimism", slug: "optimism" },
+  { name: "BNB Chain", slug: "bsc" },
+  { name: "Polygon", slug: "polygon" },
+  { name: "Avalanche", slug: "avax" },
+  {
+    name: "Bitcoin",
+    svg: `data:image/svg+xml,${encodeURIComponent(CHAIN_SVGS.Bitcoin)}`,
+  },
+  {
+    name: "Tron",
+    svg: `data:image/svg+xml,${encodeURIComponent(CHAIN_SVGS.Tron)}`,
+  },
+  { name: "Blast", slug: "blast" },
   { name: "zkSync Era", slug: "zksync%20era" },
-  { name: "Scroll",     slug: "scroll" },
-  { name: "Linea",      slug: "linea" },
-  { name: "Berachain",  slug: "berachain" },
-  { name: "Mantle",     slug: "mantle" },
-  { name: "Zora",       slug: "zora" },
-  { name: "Ronin",      slug: "ronin" },
-  { name: "Sei",        slug: "sei" },
-  { name: "Unichain",   slug: "unichain" },
+  { name: "Scroll", slug: "scroll" },
+  { name: "Linea", slug: "linea" },
+  { name: "Berachain", slug: "berachain" },
+  { name: "Mantle", slug: "mantle" },
+  { name: "Zora", slug: "zora" },
+  { name: "Ronin", slug: "ronin" },
+  { name: "Sei", slug: "sei" },
+  { name: "Unichain", slug: "unichain" },
 ];
 
 function ChainMarquee() {
@@ -570,8 +737,17 @@ function ChainMarquee() {
     let a2: any = null;
 
     import("gsap").then(({ gsap }) => {
-      a1 = gsap.to(t1Ref.current, { xPercent: -50, duration: 32, ease: "none", repeat: -1 });
-      a2 = gsap.fromTo(t2Ref.current, { xPercent: -50 }, { xPercent: 0, duration: 38, ease: "none", repeat: -1 });
+      a1 = gsap.to(t1Ref.current, {
+        xPercent: -50,
+        duration: 32,
+        ease: "none",
+        repeat: -1,
+      });
+      a2 = gsap.fromTo(
+        t2Ref.current,
+        { xPercent: -50 },
+        { xPercent: 0, duration: 38, ease: "none", repeat: -1 },
+      );
 
       const el1 = t1Ref.current?.parentElement;
       const el2 = t2Ref.current?.parentElement;
@@ -585,28 +761,52 @@ function ChainMarquee() {
       }
     });
 
-    return () => { a1?.kill(); a2?.kill(); };
+    return () => {
+      a1?.kill();
+      a2?.kill();
+    };
   }, []);
 
-  const item = (chain: typeof MARQUEE_CHAINS[0], i: number) => (
-    <div key={i} style={{
-      display: "inline-flex", alignItems: "center", gap: 8,
-      padding: "0 24px", flexShrink: 0,
-      color: "rgba(255,255,255,0.45)", fontSize: 13,
-      fontFamily: "'Geist', system-ui",
-    }}>
-      {chain.svg
-        ? <img src={chain.svg} width={18} height={18} style={{ borderRadius: 4, flexShrink: 0 }} alt="" />
-        : <img src={`https://icons.llamao.fi/icons/chains/rsz_${chain.slug}`} width={18} height={18}
-            style={{ borderRadius: 4, flexShrink: 0 }} alt=""
-            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
-      }
+  const item = (chain: (typeof MARQUEE_CHAINS)[0], i: number) => (
+    <div
+      key={i}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 8,
+        padding: "0 24px",
+        flexShrink: 0,
+        color: "rgba(255,255,255,0.45)",
+        fontSize: 13,
+        fontFamily: "'Geist', system-ui",
+      }}
+    >
+      {chain.svg ? (
+        <img
+          src={chain.svg}
+          width={18}
+          height={18}
+          style={{ borderRadius: 4, flexShrink: 0 }}
+          alt=""
+        />
+      ) : (
+        <img
+          src={`https://icons.llamao.fi/icons/chains/rsz_${chain.slug}`}
+          width={18}
+          height={18}
+          style={{ borderRadius: 4, flexShrink: 0 }}
+          alt=""
+          onError={(e) => {
+            (e.currentTarget as HTMLImageElement).style.display = "none";
+          }}
+        />
+      )}
       {chain.name}
       <span style={{ color: "rgba(245,200,0,0.25)", marginLeft: 8 }}>◆</span>
     </div>
   );
 
-  const row = (ref: React.RefObject<HTMLDivElement | null>) => (
+  const row = (ref: React.RefObject<HTMLDivElement>) => (
     <div ref={ref} style={{ display: "inline-flex", whiteSpace: "nowrap" }}>
       {MARQUEE_CHAINS.map((c, i) => item(c, i))}
       {MARQUEE_CHAINS.map((c, i) => item(c, i + MARQUEE_CHAINS.length))}
@@ -614,17 +814,36 @@ function ChainMarquee() {
   );
 
   return (
-    <div className="chain-marquee" style={{
-      borderTop: "1px solid rgba(255,255,255,0.05)",
-      borderBottom: "1px solid rgba(255,255,255,0.05)",
-      overflow: "hidden", padding: "14px 0",
-    }}>
+    <div
+      className="chain-marquee"
+      style={{
+        borderTop: "1px solid rgba(255,255,255,0.05)",
+        borderBottom: "1px solid rgba(255,255,255,0.05)",
+        overflow: "hidden",
+        padding: "14px 0",
+      }}
+    >
       {/* row 1 — left */}
-      <div style={{ overflow: "hidden", position: "relative", maskImage: "linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)" }}>
+      <div
+        style={{
+          overflow: "hidden",
+          position: "relative",
+          maskImage:
+            "linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)",
+        }}
+      >
         {row(t1Ref)}
       </div>
       {/* row 2 — right */}
-      <div style={{ overflow: "hidden", marginTop: 10, position: "relative", maskImage: "linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)" }}>
+      <div
+        style={{
+          overflow: "hidden",
+          marginTop: 10,
+          position: "relative",
+          maskImage:
+            "linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)",
+        }}
+      >
         {row(t2Ref)}
       </div>
     </div>
@@ -633,46 +852,108 @@ function ChainMarquee() {
 
 // ─── feature card with GSAP tilt ─────────────────────────────────────────────
 
-function FeatureCard({ f, FONT }: { f: { icon: React.ReactNode; title: string; desc: string }; FONT: string }) {
+function FeatureCard({
+  f,
+  FONT,
+}: {
+  f: { icon: React.ReactNode; title: string; desc: string };
+  FONT: string;
+}) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    let g: typeof import("gsap")["gsap"] | null = null;
-    import("gsap").then(({ gsap }) => { g = gsap; });
+    let g: (typeof import("gsap"))["gsap"] | null = null;
+    import("gsap").then(({ gsap }) => {
+      g = gsap;
+    });
 
     function onMove(e: MouseEvent) {
       if (!g) return;
-      const r = el.getBoundingClientRect();
-      const x = ((e.clientX - r.left) / r.width - 0.5) * 14;
-      const y = ((e.clientY - r.top) / r.height - 0.5) * -14;
-      g.to(el, { rotateY: x, rotateX: y, z: 20, duration: 0.35, ease: "power2.out", transformPerspective: 800 });
+  const r = el?.getBoundingClientRect();
+
+  if (!r) return;
+
+  const x = ((e.clientX - r.left) / r.width - 0.5) * 14;
+  const y = ((e.clientY - r.top) / r.height - 0.5) * -14;
+      g.to(el, {
+        rotateY: x,
+        rotateX: y,
+        z: 20,
+        duration: 0.35,
+        ease: "power2.out",
+        transformPerspective: 800,
+      });
     }
 
     function onLeave() {
       if (!g) return;
-      g.to(el, { rotateY: 0, rotateX: 0, z: 0, duration: 0.7, ease: "elastic.out(1, 0.55)" });
+      g.to(el, {
+        rotateY: 0,
+        rotateX: 0,
+        z: 0,
+        duration: 0.7,
+        ease: "elastic.out(1, 0.55)",
+      });
     }
 
     el.addEventListener("mousemove", onMove);
     el.addEventListener("mouseleave", onLeave);
-    return () => { el.removeEventListener("mousemove", onMove); el.removeEventListener("mouseleave", onLeave); };
+    return () => {
+      el.removeEventListener("mousemove", onMove);
+      el.removeEventListener("mouseleave", onLeave);
+    };
   }, []);
 
   return (
-    <div ref={ref} className="feature-card" style={{
-      background: "#0b0b09", padding: "36px 32px",
-      transformStyle: "preserve-3d", willChange: "transform",
-    }}>
-      <div style={{
-        width: 40, height: 40, borderRadius: 10,
-        background: "rgba(245,200,0,0.08)", border: "1px solid rgba(245,200,0,0.15)",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        color: "#F5C800", marginBottom: 20,
-      }}>{f.icon}</div>
-      <div style={{ fontSize: 17, fontWeight: 700, letterSpacing: "-0.02em", marginBottom: 10, fontFamily: FONT }}>{f.title}</div>
-      <p style={{ fontSize: 14, color: "rgba(255,255,255,0.45)", lineHeight: 1.65, fontFamily: FONT }}>{f.desc}</p>
+    <div
+      ref={ref}
+      className="feature-card"
+      style={{
+        background: "#0b0b09",
+        padding: "36px 32px",
+        transformStyle: "preserve-3d",
+        willChange: "transform",
+      }}
+    >
+      <div
+        style={{
+          width: 40,
+          height: 40,
+          borderRadius: 10,
+          background: "rgba(245,200,0,0.08)",
+          border: "1px solid rgba(245,200,0,0.15)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "#F5C800",
+          marginBottom: 20,
+        }}
+      >
+        {f.icon}
+      </div>
+      <div
+        style={{
+          fontSize: 17,
+          fontWeight: 700,
+          letterSpacing: "-0.02em",
+          marginBottom: 10,
+          fontFamily: FONT,
+        }}
+      >
+        {f.title}
+      </div>
+      <p
+        style={{
+          fontSize: 14,
+          color: "rgba(255,255,255,0.45)",
+          lineHeight: 1.65,
+          fontFamily: FONT,
+        }}
+      >
+        {f.desc}
+      </p>
     </div>
   );
 }
@@ -686,7 +967,10 @@ export default function Page() {
 
   useEffect(() => {
     function onMove(e: MouseEvent) {
-      setMouse({ x: e.clientX / window.innerWidth, y: e.clientY / window.innerHeight });
+      setMouse({
+        x: e.clientX / window.innerWidth,
+        y: e.clientY / window.innerHeight,
+      });
     }
     window.addEventListener("mousemove", onMove);
     return () => window.removeEventListener("mousemove", onMove);
@@ -701,33 +985,57 @@ export default function Page() {
       setHeroReady(true);
 
       ctx = gsap.context(() => {
-
         // ── hero entrance ───────────────────────────────────────────────
         gsap.from(".hero-word", {
-          y: 90, opacity: 0, duration: 1.2,
-          ease: "power4.out", stagger: 0.08, delay: 0.1,
+          y: 90,
+          opacity: 0,
+          duration: 1.2,
+          ease: "power4.out",
+          stagger: 0.08,
+          delay: 0.1,
         });
         gsap.from(".hero-sub", {
-          y: 30, opacity: 0, duration: 0.9,
-          ease: "power3.out", delay: 0.55,
+          y: 30,
+          opacity: 0,
+          duration: 0.9,
+          ease: "power3.out",
+          delay: 0.55,
         });
         gsap.from(".hero-cta", {
-          y: 20, opacity: 0, duration: 0.8,
-          ease: "power2.out", delay: 0.8,
+          y: 20,
+          opacity: 0,
+          duration: 0.8,
+          ease: "power2.out",
+          delay: 0.8,
         });
         gsap.from(".hero-stat", {
-          y: 14, opacity: 0, scale: 0.9, duration: 0.6,
-          ease: "back.out(1.5)", stagger: 0.1, delay: 1.0,
+          y: 14,
+          opacity: 0,
+          scale: 0.9,
+          duration: 0.6,
+          ease: "back.out(1.5)",
+          stagger: 0.1,
+          delay: 1.0,
         });
         gsap.from(".hero-badge-pill", {
-          y: 16, opacity: 0, duration: 0.5,
-          ease: "back.out(1.7)", stagger: 0.08, delay: 1.3,
+          y: 16,
+          opacity: 0,
+          duration: 0.5,
+          ease: "back.out(1.7)",
+          stagger: 0.08,
+          delay: 1.3,
         });
 
         // ── hero parallax ───────────────────────────────────────────────
         gsap.to(heroRef.current, {
-          yPercent: -18, ease: "none",
-          scrollTrigger: { trigger: heroRef.current, start: "top top", end: "bottom top", scrub: 1 },
+          yPercent: -18,
+          ease: "none",
+          scrollTrigger: {
+            trigger: heroRef.current,
+            start: "top top",
+            end: "bottom top",
+            scrub: 1,
+          },
         });
 
         // ── nav hide on scroll down, show on scroll up ──────────────────
@@ -735,67 +1043,130 @@ export default function Page() {
           start: "top -80",
           onUpdate: (self) => {
             if (self.direction === 1 && self.scroll() > 80) {
-              gsap.to(".land-nav", { yPercent: -110, duration: 0.28, ease: "power3.in", overwrite: true });
+              gsap.to(".land-nav", {
+                yPercent: -110,
+                duration: 0.28,
+                ease: "power3.in",
+                overwrite: true,
+              });
             } else {
-              gsap.to(".land-nav", { yPercent: 0, duration: 0.4, ease: "power3.out", overwrite: true });
+              gsap.to(".land-nav", {
+                yPercent: 0,
+                duration: 0.4,
+                ease: "power3.out",
+                overwrite: true,
+              });
             }
           },
         });
 
         // ── marquee fade in ─────────────────────────────────────────────
         gsap.from(".chain-marquee", {
-          opacity: 0, y: 24, duration: 0.9, ease: "power3.out",
-          scrollTrigger: { trigger: ".chain-marquee", start: "top 92%", once: true },
+          opacity: 0,
+          y: 24,
+          duration: 0.9,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: ".chain-marquee",
+            start: "top 92%",
+            once: true,
+          },
         });
 
         // ── section label clip reveal ───────────────────────────────────
         gsap.utils.toArray<Element>(".section-label").forEach((el) => {
           gsap.from(el, {
-            clipPath: "inset(0 100% 0 0)", opacity: 0, duration: 0.9, ease: "power3.out",
+            clipPath: "inset(0 100% 0 0)",
+            opacity: 0,
+            duration: 0.9,
+            ease: "power3.out",
             scrollTrigger: { trigger: el, start: "top 88%", once: true },
           });
         });
 
         // ── feature cards — stagger up ──────────────────────────────────
         gsap.from(".feature-card", {
-          y: 60, opacity: 0, duration: 0.8, ease: "power3.out",
+          y: 60,
+          opacity: 0,
+          duration: 0.8,
+          ease: "power3.out",
           stagger: { each: 0.07, from: "start" },
-          scrollTrigger: { trigger: ".feature-grid", start: "top 76%", once: true },
+          scrollTrigger: {
+            trigger: ".feature-grid",
+            start: "top 76%",
+            once: true,
+          },
         });
 
         // ── code section — columns from sides ───────────────────────────
         gsap.from(".code-col-left", {
-          x: -56, opacity: 0, duration: 1.0, ease: "power3.out",
-          scrollTrigger: { trigger: ".code-section", start: "top 76%", once: true },
+          x: -56,
+          opacity: 0,
+          duration: 1.0,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: ".code-section",
+            start: "top 76%",
+            once: true,
+          },
         });
         gsap.from(".code-col-right", {
-          x: 56, opacity: 0, duration: 1.0, ease: "power3.out",
-          scrollTrigger: { trigger: ".code-section", start: "top 76%", once: true },
+          x: 56,
+          opacity: 0,
+          duration: 1.0,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: ".code-section",
+            start: "top 76%",
+            once: true,
+          },
         });
 
         // ── counter strip ───────────────────────────────────────────────
         gsap.from(".counter-item", {
-          y: 30, opacity: 0, scale: 0.85, duration: 0.7, ease: "back.out(1.8)",
+          y: 30,
+          opacity: 0,
+          scale: 0.85,
+          duration: 0.7,
+          ease: "back.out(1.8)",
           stagger: 0.1,
-          scrollTrigger: { trigger: ".counter-strip", start: "top 82%", once: true },
+          scrollTrigger: {
+            trigger: ".counter-strip",
+            start: "top 82%",
+            once: true,
+          },
         });
 
         // ── CTA entrance ────────────────────────────────────────────────
         gsap.from(".cta-inner", {
-          y: 48, opacity: 0, scale: 0.96, duration: 1.1, ease: "power3.out",
-          scrollTrigger: { trigger: ".cta-inner", start: "top 82%", once: true },
+          y: 48,
+          opacity: 0,
+          scale: 0.96,
+          duration: 1.1,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: ".cta-inner",
+            start: "top 82%",
+            once: true,
+          },
         });
 
         // ── generic .reveal-up fallback ─────────────────────────────────
         gsap.utils.toArray<Element>(".reveal-up").forEach((el) => {
           gsap.from(el, {
-            y: 50, opacity: 0, duration: 0.9, ease: "power3.out",
+            y: 50,
+            opacity: 0,
+            duration: 0.9,
+            ease: "power3.out",
             scrollTrigger: { trigger: el, start: "top 85%", once: true },
           });
         });
       });
     }, 100);
-    return () => { clearTimeout(t); ctx?.revert(); };
+    return () => {
+      clearTimeout(t);
+      ctx?.revert();
+    };
   }, []);
 
   const STATS = [
@@ -808,8 +1179,16 @@ export default function Page() {
   const FEATURES = [
     {
       icon: (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-          <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+        >
+          <circle cx="11" cy="11" r="8" />
+          <path d="m21 21-4.35-4.35" />
         </svg>
       ),
       title: "Zero-config discovery",
@@ -817,8 +1196,16 @@ export default function Page() {
     },
     {
       icon: (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-          <rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+        >
+          <rect x="3" y="11" width="18" height="11" rx="2" />
+          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
         </svg>
       ),
       title: "Non-custodial social wallet",
@@ -826,7 +1213,14 @@ export default function Page() {
     },
     {
       icon: (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+        >
           <polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
         </svg>
       ),
@@ -835,7 +1229,14 @@ export default function Page() {
     },
     {
       icon: (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+        >
           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
         </svg>
       ),
@@ -844,8 +1245,16 @@ export default function Page() {
     },
     {
       icon: (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-          <circle cx="12" cy="12" r="3" /><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14" />
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+        >
+          <circle cx="12" cy="12" r="3" />
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14" />
         </svg>
       ),
       title: "Gold & black UI, dark/light",
@@ -853,8 +1262,16 @@ export default function Page() {
     },
     {
       icon: (
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-          <polyline points="16 18 22 12 16 6" /><polyline points="8 6 2 12 8 18" />
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+        >
+          <polyline points="16 18 22 12 16 6" />
+          <polyline points="8 6 2 12 8 18" />
         </svg>
       ),
       title: "TypeScript first",
@@ -866,7 +1283,14 @@ export default function Page() {
   const MONO = "'Geist Mono', ui-monospace, 'SF Mono', monospace";
 
   return (
-    <div style={{ background: "#070706", color: "#ecece9", fontFamily: FONT, overflowX: "hidden" }}>
+    <div
+      style={{
+        background: "#070706",
+        color: "#ecece9",
+        fontFamily: FONT,
+        overflowX: "hidden",
+      }}
+    >
       <style>{`
         @keyframes blink { 50% { opacity: 0 } }
         @keyframes bounce { 0%,100% { transform: translateY(0) } 50% { transform: translateY(6px) } }
@@ -876,36 +1300,80 @@ export default function Page() {
       `}</style>
 
       {/* ── NAV ── */}
-      <nav className="land-nav" style={{
-        position: "fixed", top: 0, left: 0, right: 0, zIndex: 50, willChange: "transform",
-        height: 60, display: "flex", alignItems: "center", justifyContent: "space-between",
-        padding: "0 32px",
-        background: "rgba(7,7,6,0.75)",
-        backdropFilter: "blur(16px)",
-        borderBottom: "1px solid rgba(245,200,0,0.08)",
-        fontFamily: FONT,
-      }}>
+      <nav
+        className="land-nav"
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 50,
+          willChange: "transform",
+          height: 60,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "0 32px",
+          background: "rgba(7,7,6,0.75)",
+          backdropFilter: "blur(16px)",
+          borderBottom: "1px solid rgba(245,200,0,0.08)",
+          fontFamily: FONT,
+        }}
+      >
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <DecaneLogo size={30} />
-          <span style={{ fontWeight: 700, letterSpacing: "-0.02em" }}>decane</span>
-          <span style={{ color: "rgba(255,255,255,0.3)", fontFamily: MONO, fontSize: 12 }}>connect-kit</span>
+          <span style={{ fontWeight: 700, letterSpacing: "-0.02em" }}>
+            decane
+          </span>
+          <span
+            style={{
+              color: "rgba(255,255,255,0.3)",
+              fontFamily: MONO,
+              fontSize: 12,
+            }}
+          >
+            connect-kit
+          </span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <Link href="/docs" style={{
-            height: 34, padding: "0 16px", display: "inline-flex", alignItems: "center",
-            background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)",
-            borderRadius: 8, fontSize: 13, color: "rgba(255,255,255,0.7)",
-            transition: "all 0.15s", fontFamily: FONT,
-          }}>
+          <Link
+            href="/docs"
+            style={{
+              height: 34,
+              padding: "0 16px",
+              display: "inline-flex",
+              alignItems: "center",
+              background: "rgba(255,255,255,0.05)",
+              border: "1px solid rgba(255,255,255,0.1)",
+              borderRadius: 8,
+              fontSize: 13,
+              color: "rgba(255,255,255,0.7)",
+              transition: "all 0.15s",
+              fontFamily: FONT,
+            }}
+          >
             Docs
           </Link>
-          <a href="https://github.com" target="_blank" rel="noreferrer" style={{
-            height: 34, padding: "0 16px", display: "inline-flex", alignItems: "center", gap: 6,
-            background: "#F5C800", color: "#0d0d0b",
-            borderRadius: 8, fontSize: 13, fontWeight: 700, fontFamily: FONT,
-          }}>
+          <a
+            href="https://github.com"
+            target="_blank"
+            rel="noreferrer"
+            style={{
+              height: 34,
+              padding: "0 16px",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              background: "#F5C800",
+              color: "#0d0d0b",
+              borderRadius: 8,
+              fontSize: 13,
+              fontWeight: 700,
+              fontFamily: FONT,
+            }}
+          >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.71 1.26 3.37.96.1-.75.4-1.26.73-1.55-2.56-.29-5.25-1.28-5.25-5.7 0-1.26.45-2.28 1.18-3.08-.12-.29-.51-1.46.11-3.04 0 0 .97-.31 3.18 1.18a11.05 11.05 0 0 1 5.79 0c2.2-1.49 3.18-1.18 3.18-1.18.62 1.58.23 2.75.11 3.04.74.8 1.18 1.82 1.18 3.08 0 4.43-2.7 5.4-5.27 5.69.41.36.78 1.06.78 2.14v3.17c0 .31.21.68.8.56C20.21 21.38 23.5 17.08 23.5 12 23.5 5.65 18.35.5 12 .5z"/>
+              <path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.71 1.26 3.37.96.1-.75.4-1.26.73-1.55-2.56-.29-5.25-1.28-5.25-5.7 0-1.26.45-2.28 1.18-3.08-.12-.29-.51-1.46.11-3.04 0 0 .97-.31 3.18 1.18a11.05 11.05 0 0 1 5.79 0c2.2-1.49 3.18-1.18 3.18-1.18.62 1.58.23 2.75.11 3.04.74.8 1.18 1.82 1.18 3.08 0 4.43-2.7 5.4-5.27 5.69.41.36.78 1.06.78 2.14v3.17c0 .31.21.68.8.56C20.21 21.38 23.5 17.08 23.5 12 23.5 5.65 18.35.5 12 .5z" />
             </svg>
             GitHub
           </a>
@@ -913,121 +1381,261 @@ export default function Page() {
       </nav>
 
       {/* ── HERO ── */}
-      <section ref={heroRef} style={{
-        position: "relative", minHeight: "100vh",
-        display: "flex", flexDirection: "column",
-        alignItems: "center", justifyContent: "center",
-        padding: "120px 24px 80px", overflow: "hidden",
-      }}>
+      <section
+        ref={heroRef}
+        style={{
+          position: "relative",
+          minHeight: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "120px 24px 80px",
+          overflow: "hidden",
+        }}
+      >
         <Scene mouse={mouse} />
 
-        <div style={{ position: "relative", zIndex: 2, textAlign: "center", maxWidth: 900 }}>
+        <div
+          style={{
+            position: "relative",
+            zIndex: 2,
+            textAlign: "center",
+            maxWidth: 900,
+          }}
+        >
           {/* eyebrow */}
-          <div style={{
-            display: "inline-flex", alignItems: "center", gap: 8,
-            fontFamily: MONO, fontSize: 12, letterSpacing: "0.08em",
-            color: "rgba(255,255,255,0.5)", background: "rgba(255,255,255,0.05)",
-            border: "1px solid rgba(255,255,255,0.1)", borderRadius: 999,
-            padding: "5px 16px", marginBottom: 32,
-          }}>
-            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#12b76a", boxShadow: "0 0 8px #12b76a" }} />
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+              fontFamily: MONO,
+              fontSize: 12,
+              letterSpacing: "0.08em",
+              color: "rgba(255,255,255,0.5)",
+              background: "rgba(255,255,255,0.05)",
+              border: "1px solid rgba(255,255,255,0.1)",
+              borderRadius: 999,
+              padding: "5px 16px",
+              marginBottom: 32,
+            }}
+          >
+            <span
+              style={{
+                width: 6,
+                height: 6,
+                borderRadius: "50%",
+                background: "#12b76a",
+                boxShadow: "0 0 8px #12b76a",
+              }}
+            />
             v1.0.0 · stable · MIT
           </div>
 
           {/* headline */}
-          <h1 style={{
-            fontSize: "clamp(52px, 9vw, 104px)",
-            fontWeight: 900, letterSpacing: "-0.045em",
-            lineHeight: 0.95, marginBottom: 28,
-            fontFamily: FONT,
-          }}>
+          <h1
+            style={{
+              fontSize: "clamp(52px, 9vw, 104px)",
+              fontWeight: 900,
+              letterSpacing: "-0.045em",
+              lineHeight: 0.95,
+              marginBottom: 28,
+              fontFamily: FONT,
+            }}
+          >
             {["Connect", "any", "wallet,"].map((w, i) => (
-              <span key={i} className="hero-word" style={{
-                color: w === "any" ? "#F5C800" : "#ecece9",
-                fontStyle: w === "any" ? "italic" : "normal",
-                marginRight: "0.25em",
-              }}>{w}</span>
+              <span
+                key={i}
+                className="hero-word"
+                style={{
+                  color: w === "any" ? "#F5C800" : "#ecece9",
+                  fontStyle: w === "any" ? "italic" : "normal",
+                  marginRight: "0.25em",
+                }}
+              >
+                {w}
+              </span>
             ))}
             <br />
             {["any", "chain."].map((w, i) => (
-              <span key={i} className="hero-word" style={{
-                color: w === "any" ? "#F5C800" : "rgba(255,255,255,0.3)",
-                fontStyle: w === "any" ? "italic" : "normal",
-                marginRight: "0.25em",
-              }}>{w}</span>
+              <span
+                key={i}
+                className="hero-word"
+                style={{
+                  color: w === "any" ? "#F5C800" : "rgba(255,255,255,0.3)",
+                  fontStyle: w === "any" ? "italic" : "normal",
+                  marginRight: "0.25em",
+                }}
+              >
+                {w}
+              </span>
             ))}
           </h1>
 
           {/* sub */}
-          <p className="hero-sub" style={{
-            fontSize: "clamp(15px, 2vw, 19px)",
-            color: "rgba(255,255,255,0.5)",
-            lineHeight: 1.65,
-            maxWidth: "56ch", margin: "0 auto 44px",
-            fontFamily: FONT,
-          }}>
-            EVM · Solana · Tron · Bitcoin — and social sign-in via Google or email.
-            One npm package. No window.ethereum. No backend required for wallet connect.
+          <p
+            className="hero-sub"
+            style={{
+              fontSize: "clamp(15px, 2vw, 19px)",
+              color: "rgba(255,255,255,0.5)",
+              lineHeight: 1.65,
+              maxWidth: "56ch",
+              margin: "0 auto 44px",
+              fontFamily: FONT,
+            }}
+          >
+            EVM · Solana · Tron · Bitcoin — and social sign-in via Google or
+            email. One npm package. No window.ethereum. No backend required for
+            wallet connect.
           </p>
 
           {/* CTAs */}
-          <div className="hero-cta" style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap", marginBottom: 56 }}>
-            <Link href="/docs" style={{
-              display: "inline-flex", alignItems: "center", gap: 8,
-              height: 52, padding: "0 32px",
-              background: "#F5C800", color: "#0d0d0b",
-              fontWeight: 800, fontSize: 15, borderRadius: 12,
-              boxShadow: "0 0 40px rgba(245,200,0,0.35)",
-              transition: "all 0.15s", fontFamily: FONT,
-            }}>
+          <div
+            className="hero-cta"
+            style={{
+              display: "flex",
+              gap: 12,
+              justifyContent: "center",
+              flexWrap: "wrap",
+              marginBottom: 56,
+            }}
+          >
+            <Link
+              href="/docs"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                height: 52,
+                padding: "0 32px",
+                background: "#F5C800",
+                color: "#0d0d0b",
+                fontWeight: 800,
+                fontSize: 15,
+                borderRadius: 12,
+                boxShadow: "0 0 40px rgba(245,200,0,0.35)",
+                transition: "all 0.15s",
+                fontFamily: FONT,
+              }}
+            >
               Get started
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                <path d="M5 12h14M12 5l7 7-7 7"/>
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+              >
+                <path d="M5 12h14M12 5l7 7-7 7" />
               </svg>
             </Link>
-            <div style={{
-              display: "inline-flex", alignItems: "center",
-              height: 52, padding: "0 24px",
-              background: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.7)",
-              border: "1px solid rgba(255,255,255,0.1)",
-              fontSize: 14, borderRadius: 12, fontFamily: MONO,
-              letterSpacing: "-0.01em",
-            }}>
-              <span style={{ color: "rgba(255,255,255,0.3)" }}>$</span>&nbsp;npm i decane-connect-kit
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                height: 52,
+                padding: "0 24px",
+                background: "rgba(255,255,255,0.04)",
+                color: "rgba(255,255,255,0.7)",
+                border: "1px solid rgba(255,255,255,0.1)",
+                fontSize: 14,
+                borderRadius: 12,
+                fontFamily: MONO,
+                letterSpacing: "-0.01em",
+              }}
+            >
+              <span style={{ color: "rgba(255,255,255,0.3)" }}>$</span>&nbsp;npm
+              i decane-connect-kit
             </div>
           </div>
 
           {/* chain type badge pills */}
-          <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap", marginBottom: 44 }}>
+          <div
+            style={{
+              display: "flex",
+              gap: 8,
+              justifyContent: "center",
+              flexWrap: "wrap",
+              marginBottom: 44,
+            }}
+          >
             {[
               { label: "EVM · 58 chains", color: "#627EEA" },
               { label: "Solana · Wallet Standard", color: "#66F9A1" },
               { label: "Tron · TronLink", color: "#EF0027" },
               { label: "Bitcoin · Unisat", color: "#F7931A" },
             ].map((b) => (
-              <div key={b.label} className="hero-badge-pill" style={{
-                display: "inline-flex", alignItems: "center", gap: 7,
-                height: 30, padding: "0 14px",
-                background: "rgba(255,255,255,0.04)",
-                border: `1px solid ${b.color}30`,
-                borderRadius: 999,
-                fontSize: 12, fontFamily: MONO,
-                color: "rgba(255,255,255,0.5)",
-              }}>
-                <span style={{ width: 7, height: 7, borderRadius: "50%", background: b.color, flexShrink: 0 }} />
+              <div
+                key={b.label}
+                className="hero-badge-pill"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 7,
+                  height: 30,
+                  padding: "0 14px",
+                  background: "rgba(255,255,255,0.04)",
+                  border: `1px solid ${b.color}30`,
+                  borderRadius: 999,
+                  fontSize: 12,
+                  fontFamily: MONO,
+                  color: "rgba(255,255,255,0.5)",
+                }}
+              >
+                <span
+                  style={{
+                    width: 7,
+                    height: 7,
+                    borderRadius: "50%",
+                    background: b.color,
+                    flexShrink: 0,
+                  }}
+                />
                 {b.label}
               </div>
             ))}
           </div>
 
           {/* stats row */}
-          <div style={{ display: "flex", gap: 40, justifyContent: "center", flexWrap: "wrap" }}>
+          <div
+            style={{
+              display: "flex",
+              gap: 40,
+              justifyContent: "center",
+              flexWrap: "wrap",
+            }}
+          >
             {STATS.map((s) => (
-              <div key={s.label} className="hero-stat" style={{ textAlign: "center" }}>
-                <div style={{ fontSize: 28, fontWeight: 900, color: "#F5C800", letterSpacing: "-0.04em", lineHeight: 1, fontFamily: FONT }}>
+              <div
+                key={s.label}
+                className="hero-stat"
+                style={{ textAlign: "center" }}
+              >
+                <div
+                  style={{
+                    fontSize: 28,
+                    fontWeight: 900,
+                    color: "#F5C800",
+                    letterSpacing: "-0.04em",
+                    lineHeight: 1,
+                    fontFamily: FONT,
+                  }}
+                >
                   {s.n}+
                 </div>
-                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", fontFamily: MONO, textTransform: "uppercase", letterSpacing: "0.08em", marginTop: 4 }}>
+                <div
+                  style={{
+                    fontSize: 11,
+                    color: "rgba(255,255,255,0.35)",
+                    fontFamily: MONO,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                    marginTop: 4,
+                  }}
+                >
                   {s.label}
                 </div>
               </div>
@@ -1036,15 +1644,34 @@ export default function Page() {
         </div>
 
         {/* scroll hint */}
-        <div style={{
-          position: "absolute", bottom: 32, left: "50%", transform: "translateX(-50%)",
-          color: "rgba(255,255,255,0.2)", fontSize: 11, fontFamily: MONO,
-          letterSpacing: "0.1em", textTransform: "uppercase",
-          display: "flex", flexDirection: "column", alignItems: "center", gap: 8,
-          animation: "bounce 2s ease-in-out infinite",
-        }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-            <path d="M12 5v14M5 12l7 7 7-7"/>
+        <div
+          style={{
+            position: "absolute",
+            bottom: 32,
+            left: "50%",
+            transform: "translateX(-50%)",
+            color: "rgba(255,255,255,0.2)",
+            fontSize: 11,
+            fontFamily: MONO,
+            letterSpacing: "0.1em",
+            textTransform: "uppercase",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 8,
+            animation: "bounce 2s ease-in-out infinite",
+          }}
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+          >
+            <path d="M12 5v14M5 12l7 7 7-7" />
           </svg>
           scroll
         </div>
@@ -1054,23 +1681,55 @@ export default function Page() {
       <ChainMarquee />
 
       {/* ── FEATURES ── */}
-      <section style={{ padding: "120px 24px", maxWidth: 1200, margin: "0 auto" }}>
-        <div className="reveal-up" style={{ textAlign: "center", marginBottom: 64 }}>
-          <div className="section-label" style={{ fontFamily: MONO, fontSize: 12, color: "#F5C800", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 12 }}>
+      <section
+        style={{ padding: "120px 24px", maxWidth: 1200, margin: "0 auto" }}
+      >
+        <div
+          className="reveal-up"
+          style={{ textAlign: "center", marginBottom: 64 }}
+        >
+          <div
+            className="section-label"
+            style={{
+              fontFamily: MONO,
+              fontSize: 12,
+              color: "#F5C800",
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              marginBottom: 12,
+            }}
+          >
             What&rsquo;s inside
           </div>
-          <h2 style={{ fontSize: "clamp(32px, 5vw, 52px)", fontWeight: 900, letterSpacing: "-0.04em", lineHeight: 1.1, fontFamily: FONT }}>
-            Everything you need.<br />
-            <span style={{ color: "rgba(255,255,255,0.3)" }}>Nothing you don&rsquo;t.</span>
+          <h2
+            style={{
+              fontSize: "clamp(32px, 5vw, 52px)",
+              fontWeight: 900,
+              letterSpacing: "-0.04em",
+              lineHeight: 1.1,
+              fontFamily: FONT,
+            }}
+          >
+            Everything you need.
+            <br />
+            <span style={{ color: "rgba(255,255,255,0.3)" }}>
+              Nothing you don&rsquo;t.
+            </span>
           </h2>
         </div>
-        <div className="feature-grid" style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-          gap: 1, background: "rgba(255,255,255,0.06)",
-          border: "1px solid rgba(255,255,255,0.06)", borderRadius: 16, overflow: "hidden",
-          transformStyle: "preserve-3d",
-        }}>
+        <div
+          className="feature-grid"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+            gap: 1,
+            background: "rgba(255,255,255,0.06)",
+            border: "1px solid rgba(255,255,255,0.06)",
+            borderRadius: 16,
+            overflow: "hidden",
+            transformStyle: "preserve-3d",
+          }}
+        >
           {FEATURES.map((f) => (
             <FeatureCard key={f.title} f={f} FONT={FONT} />
           ))}
@@ -1078,25 +1737,88 @@ export default function Page() {
       </section>
 
       {/* ── CODE + STATS ── */}
-      <section className="code-section" style={{ padding: "40px 24px 120px", maxWidth: 1100, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 64, alignItems: "center" }}>
+      <section
+        className="code-section"
+        style={{
+          padding: "40px 24px 120px",
+          maxWidth: 1100,
+          margin: "0 auto",
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: 64,
+          alignItems: "center",
+        }}
+      >
         <div className="code-col-left">
-          <div className="section-label" style={{ fontFamily: MONO, fontSize: 12, color: "#F5C800", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 12 }}>
+          <div
+            className="section-label"
+            style={{
+              fontFamily: MONO,
+              fontSize: 12,
+              color: "#F5C800",
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              marginBottom: 12,
+            }}
+          >
             Integration
           </div>
-          <h2 style={{ fontSize: "clamp(28px, 4vw, 44px)", fontWeight: 900, letterSpacing: "-0.04em", lineHeight: 1.1, marginBottom: 20, fontFamily: FONT }}>
-            Three lines.<br />
+          <h2
+            style={{
+              fontSize: "clamp(28px, 4vw, 44px)",
+              fontWeight: 900,
+              letterSpacing: "-0.04em",
+              lineHeight: 1.1,
+              marginBottom: 20,
+              fontFamily: FONT,
+            }}
+          >
+            Three lines.
+            <br />
             <span style={{ color: "rgba(255,255,255,0.3)" }}>Four chains.</span>
           </h2>
-          <p style={{ fontSize: 15, color: "rgba(255,255,255,0.45)", lineHeight: 1.65, marginBottom: 32, fontFamily: FONT }}>
-            Wrap your app with <code style={{ background: "rgba(245,200,0,0.1)", padding: "1px 6px", borderRadius: 4, fontFamily: MONO, fontSize: 13, color: "#F5C800" }}>DecaneKit</code>, add a connect button, start signing. The SDK handles discovery, sessions, and key management.
+          <p
+            style={{
+              fontSize: 15,
+              color: "rgba(255,255,255,0.45)",
+              lineHeight: 1.65,
+              marginBottom: 32,
+              fontFamily: FONT,
+            }}
+          >
+            Wrap your app with{" "}
+            <code
+              style={{
+                background: "rgba(245,200,0,0.1)",
+                padding: "1px 6px",
+                borderRadius: 4,
+                fontFamily: MONO,
+                fontSize: 13,
+                color: "#F5C800",
+              }}
+            >
+              DecaneKit
+            </code>
+            , add a connect button, start signing. The SDK handles discovery,
+            sessions, and key management.
           </p>
-          <Link href="/docs" style={{
-            display: "inline-flex", alignItems: "center", gap: 6,
-            height: 42, padding: "0 20px",
-            background: "rgba(245,200,0,0.1)", color: "#F5C800",
-            border: "1px solid rgba(245,200,0,0.25)", borderRadius: 10,
-            fontSize: 14, fontWeight: 600, fontFamily: FONT,
-          }}>
+          <Link
+            href="/docs"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              height: 42,
+              padding: "0 20px",
+              background: "rgba(245,200,0,0.1)",
+              color: "#F5C800",
+              border: "1px solid rgba(245,200,0,0.25)",
+              borderRadius: 10,
+              fontSize: 14,
+              fontWeight: 600,
+              fontFamily: FONT,
+            }}
+          >
             Read the docs →
           </Link>
         </div>
@@ -1106,13 +1828,29 @@ export default function Page() {
       </section>
 
       {/* ── COUNTER STRIP ── */}
-      <div className="counter-strip" style={{
-        borderTop: "1px solid rgba(255,255,255,0.06)",
-        borderBottom: "1px solid rgba(255,255,255,0.06)",
-        padding: "60px 24px",
-      }}>
-        <div style={{ maxWidth: 900, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 40 }}>
-          {[{ to: 58, label: "EVM chains" }, { to: 12, label: "Solana wallets" }, { to: 4, label: "Chain types" }, { to: 30, label: "Min session" }].map((c) => (
+      <div
+        className="counter-strip"
+        style={{
+          borderTop: "1px solid rgba(255,255,255,0.06)",
+          borderBottom: "1px solid rgba(255,255,255,0.06)",
+          padding: "60px 24px",
+        }}
+      >
+        <div
+          style={{
+            maxWidth: 900,
+            margin: "0 auto",
+            display: "grid",
+            gridTemplateColumns: "repeat(4, 1fr)",
+            gap: 40,
+          }}
+        >
+          {[
+            { to: 58, label: "EVM chains" },
+            { to: 12, label: "Solana wallets" },
+            { to: 4, label: "Chain types" },
+            { to: 30, label: "Min session" },
+          ].map((c) => (
             <div key={c.label} className="counter-item">
               <Counter to={c.to} label={c.label} />
             </div>
@@ -1122,41 +1860,88 @@ export default function Page() {
 
       {/* ── CTA FINAL ── */}
       <section style={{ padding: "120px 24px", textAlign: "center" }}>
-        <div className="cta-inner" style={{
-          display: "inline-block",
-          background: "radial-gradient(ellipse at center, rgba(245,200,0,0.06) 0%, transparent 70%)",
-          padding: "80px 60px", borderRadius: 24,
-          border: "1px solid rgba(245,200,0,0.1)",
-          maxWidth: 680,
-        }}>
-          <h2 style={{ fontSize: "clamp(32px, 5vw, 56px)", fontWeight: 900, letterSpacing: "-0.04em", lineHeight: 1.1, marginBottom: 16, fontFamily: FONT }}>
+        <div
+          className="cta-inner"
+          style={{
+            display: "inline-block",
+            background:
+              "radial-gradient(ellipse at center, rgba(245,200,0,0.06) 0%, transparent 70%)",
+            padding: "80px 60px",
+            borderRadius: 24,
+            border: "1px solid rgba(245,200,0,0.1)",
+            maxWidth: 680,
+          }}
+        >
+          <h2
+            style={{
+              fontSize: "clamp(32px, 5vw, 56px)",
+              fontWeight: 900,
+              letterSpacing: "-0.04em",
+              lineHeight: 1.1,
+              marginBottom: 16,
+              fontFamily: FONT,
+            }}
+          >
             Ready to ship?
           </h2>
-          <p style={{ fontSize: 17, color: "rgba(255,255,255,0.45)", marginBottom: 40, lineHeight: 1.6, fontFamily: FONT }}>
-            Install the package, wrap your app, connect. Under 60 seconds to your first signed message.
+          <p
+            style={{
+              fontSize: 17,
+              color: "rgba(255,255,255,0.45)",
+              marginBottom: 40,
+              lineHeight: 1.6,
+              fontFamily: FONT,
+            }}
+          >
+            Install the package, wrap your app, connect. Under 60 seconds to
+            your first signed message.
           </p>
-          <Link href="/docs" style={{
-            display: "inline-flex", alignItems: "center", gap: 8,
-            height: 52, padding: "0 36px",
-            background: "#F5C800", color: "#0d0d0b",
-            fontWeight: 800, fontSize: 16, borderRadius: 12,
-            boxShadow: "0 0 60px rgba(245,200,0,0.3)", fontFamily: FONT,
-          }}>
+          <Link
+            href="/docs"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+              height: 52,
+              padding: "0 36px",
+              background: "#F5C800",
+              color: "#0d0d0b",
+              fontWeight: 800,
+              fontSize: 16,
+              borderRadius: 12,
+              boxShadow: "0 0 60px rgba(245,200,0,0.3)",
+              fontFamily: FONT,
+            }}
+          >
             Get started
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-              <path d="M5 12h14M12 5l7 7-7 7"/>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+            >
+              <path d="M5 12h14M12 5l7 7-7 7" />
             </svg>
           </Link>
         </div>
       </section>
 
       {/* ── FOOTER ── */}
-      <footer style={{
-        borderTop: "1px solid rgba(255,255,255,0.06)",
-        padding: "32px 32px",
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        fontSize: 13, color: "rgba(255,255,255,0.25)", fontFamily: MONO,
-      }}>
+      <footer
+        style={{
+          borderTop: "1px solid rgba(255,255,255,0.06)",
+          padding: "32px 32px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          fontSize: 13,
+          color: "rgba(255,255,255,0.25)",
+          fontFamily: MONO,
+        }}
+      >
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <DecaneLogo size={22} />
           <span style={{ color: "#F5C800" }}>decane</span>
@@ -1165,9 +1950,25 @@ export default function Page() {
           <span>MIT</span>
         </div>
         <div style={{ display: "flex", gap: 24 }}>
-          <Link href="/docs" style={{ color: "inherit" }}>docs</Link>
-          <a href="https://github.com" target="_blank" rel="noreferrer" style={{ color: "inherit" }}>github</a>
-          <a href="https://npmjs.com" target="_blank" rel="noreferrer" style={{ color: "inherit" }}>npm</a>
+          <Link href="/docs" style={{ color: "inherit" }}>
+            docs
+          </Link>
+          <a
+            href="https://github.com"
+            target="_blank"
+            rel="noreferrer"
+            style={{ color: "inherit" }}
+          >
+            github
+          </a>
+          <a
+            href="https://npmjs.com"
+            target="_blank"
+            rel="noreferrer"
+            style={{ color: "inherit" }}
+          >
+            npm
+          </a>
         </div>
       </footer>
     </div>
