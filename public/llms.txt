@@ -1,38 +1,269 @@
 # decane-connect-kit
 
-> Wallet-connect and non-custodial social sign-in for EVM, Solana, Tron, and Bitcoin dApps, in one npm package. Two independent integration paths that share the same session model and hook API — use either one alone, or both together.
+> Wallet-connect and non-custodial social sign-in for EVM, Solana, Tron, and Bitcoin dApps, in one npm package (`decane-connect-kit`, MIT license, React 18+ peer dependency, full TypeScript declarations included). Two independent integration paths — wallet-connect (open source, free, no backend) and social sign-in (hosted, requires an API key) — that can be used alone or together through the same `<DecaneKit>` provider and hook API. This file is a self-contained integration spec: everything below is grounded in the actual package source, not paraphrased documentation.
 
-## Wallet connect (open source, free, no backend required)
+```
+npm install decane-connect-kit
+```
 
-Detects installed wallets and manages CAIP-25 sessions across chains. No `window.ethereum` — uses EIP-6963 for EVM, the Solana Wallet Standard, TronLink, and Unisat/OKX/MetaMask Snap for Bitcoin.
+---
 
-- Overview and quick start: https://decane.app/docs#overview
-- Install: https://decane.app/docs#install
-- Framework setup (Next.js, Vite/CRA): https://decane.app/docs#framework-setup
-- Configuration reference: https://decane.app/docs#configuration
-- Supported chains (58 EVM chains, Solana, Tron, Bitcoin): https://decane.app/docs#chain-list
-- Custom chains: https://decane.app/docs#custom-chains
-- Hooks — useDecane, useWalletSelector, useChainSwitch, useSignMessage, useSendTransaction, useSignTypedData: https://decane.app/docs#hooks
-- UI components — WalletSelector, DecaneKit provider: https://decane.app/docs#hooks
-- Wallet detection details: https://decane.app/docs#detection
-- Error handling: https://decane.app/docs#errors
+## Part 1 — Wallet connect (open source, free, no backend required)
 
-Core export: `createDecane()` from `decane-connect-kit`.
+Detects installed wallets and manages CAIP-25 sessions across chains. Never uses `window.ethereum` — detection is via EIP-6963 (`window.addEventListener('eip6963:announceProvider', ...)`) for EVM, the Solana Wallet Standard for Solana, TronLink's injected provider for Tron, and Unisat/Xverse/OKX-style providers for Bitcoin.
 
-## Social sign-in (hosted, Google/email embedded wallets)
+### Minimal working setup
 
-Non-custodial embedded wallets for users with no wallet at all. A private key is generated and immediately split in two (device share + server share, XOR key-split); signing happens inside a TEE (Trusted Execution Environment) that reconstructs the key only in isolated hardware. Requires an API key from the developer dashboard.
+```tsx
+import { DecaneKit, useDecane, useWalletSelector, WalletSelector } from 'decane-connect-kit';
 
-- Overview and security architecture: https://decane.app/docs#social
-- How it works, in depth (mechanism + key-split security model): https://decane.app/#social
-- ConnectMode and SocialConfig: https://decane.app/docs#connect-mode
-- Hooks — useSocialAuth, useSocialWallet: https://decane.app/docs#useSocialAuth
-- UI component — SocialWalletModal: https://decane.app/docs#social-wallet-modal
-- Pricing (Free / Scale / Enterprise tiers): https://decane.app/pricing
+// 1. Wrap your app once
+function App() {
+  return (
+    <DecaneKit config={{ mode: 'wallets', theme: 'auto' }}>
+      <ConnectButton />
+    </DecaneKit>
+  );
+}
 
-Core exports: `createDecaneConnect()`, `startEmailAuth()`, `verifyEmailCode()` from `decane-connect-kit`.
+// 2. Open the picker and read connection state from hooks
+// <DecaneKit> already renders <WalletSelector> and <SocialWalletModal>
+// internally — you never render them yourself, just control them via hooks.
+function ConnectButton() {
+  const { isConnected, connectedWallet, activeChain, disconnect } = useDecane();
+  const { open } = useWalletSelector();
 
-Error types: `InvalidApiKeyError`, `OriginNotAllowedError`, `SessionExpiredError`, `UnlockRequiredError`, `UserCancelledError`, `WebAuthnNotSupportedError`, `InvalidPinError`, `CallSequenceError`, `NetworkError`, `ShareCorruptedError`, `NewDeviceError`, `PromptPinNotConfiguredError`, `AttestationError`, `RecoveryFailedError`, `InvalidPhraseError`.
+  if (isConnected) {
+    return (
+      <div>
+        Connected: {connectedWallet?.name} on {activeChain}
+        <button onClick={disconnect}>Disconnect</button>
+      </div>
+    );
+  }
+  return <button onClick={open}>Connect wallet</button>;
+}
+```
+
+`<DecaneKit config={...}>` takes one `config` prop of type `DecaneConfig`:
+
+```ts
+interface DecaneConfig {
+  chains?: ChainDescriptor[];               // custom chains to register at init
+  supportedChainIds?: string[];             // restrict which built-in chains are available
+  networks?: 'evm' | 'solana' | 'tron' | 'bitcoin' | 'all';  // overridden by `mode` when both set
+  defaultChain?: string;                    // CAIP-2 id, e.g. 'eip155:1'
+  theme?: 'light' | 'dark' | 'auto';
+  mode?: ConnectMode;                       // see ConnectMode below — default 'wallets'
+  social?: SocialConfig;                    // required when mode includes '+social' or is 'social'
+}
+
+type ConnectMode =
+  | 'all' | 'wallets'          // 'wallets' is the default — all wallet types, no social
+  | 'social'                   // social sign-in only, no wallet connect
+  | 'evm' | 'solana' | 'tron'  // single chain type, no social
+  | 'evm+social' | 'solana+social' | 'tron+social'
+  | 'evm+tron' | 'evm+tron+social';
+```
+
+### Hooks (all exported from `decane-connect-kit`)
+
+- **`useDecane()`** — connection state: `{ provider, wallets, evmWallets, solanaWallets, multiChainWallets, chains, connectedWallet, activeSession, activeChain, isConnected, theme, setTheme, connect(wallet, preferredChain?), disconnect(), addChain(chain), removeChain(chainId) }`.
+- **`useWalletSelector()`** — `{ isOpen, open(), close() }`, controls the built-in `<WalletSelector>` modal.
+- **`useChainSwitch()`** — `{ switchChain(chainId): Promise<void>, loading, error, activeChain, grantedChains }`. Extends the current CAIP-25 session to include a new chain (calls `wallet_requestPermissions` under the hood, preserving any existing granted scope for that chain).
+- **`useSignMessage()`** — `{ signMessage(message: string, options?: { chainId?, account? }): Promise<string>, signature, loading, error, reset() }`.
+- **`useSendTransaction()`** — `{ sendTransaction(tx: TxParams, options?: { chainId?, from? }): Promise<string>, txHash, loading, error, reset() }`, where `TxParams = { to: string; value?: string; data?: string; gas?: string; gasPrice?: string }` (value as decimal or `0x`-hex wei).
+- **`useSignTypedData()`** — `{ signTypedData(typedData: { domain, types, message }, options?): Promise<string>, signature, loading, error, reset() }`. EVM only — throws `DecaneErrorCode.EVM_ONLY_METHOD` (5031) if the active chain is Solana/Tron/Bitcoin.
+
+All four signing/session hooks resolve `chainId`/`account` from the active CAIP-25 session when not explicitly passed, and throw a `DecaneError` (see below) on failure — errors are also captured in the hook's own `error` state.
+
+### CAIP-25 session model
+
+Connecting a wallet doesn't itself grant permissions — call `provider.request({ method: 'wallet_requestPermissions', params: [{ requiredScopes: {...}, optionalScopes: {...} }] })` (or use `useChainSwitch().switchChain(chainId)` for the common case of extending to one more chain). A granted scope looks like:
+
+```ts
+interface ChainScope {
+  methods: CAIP25Method[];  // subset of: wallet_sendTransaction, wallet_signMessage, wallet_signTypedData, wallet_requestPermissions, wallet_revokePermissions, wallet_getPermissions
+  accounts: string[];       // CAIP-10, e.g. 'eip155:1:0xAbc...' or 'solana:mainnet:BxY3...'
+  events?: string[];
+}
+```
+
+`provider.activeSession` (`ActiveSession`) exposes `{ sessionId, grantedScopes, walletId, walletType, createdAt }`. Signing on a chain outside the granted scope throws `CHAIN_NOT_IN_SCOPE` (5011).
+
+### Chains
+
+64 built-in chains ship with the package: 59 EVM chains (`eip155:*` — Ethereum, Base, Arbitrum One + Nova, Optimism, BNB Chain, Polygon, Avalanche, plus ~50 more L2s/appchains including Blast, Scroll, zkSync Era, Linea, Mantle, Sei, Monad, Berachain, World Chain, Zora, and others — full list is `BUILT_IN_CHAINS` in the package source), 2 Solana clusters (`solana:mainnet`, `solana:devnet`), 2 Tron networks (`tron:mainnet`, `tron:shasta`), and 1 Bitcoin (`bip122:mainnet`). Named constants for all of them are exported as `CHAINS` (e.g. `CHAINS.ETHEREUM === 'eip155:1'`, `CHAINS.BASE === 'eip155:8453'`).
+
+Register a custom chain (e.g. a local devnet) via `provider.addChain(chain)` or the `config.chains` array:
+
+```ts
+provider.addChain({
+  id: 'eip155:31337',
+  type: 'evm',
+  name: 'Localhost',
+  chainId: 31337,
+  nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+  rpcUrl: 'http://localhost:8545',
+  isCustom: true,
+});
+```
+
+`ChainDescriptor` shape: `{ id: string /* CAIP-2 */; type: 'evm'|'solana'|'tron'|'bitcoin'; name: string; nativeCurrency: { name, symbol, decimals }; rpcUrl?; blockExplorerUrl?; iconUrl?; chainId?: number /* EVM only */; isCustom?: boolean }`.
+
+### `<WalletSelector>` (rendered automatically by `<DecaneKit>`)
+
+Props (for reference — you control it via `useWalletSelector()`, you don't render it yourself): `{ provider, open, onClose, onConnect, theme?, networks?, mode?, socialAuthMethods?, onGoogleSignIn?, onEmailStart?, onEmailVerify? }`.
+
+### Errors
+
+`DecaneError extends Error` with a `code: DecaneErrorCode` field:
+
+| Code | Value | Meaning |
+|---|---|---|
+| `USER_REJECTED` | 4001 | User rejected the wallet prompt |
+| `UNAUTHORIZED` | 4100 | Not authorized for the requested method/chain |
+| `NO_ACTIVE_SESSION` | 5001 | Signing attempted before any session was granted |
+| `SCOPE_MISMATCH` | 5002 | Account not in the granted scope |
+| `SESSION_EXPIRED` | 5003 | Session expired, re-request permissions |
+| `UNSUPPORTED_CHAIN` | 5010 | Chain not registered (built-in or custom) |
+| `CHAIN_NOT_IN_SCOPE` | 5011 | Chain not included in the current granted session |
+| `INVALID_CHAIN_CONFIG` | 5012 | Malformed `ChainDescriptor` passed to `addChain` |
+| `NO_WALLET_CONNECTED` | 5020 | No wallet connected yet |
+| `WALLET_DISCONNECTED` | 5021 | Wallet disconnected mid-operation |
+| `PROVIDER_ERROR` | 5022 | Underlying wallet provider threw (wrapped) |
+| `METHOD_NOT_SUPPORTED` | 5030 | Unknown/unsupported CAIP-25 method |
+| `EVM_ONLY_METHOD` | 5031 | `wallet_signTypedData` called on a non-EVM chain |
+
+---
+
+## Part 2 — Social sign-in (hosted, Google/email embedded wallets)
+
+Non-custodial embedded wallets for users with no wallet installed at all. On first sign-in, a private key is generated client-side and immediately split in two via XOR (device share + server share) — the server share alone is meaningless without the device share, and vice versa. Signing happens by sending both shares into a TEE (Trusted Execution Environment, a hardware-isolated enclave) which reconstructs the key only inside isolated memory, signs, and discards it — the full private key never exists in plaintext outside that enclave, and never touches the server's own process memory or disk. Requires an API key from the developer dashboard (has its own pricing — Free/Scale/Enterprise tiers, see https://decane.app/pricing).
+
+### Standalone usage (no React)
+
+```ts
+import { createDecaneConnect } from 'decane-connect-kit';
+
+const connect = await createDecaneConnect({
+  apiKey: 'dck_live_...',
+  chains: ['evm:1', 'solana:mainnet'],       // Chain = `evm:${number}` | `solana:'mainnet'|'devnet'`
+  authMethods: ['google', 'email'],
+});
+
+const { addresses, isNewUser } = await connect.connectWithGoogle();
+// addresses: { evm?: string; solana?: string }
+
+const sig = await connect.signMessage({ chain: 'evm:1', message: 'hello' });
+const txHash = await connect.sendTransaction({ chain: 'evm:1', to: '0x...', value: 1000000000000000n });
+```
+
+`createDecaneConnect(config: DecaneConnectConfig): Promise<DecaneConnect>` throws a plain `Error` (not `DecaneConnectError`) if `apiKey` is missing or `chains` is empty.
+
+**`DecaneConnectConfig`** (full shape):
+
+```ts
+interface DecaneConnectConfig {
+  apiKey: string;
+  chains: Chain[];
+  authMethods: Array<'google' | 'email'>;
+  apiBaseUrl?: string;                // default: https://api.decane.app — self-host override only
+  sessionDurationMinutes?: number;    // default: 30
+  promptPin?: () => Promise<string>;  // required if the browser has no passkey support
+  rpId?: string;                      // WebAuthn RP ID, defaults to window.location.hostname
+  rpName?: string;                    // WebAuthn RP display name
+  rpcUrls?: Record<string, string>;   // override built-in public RPCs per chain
+  teeUrl?: string;                    // advanced/self-hosted override only
+  offerPhraseAtSignup?: boolean;      // default true — offer a recovery phrase at signup
+  onPhraseGenerated?: (result: PhraseGenerationResult) => Promise<{ userConfirmed: boolean; userAnswers: Array<{ position: number; word: string }> }>;
+  promptForRecoveryPhrase?: () => Promise<string | null>;
+  onRecoveryProgress?: (event: RecoveryProgress) => void;
+}
+```
+
+**`DecaneConnect`** (the object `createDecaneConnect` resolves to) — full method set:
+
+```ts
+interface DecaneConnect {
+  connect(): Promise<ConnectResult>;                              // opens whichever authMethods are configured
+  connectWithGoogle(): Promise<ConnectResult>;
+  connectWithEmail(email: string): Promise<{ codeRequired: true }>;
+  verifyEmailCode(email: string, code: string): Promise<ConnectResult>;
+  unlock(): Promise<void>;                                        // re-authenticate an expired session
+  isUnlocked(): boolean;
+  sessionExpiresAt(): number | null;
+  signMessage(req: SignMessageRequest): Promise<string>;
+  sendTransaction(req: SendTransactionRequest): Promise<string>;
+  signSolanaTransaction(tx: Uint8Array): Promise<Uint8Array>;
+  disconnect(): Promise<void>;
+  getAddresses(): { evm?: string; solana?: string } | null;
+  generateRecoveryPhrase(): Promise<PhraseGenerationResult>;       // re-prompts unlock; does not cache the share
+  markPhraseSaved(challenge, userAnswers): Promise<boolean>;
+  hasBackup(): Promise<boolean>;
+  deleteBackup(): Promise<void>;                                   // disables phrase-based recovery
+  on(event: SdkEvent, handler: (...args: unknown[]) => void): void;
+  off(event: SdkEvent, handler: (...args: unknown[]) => void): void;
+}
+// ConnectResult = { addresses: { evm?: string; solana?: string }; isNewUser: boolean }
+// SdkEvent = 'connected' | 'disconnected' | 'session-expired' | 'session-started'
+```
+
+Email sign-in is the two-step `connectWithEmail(email)` → `verifyEmailCode(email, code)` flow — a 6-digit code is emailed, `connectWithEmail` always resolves the same way regardless of whether the address has an account (prevents email enumeration).
+
+> Note: the package also exports standalone `startEmailAuth`/`verifyEmailCode` functions, but their first parameter is an internal `ApiClient` type that isn't part of the public API — use `DecaneConnect.connectWithEmail()`/`.verifyEmailCode()` instead (shown above), not the standalone functions.
+
+### React usage
+
+```tsx
+import { DecaneKit, useSocialAuth, SocialWalletModal } from 'decane-connect-kit';
+
+function App() {
+  return (
+    <DecaneKit config={{
+      mode: 'social',                    // or 'all' / 'evm+social' etc. to combine with wallet-connect
+      social: { apiKey: 'dck_live_...', authMethods: ['google', 'email'] },
+    }}>
+      <SignInButton />
+    </DecaneKit>
+  );
+}
+
+function SignInButton() {
+  const { isConnected, addresses, signInWithGoogle, googleLoading } = useSocialAuth();
+  if (isConnected) return <div>Signed in: {addresses?.evm}</div>;
+  return <button onClick={signInWithGoogle} disabled={googleLoading}>Sign in with Google</button>;
+}
+```
+
+- **`useSocialAuth()`** — sign-in flow: `{ isConnected, isUnlocked, isNewUser, addresses, sessionExpiresAt, googleLoading, emailLoading, error, clearError(), signInWithGoogle(), sendEmailCode(email): Promise<{codeRequired:true}>, confirmEmailCode(email, code), unlock(), disconnect() }`.
+- **`useSocialWallet()`** — sign-in + signing + modal control: everything in `useSocialAuth()` plus `{ modalOpen, openModal(), closeModal(), signMessage(chain, message), sendTransaction(req), signSolanaTransaction(tx), loading, error }`.
+
+`<SocialWalletModal>` is rendered automatically by `<DecaneKit>` (props: `{ open, onClose, theme?, socialAuth, onUnlock, onDisconnect }`) — control it via `useSocialWallet().openModal()`/`.closeModal()`, don't render it directly.
+
+### Errors
+
+All extend `DecaneConnectError` (`{ code: string; message: string; retryable: boolean }`):
+
+| Class | code | retryable | Trigger |
+|---|---|---|---|
+| `InvalidApiKeyError` | `INVALID_API_KEY` | no | API key is invalid or revoked |
+| `OriginNotAllowedError` | `ORIGIN_NOT_ALLOWED` | no | Calling origin isn't in the API key's allowlist |
+| `SessionExpiredError` | `SESSION_EXPIRED` | yes | Session TTL elapsed — call `unlock()` |
+| `UnlockRequiredError` | `UNLOCK_REQUIRED` | yes | Signing attempted before unlocking |
+| `UserCancelledError` | `USER_CANCELLED` | yes | User dismissed a passkey/PIN/OAuth prompt |
+| `WebAuthnNotSupportedError` | `WEBAUTHN_UNSUPPORTED` | no | Browser has no WebAuthn support and no `promptPin` configured |
+| `InvalidPinError` | `INVALID_PIN` | yes | Incorrect PIN entered |
+| `CallSequenceError` | `CALL_SEQUENCE` | no | SDK methods called out of order (e.g. signing before connecting) |
+| `NetworkError` | `NETWORK` | yes | Request to the backend failed |
+| `ShareCorruptedError` | `SHARE_CORRUPTED` | no | Locally stored device share is corrupted |
+| `NewDeviceError` | `NEW_DEVICE` | no | No device share found on this device — re-authenticate to provision it |
+| `PromptPinNotConfiguredError` | `PROMPT_PIN_NOT_CONFIGURED` | no | Passkey unavailable and no `promptPin` callback was provided |
+| `AttestationError` | `ATTESTATION_FAILED` | no | TEE attestation quote failed verification |
+| `RecoveryFailedError` | `RECOVERY_FAILED` | yes | Recovery-phrase flow failed |
+| `InvalidPhraseError` | `INVALID_PHRASE` | yes | Recovery phrase is invalid or corrupted |
+
+---
 
 ## Package
 
@@ -40,10 +271,10 @@ Error types: `InvalidApiKeyError`, `OriginNotAllowedError`, `SessionExpiredError
 - Install: `npm install decane-connect-kit`
 - License: MIT
 - Peer dependency: React 18 or later
-- TypeScript: full type declarations included
+- TypeScript: full type declarations included, no `@types` package needed
 
-## Optional
+## Optional (human-readable pages)
 
-- Full documentation (single-page reference): https://decane.app/docs
+- Full documentation: https://decane.app/docs
 - Landing page: https://decane.app
-- Pricing: https://decane.app/pricing
+- Pricing (social sign-in hosted tiers): https://decane.app/pricing
