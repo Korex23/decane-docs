@@ -108,6 +108,14 @@ export default function DocsPage() {
                 npmjs.com/package/decane-connect-kit
               </a>.
             </p>
+            <p>
+              Wiring up an LLM or coding agent to integrate decane-connect-kit? Grab{" "}
+              <a href="/llms.txt" download="decane-connect-kit-llms.txt">
+                llms.txt
+              </a>{" "}
+              — a machine-readable reference covering both the wallet-connect SDK and the hosted
+              social sign-in integration.
+            </p>
           </section>
 
           {/* ── Quick start ── */}
