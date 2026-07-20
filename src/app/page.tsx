@@ -2,7 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { DecaneLogo } from "@/components/DecaneLogo";
+import { SiteNav } from "@/components/SiteNav";
+import { SiteFooter } from "@/components/SiteFooter";
+import { useTheme, DASHBOARD_URL, type Theme } from "@/lib/theme";
 
 // ─── types ───────────────────────────────────────────────────────────────────
 
@@ -53,7 +55,63 @@ const CHAIN_SVGS: Record<string, string> = {
 
 // ─── immersive canvas ─────────────────────────────────────────────────────────
 
-function Scene({ mouse }: { mouse: Vec2 }) {
+// Canvas can't read CSS custom properties directly — ctx.fillStyle needs a
+// resolved color string, not "var(--doc-accent)". These mirror the --doc-*
+// tokens' dark/light values for exactly the strokes/fills this scene draws.
+const SCENE_PALETTES: Record<
+  Theme,
+  {
+    bgTint: string;
+    grid: string;
+    gridAlpha: number;
+    particleGold: (a: number) => string;
+    particleOther: (a: number) => string;
+    ringTrack: string;
+    glow: (i: number) => string;
+    ringStroke: string;
+    nodeLabel: (a: number) => string;
+    nodeFallbackBg: string;
+    logoGlow: string;
+    logoFallbackBg: string;
+    logoFallbackStroke: string;
+    logoFallbackText: string;
+  }
+> = {
+  dark: {
+    bgTint: "rgba(30,24,5,0.4)",
+    grid: "#F5C800",
+    gridAlpha: 0.07,
+    particleGold: (a) => `rgba(245,200,0,${a})`,
+    particleOther: (a) => `rgba(255,255,255,${a * 0.4})`,
+    ringTrack: "rgba(245,200,0,0.08)",
+    glow: (i) => `rgba(245,200,0,${0.06 / i})`,
+    ringStroke: "rgba(245,200,0,0.35)",
+    nodeLabel: (a) => `rgba(255,255,255,${a})`,
+    nodeFallbackBg: "#0d0d0b",
+    logoGlow: "rgba(245,200,0,0.2)",
+    logoFallbackBg: "#1a1505",
+    logoFallbackStroke: "#F5C800",
+    logoFallbackText: "#F5C800",
+  },
+  light: {
+    bgTint: "rgba(184,148,10,0.10)",
+    grid: "#B8940A",
+    gridAlpha: 0.10,
+    particleGold: (a) => `rgba(184,148,10,${a})`,
+    particleOther: (a) => `rgba(26,25,20,${a * 0.35})`,
+    ringTrack: "rgba(184,148,10,0.16)",
+    glow: (i) => `rgba(184,148,10,${0.08 / i})`,
+    ringStroke: "rgba(184,148,10,0.45)",
+    nodeLabel: (a) => `rgba(26,25,20,${a})`,
+    nodeFallbackBg: "#FFFFFF",
+    logoGlow: "rgba(184,148,10,0.22)",
+    logoFallbackBg: "#FBF4DC",
+    logoFallbackStroke: "#B8940A",
+    logoFallbackText: "#B8940A",
+  },
+};
+
+function Scene({ mouse, theme }: { mouse: Vec2; theme: Theme }) {
   const ref = useRef<HTMLCanvasElement>(null);
   const state = useRef<{
     particles: Particle[];
@@ -61,7 +119,8 @@ function Scene({ mouse }: { mouse: Vec2 }) {
     raf: number;
     mouse: Vec2;
     images: Record<string, HTMLImageElement>;
-  }>({ particles: [], time: 0, raf: 0, mouse: { x: 0.5, y: 0.5 }, images: {} });
+    palette: (typeof SCENE_PALETTES)["dark"];
+  }>({ particles: [], time: 0, raf: 0, mouse: { x: 0.5, y: 0.5 }, images: {}, palette: SCENE_PALETTES.dark });
 
   const NODES: ChainNode[] = [
     { label: "EVM", color: "#627EEA", angle: 0, dist: 200, phase: 0 },
@@ -148,7 +207,7 @@ function Scene({ mouse }: { mouse: Vec2 }) {
         cy,
         Math.max(W, H) * 0.75,
       );
-      bg.addColorStop(0, "rgba(30,24,5,0.4)");
+      bg.addColorStop(0, s.palette.bgTint);
       bg.addColorStop(1, "transparent");
       ctx.fillStyle = bg;
       ctx.fillRect(0, 0, W, H);
@@ -157,8 +216,8 @@ function Scene({ mouse }: { mouse: Vec2 }) {
       const horizon = cy * 0.55;
       const vp = { x: cx + tilt.x * W * 0.5, y: horizon };
       ctx.save();
-      ctx.globalAlpha = 0.07;
-      ctx.strokeStyle = "#F5C800";
+      ctx.globalAlpha = s.palette.gridAlpha;
+      ctx.strokeStyle = s.palette.grid;
       ctx.lineWidth = 0.8;
       const gridLines = 22;
       for (let i = 0; i <= gridLines; i++) {
@@ -192,8 +251,8 @@ function Scene({ mouse }: { mouse: Vec2 }) {
         ctx.beginPath();
         ctx.arc(p.x * W, p.y * H, p.r, 0, Math.PI * 2);
         ctx.fillStyle = p.gold
-          ? `rgba(245,200,0,${p.a})`
-          : `rgba(255,255,255,${p.a * 0.4})`;
+          ? s.palette.particleGold(p.a)
+          : s.palette.particleOther(p.a);
         ctx.fill();
       }
 
@@ -212,7 +271,7 @@ function Scene({ mouse }: { mouse: Vec2 }) {
         0,
         Math.PI * 2,
       );
-      ctx.strokeStyle = "rgba(245,200,0,0.08)";
+      ctx.strokeStyle = s.palette.ringTrack;
       ctx.lineWidth = 1;
       ctx.setLineDash([4, 8]);
       ctx.stroke();
@@ -222,7 +281,7 @@ function Scene({ mouse }: { mouse: Vec2 }) {
       for (let i = 3; i > 0; i--) {
         const rr = ringR * (0.6 + i * 0.2);
         const g = ctx.createRadialGradient(cx, cy, rr * 0.6, cx, cy, rr * 1.3);
-        g.addColorStop(0, `rgba(245,200,0,${0.06 / i})`);
+        g.addColorStop(0, s.palette.glow(i));
         g.addColorStop(1, "transparent");
         ctx.beginPath();
         ctx.arc(cx, cy, rr, 0, Math.PI * 2);
@@ -233,7 +292,7 @@ function Scene({ mouse }: { mouse: Vec2 }) {
       // ring stroke
       ctx.beginPath();
       ctx.arc(cx, cy, ringR, 0, Math.PI * 2);
-      ctx.strokeStyle = "rgba(245,200,0,0.35)";
+      ctx.strokeStyle = s.palette.ringStroke;
       ctx.lineWidth = 1.5;
       ctx.stroke();
 
@@ -298,7 +357,7 @@ function Scene({ mouse }: { mouse: Vec2 }) {
           // fallback disc + initial
           ctx.beginPath();
           ctx.arc(nx, ny, r, 0, Math.PI * 2);
-          ctx.fillStyle = "#0d0d0b";
+          ctx.fillStyle = s.palette.nodeFallbackBg;
           ctx.strokeStyle = node.color + "99";
           ctx.lineWidth = 1.5;
           ctx.fill();
@@ -312,7 +371,7 @@ function Scene({ mouse }: { mouse: Vec2 }) {
 
         // label
         if (ny < cy || perspective > 1.1) {
-          ctx.fillStyle = `rgba(255,255,255,${0.4 * perspective})`;
+          ctx.fillStyle = s.palette.nodeLabel(0.4 * perspective);
           ctx.font = `${10 * perspective}px 'Geist', system-ui`;
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
@@ -323,7 +382,7 @@ function Scene({ mouse }: { mouse: Vec2 }) {
       // Decane logo at centre
       const cr = 28;
       const cg = ctx.createRadialGradient(cx, cy, 0, cx, cy, cr * 2.5);
-      cg.addColorStop(0, "rgba(245,200,0,0.2)");
+      cg.addColorStop(0, s.palette.logoGlow);
       cg.addColorStop(1, "transparent");
       ctx.beginPath();
       ctx.arc(cx, cy, cr * 2.5, 0, Math.PI * 2);
@@ -338,12 +397,12 @@ function Scene({ mouse }: { mouse: Vec2 }) {
       } else {
         ctx.beginPath();
         ctx.arc(cx, cy, cr, 0, Math.PI * 2);
-        ctx.fillStyle = "#1a1505";
-        ctx.strokeStyle = "#F5C800";
+        ctx.fillStyle = s.palette.logoFallbackBg;
+        ctx.strokeStyle = s.palette.logoFallbackStroke;
         ctx.lineWidth = 1.5;
         ctx.fill();
         ctx.stroke();
-        ctx.fillStyle = "#F5C800";
+        ctx.fillStyle = s.palette.logoFallbackText;
         ctx.font = `800 ${cr}px 'Geist', system-ui`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
@@ -363,6 +422,10 @@ function Scene({ mouse }: { mouse: Vec2 }) {
   useEffect(() => {
     state.current.mouse = mouse;
   }, [mouse]);
+
+  useEffect(() => {
+    state.current.palette = SCENE_PALETTES[theme];
+  }, [theme]);
 
   return (
     <canvas
@@ -404,7 +467,7 @@ function Counter({ to, label }: { to: number; label: string }) {
           fontSize: 44,
           fontWeight: 900,
           letterSpacing: "-0.04em",
-          color: "#F5C800",
+          color: "var(--doc-accent)",
           lineHeight: 1,
           fontFamily: "'Geist', system-ui",
         }}
@@ -415,7 +478,7 @@ function Counter({ to, label }: { to: number; label: string }) {
       <div
         style={{
           fontSize: 13,
-          color: "rgba(255,255,255,0.4)",
+          color: "var(--doc-text-muted)",
           marginTop: 4,
           fontFamily: "'Geist Mono', monospace",
           textTransform: "uppercase",
@@ -498,13 +561,14 @@ function hlLine(line: string): string {
   );
 
   // 9. SDK exports / components
-  s = s.replace(/\b(DecaneKit|useSocialWallet|App)\b/g, (_, id) =>
-    ph(`<span style="color:#82aaff">${id}</span>`),
+  s = s.replace(
+    /\b(DecaneKit|useSocialWallet|useDecane|useWalletSelector|App)\b/g,
+    (_, id) => ph(`<span style="color:#82aaff">${id}</span>`),
   );
 
   // 10. Destructured identifiers
   s = s.replace(
-    /\b(signMessage|sendTransaction|openModal|addresses)\b/g,
+    /\b(signMessage|sendTransaction|openModal|addresses|open|connectedWallet|disconnect|signInWithGoogle)\b/g,
     (_, id) => ph(`<span style="color:#89ddff">${id}</span>`),
   );
 
@@ -521,43 +585,74 @@ function hlLine(line: string): string {
 
 // ─── typing code block ────────────────────────────────────────────────────────
 
-const CODE = `import { DecaneKit, useSocialWallet } from "decane-connect-kit";
+const WALLET_CODE = `import { DecaneKit, useDecane,
+         useWalletSelector } from "decane-connect-kit";
 
-// Wallets + social sign-in, one provider
+<DecaneKit config={{ mode: "wallets" }}>
+  <App />
+</DecaneKit>
+
+// Connect whatever's already installed
+const { open } = useWalletSelector();
+const { connectedWallet, disconnect } = useDecane();
+
+<button onClick={open}>Connect Wallet</button>`;
+
+const SOCIAL_CODE = `import { DecaneKit, useSocialWallet } from "decane-connect-kit";
+
 <DecaneKit config={{
-  mode: "all",
+  mode: "social",
   social: { apiKey: "dck_live_…" },
 }}>
   <App />
 </DecaneKit>
 
-// Hook — same API for wallet or social
-const { signMessage, sendTransaction,
-        openModal, addresses } = useSocialWallet();`;
+// Same shape — no extension required
+const { signInWithGoogle, addresses,
+        signMessage, sendTransaction } = useSocialWallet();`;
 
-function TypingCode() {
+function TypingCode({ code }: { code: string }) {
   const [shown, setShown] = useState(0);
+  const [started, setStarted] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  function typeOut(text: string) {
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    setShown(0);
+    let i = 0;
+    intervalRef.current = setInterval(() => {
+      i += 2;
+      setShown(i);
+      if (i >= text.length && intervalRef.current) clearInterval(intervalRef.current);
+    }, 14);
+  }
 
   useEffect(() => {
     const io = new IntersectionObserver(
       ([e]) => {
         if (!e.isIntersecting) return;
         io.disconnect();
-        let i = 0;
-        const id = setInterval(() => {
-          i += 2;
-          setShown(i);
-          if (i >= CODE.length) clearInterval(id);
-        }, 14);
+        setStarted(true);
+        typeOut(code);
       },
       { threshold: 0.4 },
     );
     if (ref.current) io.observe(ref.current);
-    return () => io.disconnect();
+    return () => {
+      io.disconnect();
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const lines = CODE.slice(0, shown).split("\n");
+  useEffect(() => {
+    if (!started) return;
+    typeOut(code);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [code]);
+
+  const lines = code.slice(0, shown).split("\n");
 
   return (
     <div
@@ -666,7 +761,7 @@ function TypingCode() {
                   paddingRight: 16,
                   textAlign: "right",
                   flexShrink: 0,
-                  color: "rgba(255,255,255,0.14)",
+                  color: "var(--doc-text-muted)",
                   fontSize: 12,
                   userSelect: "none",
                   fontVariantNumeric: "tabular-nums",
@@ -679,7 +774,7 @@ function TypingCode() {
                 style={{
                   flex: 1,
                   paddingRight: 20,
-                  color: "rgba(255,255,255,0.82)",
+                  color: "var(--doc-text)",
                   whiteSpace: "pre",
                 }}
                 dangerouslySetInnerHTML={{ __html: hlLine(line) + cursor }}
@@ -776,7 +871,7 @@ function ChainMarquee() {
         gap: 8,
         padding: "0 24px",
         flexShrink: 0,
-        color: "rgba(255,255,255,0.45)",
+        color: "var(--doc-text-muted)",
         fontSize: 13,
         fontFamily: "'Geist', system-ui",
       }}
@@ -802,7 +897,7 @@ function ChainMarquee() {
         />
       )}
       {chain.name}
-      <span style={{ color: "rgba(245,200,0,0.25)", marginLeft: 8 }}>◆</span>
+      <span style={{ color: "color-mix(in oklab, var(--doc-accent) 25%, transparent)", marginLeft: 8 }}>◆</span>
     </div>
   );
 
@@ -817,8 +912,8 @@ function ChainMarquee() {
     <div
       className="chain-marquee"
       style={{
-        borderTop: "1px solid rgba(255,255,255,0.05)",
-        borderBottom: "1px solid rgba(255,255,255,0.05)",
+        borderTop: "1px solid var(--doc-border)",
+        borderBottom: "1px solid var(--doc-border)",
         overflow: "hidden",
         padding: "14px 0",
       }}
@@ -911,7 +1006,7 @@ function FeatureCard({
       ref={ref}
       className="feature-card"
       style={{
-        background: "#0b0b09",
+        background: "var(--doc-surface)",
         padding: "36px 32px",
         transformStyle: "preserve-3d",
         willChange: "transform",
@@ -922,12 +1017,12 @@ function FeatureCard({
           width: 40,
           height: 40,
           borderRadius: 10,
-          background: "rgba(245,200,0,0.08)",
-          border: "1px solid rgba(245,200,0,0.15)",
+          background: "color-mix(in oklab, var(--doc-accent) 8%, transparent)",
+          border: "1px solid color-mix(in oklab, var(--doc-accent) 15%, transparent)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          color: "#F5C800",
+          color: "var(--doc-accent)",
           marginBottom: 20,
         }}
       >
@@ -940,6 +1035,7 @@ function FeatureCard({
           letterSpacing: "-0.02em",
           marginBottom: 10,
           fontFamily: FONT,
+          color: "var(--doc-text)",
         }}
       >
         {f.title}
@@ -947,7 +1043,7 @@ function FeatureCard({
       <p
         style={{
           fontSize: 14,
-          color: "rgba(255,255,255,0.45)",
+          color: "var(--doc-text-muted)",
           lineHeight: 1.65,
           fontFamily: FONT,
         }}
@@ -958,11 +1054,204 @@ function FeatureCard({
   );
 }
 
+// ─── shared type tokens ───────────────────────────────────────────────────────
+
+const FONT = "'Geist', ui-sans-serif, system-ui, -apple-system, sans-serif";
+const MONO = "'Geist Mono', ui-monospace, 'SF Mono', monospace";
+
+// ─── two-piece key glyph — the recurring security motif for social sign-in ────
+// Not decorative: this literally represents the device-share / server-share
+// split the security section explains.
+
+function KeyHalf({
+  side,
+  joined,
+  color = "var(--doc-accent)",
+}: {
+  side: "left" | "right";
+  joined: boolean;
+  color?: string;
+}) {
+  const flip = side === "left" ? 1 : -1;
+  return (
+    <svg
+      width="56"
+      height="56"
+      viewBox="0 0 56 56"
+      style={{
+        transform: `translateX(${joined ? 0 : flip * 22}px) rotate(${joined ? 0 : flip * -8}deg)`,
+        transition: "transform 0.7s cubic-bezier(0.16, 1, 0.3, 1)",
+      }}
+    >
+      <path
+        d={
+          side === "left"
+            ? "M28 6a20 20 0 1 0 0 40 20 20 0 0 0 14.1-5.9L28 26V6z"
+            : "M28 6v20l14.1 14.1A20 20 0 0 0 28 6z"
+        }
+        fill="none"
+        stroke={color}
+        strokeWidth="2.5"
+        strokeLinejoin="round"
+      />
+      <circle cx="28" cy="26" r="4" fill={joined ? color : "transparent"} stroke={color} strokeWidth="2" />
+    </svg>
+  );
+}
+
+// ─── hero-style demo of the social sign-in moment ──────────────────────────────
+
+type DemoStage = "idle" | "loading" | "revealed";
+
+function wait(ms: number) {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
+function GoogleG() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24">
+      <path fill="#4285F4" d="M23.52 12.27c0-.85-.08-1.67-.22-2.45H12v4.64h6.47a5.53 5.53 0 0 1-2.4 3.63v3h3.87c2.27-2.09 3.58-5.17 3.58-8.82Z" />
+      <path fill="#34A853" d="M12 24c3.24 0 5.96-1.07 7.94-2.91l-3.87-3c-1.08.72-2.45 1.15-4.07 1.15-3.13 0-5.78-2.11-6.73-4.96H1.28v3.11A12 12 0 0 0 12 24Z" />
+      <path fill="#FBBC05" d="M5.27 14.28A7.2 7.2 0 0 1 4.89 12c0-.79.14-1.56.38-2.28V6.61H1.28A12 12 0 0 0 0 12c0 1.94.46 3.77 1.28 5.39l3.99-3.11Z" />
+      <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.69 1.28 6.61l3.99 3.11C6.22 6.86 8.87 4.75 12 4.75Z" />
+    </svg>
+  );
+}
+
+function DemoRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        padding: "6px 0",
+        fontSize: 12.5,
+      }}
+    >
+      <span style={{ color: "var(--doc-text-muted)", fontFamily: MONO }}>{label}</span>
+      <span style={{ color: "var(--doc-text-secondary)", fontFamily: MONO }}>{value}</span>
+    </div>
+  );
+}
+
+function SignInDemo() {
+  const [stage, setStage] = useState<DemoStage>("idle");
+
+  useEffect(() => {
+    let mounted = true;
+    async function loop() {
+      while (mounted) {
+        setStage("idle");
+        await wait(1400);
+        if (!mounted) return;
+        setStage("loading");
+        await wait(1100);
+        if (!mounted) return;
+        setStage("revealed");
+        await wait(3200);
+      }
+    }
+    loop();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  return (
+    <div
+      style={{
+        width: 320,
+        background: "var(--doc-surface)",
+        border: "1px solid var(--doc-border)",
+        borderRadius: 16,
+        borderTop: "2px solid #F5C800",
+        padding: 26,
+        boxShadow: "0 30px 80px -30px rgba(0,0,0,0.7)",
+      }}
+    >
+      <div
+        style={{
+          fontFamily: MONO,
+          fontSize: 11,
+          color: "var(--doc-text-muted)",
+          textTransform: "uppercase",
+          letterSpacing: "0.08em",
+          marginBottom: 18,
+        }}
+      >
+        yourapp.com
+      </div>
+
+      {stage !== "revealed" ? (
+        <div
+          style={{
+            height: 44,
+            borderRadius: 10,
+            border: "1px solid var(--doc-border)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 10,
+            fontSize: 14,
+            fontWeight: 600,
+            color: "var(--doc-text)",
+            background: "var(--doc-surface)",
+            opacity: stage === "loading" ? 0.6 : 1,
+            transition: "opacity 0.2s",
+            fontFamily: FONT,
+          }}
+        >
+          {stage === "loading" ? (
+            <span
+              style={{
+                width: 14,
+                height: 14,
+                borderRadius: "50%",
+                border: "2px solid var(--doc-border)",
+                borderTopColor: "var(--doc-accent)",
+                animation: "dc-spin 0.7s linear infinite",
+              }}
+            />
+          ) : (
+            <GoogleG />
+          )}
+          {stage === "loading" ? "Signing in…" : "Continue with Google"}
+        </div>
+      ) : (
+        <div
+          style={{
+            borderRadius: 10,
+            border: "1px solid var(--doc-border)",
+            background: "var(--doc-surface)",
+            padding: 16,
+            animation: "dc-reveal 0.5s cubic-bezier(0.16,1,0.3,1)",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+            <div style={{ display: "flex" }}>
+              <KeyHalf side="left" joined color="var(--doc-success)" />
+              <div style={{ marginLeft: -18, marginRight: -18 }} />
+              <KeyHalf side="right" joined color="var(--doc-success)" />
+            </div>
+            <span style={{ fontFamily: MONO, fontSize: 11, color: "var(--doc-success)", marginLeft: -8 }}>
+              2-of-2 secured
+            </span>
+          </div>
+          <DemoRow label="EVM" value="0x8f2A…c91E" />
+          <DemoRow label="Solana" value="7xKX…RqW9" />
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── main page ─────────────────────────────────────────────────────────────────
 
 export default function Page() {
   const [mouse, setMouse] = useState<Vec2>({ x: 0.5, y: 0.5 });
   const [heroReady, setHeroReady] = useState(false);
+  const [codeTab, setCodeTab] = useState<"wallet" | "social">("wallet");
+  const [theme, toggleTheme] = useTheme();
   const heroRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -1279,14 +1568,12 @@ export default function Page() {
     },
   ];
 
-  const FONT = "'Geist', ui-sans-serif, system-ui, -apple-system, sans-serif";
-  const MONO = "'Geist Mono', ui-monospace, 'SF Mono', monospace";
-
   return (
     <div
+      data-theme={theme}
       style={{
-        background: "#070706",
-        color: "#ecece9",
+        background: "var(--doc-bg)",
+        color: "var(--doc-text)",
         fontFamily: FONT,
         overflowX: "hidden",
       }}
@@ -1294,91 +1581,15 @@ export default function Page() {
       <style>{`
         @keyframes blink { 50% { opacity: 0 } }
         @keyframes bounce { 0%,100% { transform: translateY(0) } 50% { transform: translateY(6px) } }
+        @keyframes dc-spin { to { transform: rotate(360deg) } }
+        @keyframes dc-reveal { from { opacity: 0; transform: translateY(6px) } to { opacity: 1; transform: translateY(0) } }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         a { text-decoration: none; color: inherit; }
         .hero-word { display: inline-block; will-change: transform; }
       `}</style>
 
       {/* ── NAV ── */}
-      <nav
-        className="land-nav"
-        style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 50,
-          willChange: "transform",
-          height: 60,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: "0 32px",
-          background: "rgba(7,7,6,0.75)",
-          backdropFilter: "blur(16px)",
-          borderBottom: "1px solid rgba(245,200,0,0.08)",
-          fontFamily: FONT,
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <DecaneLogo size={30} />
-          <span style={{ fontWeight: 700, letterSpacing: "-0.02em" }}>
-            decane
-          </span>
-          <span
-            style={{
-              color: "rgba(255,255,255,0.3)",
-              fontFamily: MONO,
-              fontSize: 12,
-            }}
-          >
-            connect-kit
-          </span>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <Link
-            href="/docs"
-            style={{
-              height: 34,
-              padding: "0 16px",
-              display: "inline-flex",
-              alignItems: "center",
-              background: "rgba(255,255,255,0.05)",
-              border: "1px solid rgba(255,255,255,0.1)",
-              borderRadius: 8,
-              fontSize: 13,
-              color: "rgba(255,255,255,0.7)",
-              transition: "all 0.15s",
-              fontFamily: FONT,
-            }}
-          >
-            Docs
-          </Link>
-          <a
-            href="https://github.com"
-            target="_blank"
-            rel="noreferrer"
-            style={{
-              height: 34,
-              padding: "0 16px",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 6,
-              background: "#F5C800",
-              color: "#0d0d0b",
-              borderRadius: 8,
-              fontSize: 13,
-              fontWeight: 700,
-              fontFamily: FONT,
-            }}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.71 1.26 3.37.96.1-.75.4-1.26.73-1.55-2.56-.29-5.25-1.28-5.25-5.7 0-1.26.45-2.28 1.18-3.08-.12-.29-.51-1.46.11-3.04 0 0 .97-.31 3.18 1.18a11.05 11.05 0 0 1 5.79 0c2.2-1.49 3.18-1.18 3.18-1.18.62 1.58.23 2.75.11 3.04.74.8 1.18 1.82 1.18 3.08 0 4.43-2.7 5.4-5.27 5.69.41.36.78 1.06.78 2.14v3.17c0 .31.21.68.8.56C20.21 21.38 23.5 17.08 23.5 12 23.5 5.65 18.35.5 12 .5z" />
-            </svg>
-            GitHub
-          </a>
-        </div>
-      </nav>
+      <SiteNav theme={theme} onToggleTheme={toggleTheme} />
 
       {/* ── HERO ── */}
       <section
@@ -1394,7 +1605,7 @@ export default function Page() {
           overflow: "hidden",
         }}
       >
-        <Scene mouse={mouse} />
+        <Scene mouse={mouse} theme={theme} />
 
         <div
           style={{
@@ -1413,9 +1624,9 @@ export default function Page() {
               fontFamily: MONO,
               fontSize: 12,
               letterSpacing: "0.08em",
-              color: "rgba(255,255,255,0.5)",
-              background: "rgba(255,255,255,0.05)",
-              border: "1px solid rgba(255,255,255,0.1)",
+              color: "var(--doc-text-muted)",
+              background: "var(--doc-surface)",
+              border: "1px solid var(--doc-border)",
               borderRadius: 999,
               padding: "5px 16px",
               marginBottom: 32,
@@ -1426,7 +1637,7 @@ export default function Page() {
                 width: 6,
                 height: 6,
                 borderRadius: "50%",
-                background: "#12b76a",
+                background: "var(--doc-success)",
                 boxShadow: "0 0 8px #12b76a",
               }}
             />
@@ -1444,13 +1655,12 @@ export default function Page() {
               fontFamily: FONT,
             }}
           >
-            {["Connect", "any", "wallet,"].map((w, i) => (
+            {["Connect", "a", "wallet."].map((w, i) => (
               <span
                 key={i}
                 className="hero-word"
                 style={{
-                  color: w === "any" ? "#F5C800" : "#ecece9",
-                  fontStyle: w === "any" ? "italic" : "normal",
+                  color: "var(--doc-text)",
                   marginRight: "0.25em",
                 }}
               >
@@ -1458,13 +1668,13 @@ export default function Page() {
               </span>
             ))}
             <br />
-            {["any", "chain."].map((w, i) => (
+            {["Or", "create", "one."].map((w, i) => (
               <span
                 key={i}
                 className="hero-word"
                 style={{
-                  color: w === "any" ? "#F5C800" : "rgba(255,255,255,0.3)",
-                  fontStyle: w === "any" ? "italic" : "normal",
+                  color: w === "create" ? "var(--doc-accent)" : "var(--doc-text-muted)",
+                  fontStyle: w === "create" ? "italic" : "normal",
                   marginRight: "0.25em",
                 }}
               >
@@ -1478,16 +1688,17 @@ export default function Page() {
             className="hero-sub"
             style={{
               fontSize: "clamp(15px, 2vw, 19px)",
-              color: "rgba(255,255,255,0.5)",
+              color: "var(--doc-text-muted)",
               lineHeight: 1.65,
               maxWidth: "56ch",
               margin: "0 auto 44px",
               fontFamily: FONT,
             }}
           >
-            EVM · Solana · Tron · Bitcoin — and social sign-in via Google or
-            email. One npm package. No window.ethereum. No backend required for
-            wallet connect.
+            EVM, Solana, Tron, Bitcoin — connect whatever&rsquo;s already
+            installed. Nothing installed? Google or email sign-in spins up a
+            real non-custodial wallet in seconds. Same hooks, same session,
+            either way.
           </p>
 
           {/* CTAs */}
@@ -1509,12 +1720,12 @@ export default function Page() {
                 gap: 8,
                 height: 52,
                 padding: "0 32px",
-                background: "#F5C800",
-                color: "#0d0d0b",
+                background: "var(--doc-accent)",
+                color: "var(--doc-accent-text)",
                 fontWeight: 800,
                 fontSize: 15,
                 borderRadius: 12,
-                boxShadow: "0 0 40px rgba(245,200,0,0.35)",
+                boxShadow: "0 0 40px color-mix(in oklab, var(--doc-accent) 35%, transparent)",
                 transition: "all 0.15s",
                 fontFamily: FONT,
               }}
@@ -1538,16 +1749,16 @@ export default function Page() {
                 alignItems: "center",
                 height: 52,
                 padding: "0 24px",
-                background: "rgba(255,255,255,0.04)",
-                color: "rgba(255,255,255,0.7)",
-                border: "1px solid rgba(255,255,255,0.1)",
+                background: "var(--doc-surface)",
+                color: "var(--doc-text-secondary)",
+                border: "1px solid var(--doc-border)",
                 fontSize: 14,
                 borderRadius: 12,
                 fontFamily: MONO,
                 letterSpacing: "-0.01em",
               }}
             >
-              <span style={{ color: "rgba(255,255,255,0.3)" }}>$</span>&nbsp;npm
+              <span style={{ color: "var(--doc-text-muted)" }}>$</span>&nbsp;npm
               i decane-connect-kit
             </div>
           </div>
@@ -1567,6 +1778,7 @@ export default function Page() {
               { label: "Solana · Wallet Standard", color: "#66F9A1" },
               { label: "Tron · TronLink", color: "#EF0027" },
               { label: "Bitcoin · Unisat", color: "#F7931A" },
+              { label: "Social · Google & email", color: "var(--doc-accent)" },
             ].map((b) => (
               <div
                 key={b.label}
@@ -1577,12 +1789,12 @@ export default function Page() {
                   gap: 7,
                   height: 30,
                   padding: "0 14px",
-                  background: "rgba(255,255,255,0.04)",
+                  background: "var(--doc-surface)",
                   border: `1px solid ${b.color}30`,
                   borderRadius: 999,
                   fontSize: 12,
                   fontFamily: MONO,
-                  color: "rgba(255,255,255,0.5)",
+                  color: "var(--doc-text-muted)",
                 }}
               >
                 <span
@@ -1618,7 +1830,7 @@ export default function Page() {
                   style={{
                     fontSize: 28,
                     fontWeight: 900,
-                    color: "#F5C800",
+                    color: "var(--doc-accent)",
                     letterSpacing: "-0.04em",
                     lineHeight: 1,
                     fontFamily: FONT,
@@ -1629,7 +1841,7 @@ export default function Page() {
                 <div
                   style={{
                     fontSize: 11,
-                    color: "rgba(255,255,255,0.35)",
+                    color: "var(--doc-text-muted)",
                     fontFamily: MONO,
                     textTransform: "uppercase",
                     letterSpacing: "0.08em",
@@ -1650,7 +1862,7 @@ export default function Page() {
             bottom: 32,
             left: "50%",
             transform: "translateX(-50%)",
-            color: "rgba(255,255,255,0.2)",
+            color: "var(--doc-text-muted)",
             fontSize: 11,
             fontFamily: MONO,
             letterSpacing: "0.1em",
@@ -1693,7 +1905,7 @@ export default function Page() {
             style={{
               fontFamily: MONO,
               fontSize: 12,
-              color: "#F5C800",
+              color: "var(--doc-accent)",
               letterSpacing: "0.12em",
               textTransform: "uppercase",
               marginBottom: 12,
@@ -1712,7 +1924,7 @@ export default function Page() {
           >
             Everything you need.
             <br />
-            <span style={{ color: "rgba(255,255,255,0.3)" }}>
+            <span style={{ color: "var(--doc-text-muted)" }}>
               Nothing you don&rsquo;t.
             </span>
           </h2>
@@ -1723,8 +1935,8 @@ export default function Page() {
             display: "grid",
             gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
             gap: 1,
-            background: "rgba(255,255,255,0.06)",
-            border: "1px solid rgba(255,255,255,0.06)",
+            background: "var(--doc-border)",
+            border: "1px solid var(--doc-border)",
             borderRadius: 16,
             overflow: "hidden",
             transformStyle: "preserve-3d",
@@ -1733,6 +1945,210 @@ export default function Page() {
           {FEATURES.map((f) => (
             <FeatureCard key={f.title} f={f} FONT={FONT} />
           ))}
+        </div>
+      </section>
+
+      {/* ── SOCIAL: THE MECHANISM ── */}
+      <section
+        id="social"
+        style={{ padding: "0 24px 100px", maxWidth: 1160, margin: "0 auto" }}
+      >
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1.05fr 0.95fr",
+            gap: 56,
+            alignItems: "center",
+            marginBottom: 72,
+          }}
+        >
+          <div className="reveal-up">
+            <div
+              className="section-label"
+              style={{
+                fontFamily: MONO,
+                fontSize: 12,
+                color: "var(--doc-accent)",
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                marginBottom: 12,
+              }}
+            >
+              No wallet? No problem.
+            </div>
+            <h2
+              style={{
+                fontSize: "clamp(30px, 4.4vw, 46px)",
+                fontWeight: 900,
+                letterSpacing: "-0.04em",
+                lineHeight: 1.1,
+                marginBottom: 20,
+                fontFamily: FONT,
+                maxWidth: "16ch",
+              }}
+            >
+              Turn a login into a{" "}
+              <span style={{ color: "var(--doc-accent)", fontStyle: "italic" }}>wallet.</span>
+            </h2>
+            <p
+              style={{
+                fontSize: 15,
+                color: "var(--doc-text-muted)",
+                lineHeight: 1.65,
+                maxWidth: "48ch",
+              }}
+            >
+              Google or email sign-in creates a real EVM and Solana wallet —
+              no extension, no seed phrase, nothing for your user to lose.
+              The private key is never assembled in one place: the user&rsquo;s
+              device holds half, decane holds the other.
+            </p>
+          </div>
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            <SignInDemo />
+          </div>
+        </div>
+
+        <div
+          className="reveal-up"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3, 1fr)",
+            gap: 1,
+            background: "var(--doc-border)",
+            border: "1px solid var(--doc-border)",
+            borderRadius: 16,
+            overflow: "hidden",
+          }}
+        >
+          {[
+            {
+              n: "01",
+              title: "They sign in",
+              desc: "Google or email — the flow your users already know. Nothing about it looks or feels like crypto.",
+            },
+            {
+              n: "02",
+              title: "A key is generated, then split",
+              desc: "A fresh private key is created and immediately XOR-split into two halves. Neither half is the key.",
+            },
+            {
+              n: "03",
+              title: "Wallet is ready",
+              desc: "Their device keeps one half, wrapped by a passkey or PIN. decane stores the other, encrypted. Both are needed to sign.",
+            },
+          ].map((s) => (
+            <div key={s.n} style={{ background: "var(--doc-surface)", padding: "32px 28px" }}>
+              <div style={{ fontFamily: MONO, fontSize: 13, color: "var(--doc-text-muted)", marginBottom: 16 }}>
+                {s.n}
+              </div>
+              <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 10, letterSpacing: "-0.01em", fontFamily: FONT }}>
+                {s.title}
+              </div>
+              <p style={{ fontSize: 13.5, color: "var(--doc-text-muted)", lineHeight: 1.65, fontFamily: FONT }}>
+                {s.desc}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── SOCIAL: SECURITY — two-halves motif ── */}
+      <section style={{ padding: "0 24px 120px" }}>
+        <div
+          className="reveal-up"
+          style={{
+            maxWidth: 980,
+            margin: "0 auto",
+            background: "radial-gradient(ellipse at 50% 0%, color-mix(in oklab, var(--doc-accent) 5%, transparent), transparent 70%)",
+            border: "1px solid var(--doc-border)",
+            borderRadius: 20,
+            padding: "64px 48px",
+            textAlign: "center",
+          }}
+        >
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: 8 }}>
+            <div style={{ display: "flex" }}>
+              <KeyHalf side="left" joined={false} />
+              <div style={{ marginLeft: -18, marginRight: -18 }} />
+              <KeyHalf side="right" joined={false} />
+            </div>
+          </div>
+          <div
+            style={{
+              fontFamily: MONO,
+              fontSize: 12,
+              color: "var(--doc-accent)",
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              marginBottom: 18,
+            }}
+          >
+            Nobody holds the whole key
+          </div>
+          <h2
+            style={{
+              fontSize: "clamp(26px, 3.4vw, 36px)",
+              fontWeight: 900,
+              letterSpacing: "-0.03em",
+              lineHeight: 1.15,
+              maxWidth: "22ch",
+              margin: "0 auto 20px",
+              fontFamily: FONT,
+            }}
+          >
+            Not the user&rsquo;s device alone. Not decane&rsquo;s servers alone.
+          </h2>
+          <p
+            style={{
+              fontSize: 15,
+              color: "var(--doc-text-muted)",
+              lineHeight: 1.7,
+              maxWidth: "56ch",
+              margin: "0 auto 32px",
+              fontFamily: FONT,
+            }}
+          >
+            The key only ever comes together for the length of a single
+            signature, and even then, only inside the SDK on the device
+            that&rsquo;s signing. If decane&rsquo;s database were breached, the
+            stolen half is useless without the device half. If a device were
+            lost, that half is useless without a valid, authenticated
+            session.
+          </p>
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+              fontFamily: MONO,
+              fontSize: 12,
+              color: "color-mix(in oklab, var(--doc-success) 90%, transparent)",
+              background: "color-mix(in oklab, var(--doc-success) 8%, transparent)",
+              border: "1px solid color-mix(in oklab, var(--doc-success) 25%, transparent)",
+              borderRadius: 999,
+              padding: "6px 16px",
+              marginRight: 10,
+            }}
+          >
+            Encrypted at rest today
+          </div>
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+              fontFamily: MONO,
+              fontSize: 12,
+              color: "color-mix(in oklab, var(--doc-accent) 90%, transparent)",
+              background: "color-mix(in oklab, var(--doc-accent) 8%, transparent)",
+              border: "1px solid color-mix(in oklab, var(--doc-accent) 25%, transparent)",
+              borderRadius: 999,
+              padding: "6px 16px",
+            }}
+          >
+            In progress — signing moving into a hardware-isolated enclave (TEE)
+          </div>
         </div>
       </section>
 
@@ -1755,7 +2171,7 @@ export default function Page() {
             style={{
               fontFamily: MONO,
               fontSize: 12,
-              color: "#F5C800",
+              color: "var(--doc-accent)",
               letterSpacing: "0.12em",
               textTransform: "uppercase",
               marginBottom: 12,
@@ -1773,14 +2189,14 @@ export default function Page() {
               fontFamily: FONT,
             }}
           >
-            Three lines.
+            One SDK.
             <br />
-            <span style={{ color: "rgba(255,255,255,0.3)" }}>Four chains.</span>
+            <span style={{ color: "var(--doc-text-muted)" }}>Both paths.</span>
           </h2>
           <p
             style={{
               fontSize: 15,
-              color: "rgba(255,255,255,0.45)",
+              color: "var(--doc-text-muted)",
               lineHeight: 1.65,
               marginBottom: 32,
               fontFamily: FONT,
@@ -1789,18 +2205,19 @@ export default function Page() {
             Wrap your app with{" "}
             <code
               style={{
-                background: "rgba(245,200,0,0.1)",
+                background: "color-mix(in oklab, var(--doc-accent) 10%, transparent)",
                 padding: "1px 6px",
                 borderRadius: 4,
                 fontFamily: MONO,
                 fontSize: 13,
-                color: "#F5C800",
+                color: "var(--doc-accent)",
               }}
             >
               DecaneKit
             </code>
-            , add a connect button, start signing. The SDK handles discovery,
-            sessions, and key management.
+            . Whether a user connects an existing wallet or signs in with
+            Google, the hooks on your side look the same — discovery,
+            sessions, and key management are handled either way.
           </p>
           <Link
             href="/docs"
@@ -1810,9 +2227,9 @@ export default function Page() {
               gap: 6,
               height: 42,
               padding: "0 20px",
-              background: "rgba(245,200,0,0.1)",
-              color: "#F5C800",
-              border: "1px solid rgba(245,200,0,0.25)",
+              background: "color-mix(in oklab, var(--doc-accent) 10%, transparent)",
+              color: "var(--doc-accent)",
+              border: "1px solid color-mix(in oklab, var(--doc-accent) 25%, transparent)",
               borderRadius: 10,
               fontSize: 14,
               fontWeight: 600,
@@ -1823,7 +2240,35 @@ export default function Page() {
           </Link>
         </div>
         <div className="code-col-right">
-          <TypingCode />
+          <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
+            {(
+              [
+                { key: "wallet", label: "Connect a wallet" },
+                { key: "social", label: "Sign in with Google" },
+              ] as const
+            ).map((t) => (
+              <button
+                key={t.key}
+                onClick={() => setCodeTab(t.key)}
+                style={{
+                  height: 34,
+                  padding: "0 16px",
+                  borderRadius: 8,
+                  border: `1px solid ${codeTab === t.key ? "color-mix(in oklab, var(--doc-accent) 35%, transparent)" : "var(--doc-border)"}`,
+                  background: codeTab === t.key ? "color-mix(in oklab, var(--doc-accent) 10%, transparent)" : "var(--doc-surface)",
+                  color: codeTab === t.key ? "var(--doc-accent)" : "var(--doc-text-muted)",
+                  fontSize: 13,
+                  fontWeight: 600,
+                  fontFamily: FONT,
+                  cursor: "pointer",
+                  transition: "all 0.15s",
+                }}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+          <TypingCode code={codeTab === "wallet" ? WALLET_CODE : SOCIAL_CODE} />
         </div>
       </section>
 
@@ -1831,8 +2276,8 @@ export default function Page() {
       <div
         className="counter-strip"
         style={{
-          borderTop: "1px solid rgba(255,255,255,0.06)",
-          borderBottom: "1px solid rgba(255,255,255,0.06)",
+          borderTop: "1px solid var(--doc-border)",
+          borderBottom: "1px solid var(--doc-border)",
           padding: "60px 24px",
         }}
       >
@@ -1865,10 +2310,10 @@ export default function Page() {
           style={{
             display: "inline-block",
             background:
-              "radial-gradient(ellipse at center, rgba(245,200,0,0.06) 0%, transparent 70%)",
+              "radial-gradient(ellipse at center, color-mix(in oklab, var(--doc-accent) 6%, transparent) 0%, transparent 70%)",
             padding: "80px 60px",
             borderRadius: 24,
-            border: "1px solid rgba(245,200,0,0.1)",
+            border: "1px solid color-mix(in oklab, var(--doc-accent) 10%, transparent)",
             maxWidth: 680,
           }}
         >
@@ -1887,90 +2332,70 @@ export default function Page() {
           <p
             style={{
               fontSize: 17,
-              color: "rgba(255,255,255,0.45)",
+              color: "var(--doc-text-muted)",
               marginBottom: 40,
               lineHeight: 1.6,
               fontFamily: FONT,
             }}
           >
             Install the package, wrap your app, connect. Under 60 seconds to
-            your first signed message.
+            your first signed message — with or without an installed wallet.
           </p>
-          <Link
-            href="/docs"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 8,
-              height: 52,
-              padding: "0 36px",
-              background: "#F5C800",
-              color: "#0d0d0b",
-              fontWeight: 800,
-              fontSize: 16,
-              borderRadius: 12,
-              boxShadow: "0 0 60px rgba(245,200,0,0.3)",
-              fontFamily: FONT,
-            }}
-          >
-            Get started
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
+          <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
+            <Link
+              href="/docs"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                height: 52,
+                padding: "0 36px",
+                background: "var(--doc-accent)",
+                color: "var(--doc-accent-text)",
+                fontWeight: 800,
+                fontSize: 16,
+                borderRadius: 12,
+                boxShadow: "0 0 60px color-mix(in oklab, var(--doc-accent) 30%, transparent)",
+                fontFamily: FONT,
+              }}
             >
-              <path d="M5 12h14M12 5l7 7-7 7" />
-            </svg>
-          </Link>
+              Get started
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+              >
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </Link>
+            <a
+              href={`${DASHBOARD_URL}/auth/register`}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                height: 52,
+                padding: "0 32px",
+                background: "var(--doc-surface)",
+                color: "var(--doc-text-secondary)",
+                border: "1px solid var(--doc-border)",
+                borderRadius: 12,
+                fontSize: 16,
+                fontWeight: 600,
+                fontFamily: FONT,
+              }}
+            >
+              Get a social sign-in API key
+            </a>
+          </div>
         </div>
       </section>
 
       {/* ── FOOTER ── */}
-      <footer
-        style={{
-          borderTop: "1px solid rgba(255,255,255,0.06)",
-          padding: "32px 32px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          fontSize: 13,
-          color: "rgba(255,255,255,0.25)",
-          fontFamily: MONO,
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <DecaneLogo size={22} />
-          <span style={{ color: "#F5C800" }}>decane</span>
-          <span>connect-kit</span>
-          <span>·</span>
-          <span>MIT</span>
-        </div>
-        <div style={{ display: "flex", gap: 24 }}>
-          <Link href="/docs" style={{ color: "inherit" }}>
-            docs
-          </Link>
-          <a
-            href="https://github.com"
-            target="_blank"
-            rel="noreferrer"
-            style={{ color: "inherit" }}
-          >
-            github
-          </a>
-          <a
-            href="https://npmjs.com"
-            target="_blank"
-            rel="noreferrer"
-            style={{ color: "inherit" }}
-          >
-            npm
-          </a>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

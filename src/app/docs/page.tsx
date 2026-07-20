@@ -1,5 +1,4 @@
 "use client";
-import { useState, useEffect } from "react";
 import { Topbar } from "./components/Topbar";
 import { Sidebar } from "./components/Sidebar";
 import { Toc } from "./components/Toc";
@@ -7,20 +6,10 @@ import { CodeBlock } from "./components/CodeBlock";
 import { ChainTable } from "./components/ChainTable";
 import { FrameworkTabs } from "./components/FrameworkTabs";
 import { ChainTypeIcon } from "@/components/ChainIcon";
+import { useTheme } from "@/lib/theme";
 
 export default function DocsPage() {
-  const [theme, setTheme] = useState<"dark" | "light">("dark");
-
-  useEffect(() => {
-    const stored = localStorage.getItem("dc-docs-theme") as "dark" | "light" | null;
-    if (stored) setTheme(stored);
-  }, []);
-
-  function toggleTheme() {
-    const next = theme === "dark" ? "light" : "dark";
-    setTheme(next);
-    localStorage.setItem("dc-docs-theme", next);
-  }
+  const [theme, toggleTheme] = useTheme();
 
   return (
     <div className="docs-root" data-theme={theme}>
@@ -43,13 +32,14 @@ export default function DocsPage() {
               <span style={{ color: "var(--doc-text)" }}>Overview</span>
             </div>
 
-            <h1>Connect any wallet, any chain.</h1>
+            <h1>Connect a wallet. Or create one.</h1>
             <p className="docs-lede">
-              <strong>decane-connect-kit</strong> is a wallet-connection layer for EVM, Solana, Tron,
-              and Bitcoin dApps — with built-in social sign-in via Google and email. It detects installed
-              wallets via EIP-6963, the Solana Wallet Standard, TronLink, and Unisat / OKX / MetaMask
-              Snap providers, manages sessions with CAIP-25, and ships a polished selector UI. Works with
-              React 18+ in any framework.
+              <strong>decane-connect-kit</strong> is a wallet layer for EVM, Solana, Tron, and Bitcoin
+              dApps that also covers the case where a user has no wallet at all: built-in non-custodial
+              social sign-in via Google and email. It detects installed wallets via EIP-6963, the Solana
+              Wallet Standard, TronLink, and Unisat / OKX / MetaMask Snap providers, manages sessions with
+              CAIP-25, and ships a polished selector UI covering both paths. Works with React 18+ in any
+              framework.
             </p>
 
             <div className="docs-hero-meta">
