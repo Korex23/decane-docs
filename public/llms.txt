@@ -1,0 +1,49 @@
+# decane-connect-kit
+
+> Wallet-connect and non-custodial social sign-in for EVM, Solana, Tron, and Bitcoin dApps, in one npm package. Two independent integration paths that share the same session model and hook API — use either one alone, or both together.
+
+## Wallet connect (open source, free, no backend required)
+
+Detects installed wallets and manages CAIP-25 sessions across chains. No `window.ethereum` — uses EIP-6963 for EVM, the Solana Wallet Standard, TronLink, and Unisat/OKX/MetaMask Snap for Bitcoin.
+
+- Overview and quick start: https://decane.app/docs#overview
+- Install: https://decane.app/docs#install
+- Framework setup (Next.js, Vite/CRA): https://decane.app/docs#framework-setup
+- Configuration reference: https://decane.app/docs#configuration
+- Supported chains (58 EVM chains, Solana, Tron, Bitcoin): https://decane.app/docs#chain-list
+- Custom chains: https://decane.app/docs#custom-chains
+- Hooks — useDecane, useWalletSelector, useChainSwitch, useSignMessage, useSendTransaction, useSignTypedData: https://decane.app/docs#hooks
+- UI components — WalletSelector, DecaneKit provider: https://decane.app/docs#hooks
+- Wallet detection details: https://decane.app/docs#detection
+- Error handling: https://decane.app/docs#errors
+
+Core export: `createDecane()` from `decane-connect-kit`.
+
+## Social sign-in (hosted, Google/email embedded wallets)
+
+Non-custodial embedded wallets for users with no wallet at all. A private key is generated and immediately split in two (device share + server share, XOR key-split); signing happens inside a TEE (Trusted Execution Environment) that reconstructs the key only in isolated hardware. Requires an API key from the developer dashboard.
+
+- Overview and security architecture: https://decane.app/docs#social
+- How it works, in depth (mechanism + key-split security model): https://decane.app/#social
+- ConnectMode and SocialConfig: https://decane.app/docs#connect-mode
+- Hooks — useSocialAuth, useSocialWallet: https://decane.app/docs#useSocialAuth
+- UI component — SocialWalletModal: https://decane.app/docs#social-wallet-modal
+- Pricing (Free / Scale / Enterprise tiers): https://decane.app/pricing
+
+Core exports: `createDecaneConnect()`, `startEmailAuth()`, `verifyEmailCode()` from `decane-connect-kit`.
+
+Error types: `InvalidApiKeyError`, `OriginNotAllowedError`, `SessionExpiredError`, `UnlockRequiredError`, `UserCancelledError`, `WebAuthnNotSupportedError`, `InvalidPinError`, `CallSequenceError`, `NetworkError`, `ShareCorruptedError`, `NewDeviceError`, `PromptPinNotConfiguredError`, `AttestationError`, `RecoveryFailedError`, `InvalidPhraseError`.
+
+## Package
+
+- npm: https://www.npmjs.com/package/decane-connect-kit
+- Install: `npm install decane-connect-kit`
+- License: MIT
+- Peer dependency: React 18 or later
+- TypeScript: full type declarations included
+
+## Optional
+
+- Full documentation (single-page reference): https://decane.app/docs
+- Landing page: https://decane.app
+- Pricing: https://decane.app/pricing

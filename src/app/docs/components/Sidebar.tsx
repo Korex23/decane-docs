@@ -62,7 +62,12 @@ const NAV = [
   },
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+  mobileOpen?: boolean;
+  onClose?: () => void;
+}
+
+export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
   const [activeId, setActiveId] = useState("overview");
 
   useEffect(() => {
@@ -84,24 +89,28 @@ export function Sidebar() {
   }, []);
 
   return (
-    <aside className="docs-sidebar">
-      {NAV.map((group) => (
-        <nav key={group.title} className="docs-nav-group">
-          <div className="docs-nav-group-title">{group.title}</div>
-          <ul className="docs-nav-list">
-            {group.items.map((item) => (
-              <li key={item.href}>
-                <a
-                  href={item.href}
-                  className={activeId === item.href.slice(1) ? "active" : ""}
-                >
-                  {item.mono ? <code>{item.label}</code> : item.label}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
-      ))}
-    </aside>
+    <>
+      {mobileOpen && <div className="docs-sidebar-backdrop" onClick={onClose} />}
+      <aside className={`docs-sidebar${mobileOpen ? " mobile-open" : ""}`}>
+        {NAV.map((group) => (
+          <nav key={group.title} className="docs-nav-group">
+            <div className="docs-nav-group-title">{group.title}</div>
+            <ul className="docs-nav-list">
+              {group.items.map((item) => (
+                <li key={item.href}>
+                  <a
+                    href={item.href}
+                    className={activeId === item.href.slice(1) ? "active" : ""}
+                    onClick={onClose}
+                  >
+                    {item.mono ? <code>{item.label}</code> : item.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        ))}
+      </aside>
+    </>
   );
 }

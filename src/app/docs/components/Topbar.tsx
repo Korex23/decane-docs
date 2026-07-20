@@ -41,9 +41,11 @@ const SEARCH_INDEX = [
 interface TopbarProps {
   theme: "dark" | "light";
   onThemeToggle: () => void;
+  onMenuToggle?: () => void;
+  menuOpen?: boolean;
 }
 
-export function Topbar({ theme, onThemeToggle }: TopbarProps) {
+export function Topbar({ theme, onThemeToggle, onMenuToggle, menuOpen }: TopbarProps) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [focusIdx, setFocusIdx] = useState(-1);
@@ -107,6 +109,24 @@ export function Topbar({ theme, onThemeToggle }: TopbarProps) {
 
   return (
     <header className="docs-topbar">
+      <button
+        className="docs-menu-btn"
+        onClick={onMenuToggle}
+        aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
+        aria-expanded={menuOpen}
+      >
+        {menuOpen ? (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        ) : (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
+          </svg>
+        )}
+      </button>
       <div className="docs-brand">
         <DecaneLogo size={28} />
         <div>
@@ -172,12 +192,7 @@ export function Topbar({ theme, onThemeToggle }: TopbarProps) {
             </svg>
           )}
         </button>
-        <a className="docs-icon-btn" href="https://github.com" title="GitHub" target="_blank" rel="noreferrer">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.71 1.26 3.37.96.1-.75.4-1.26.73-1.55-2.56-.29-5.25-1.28-5.25-5.7 0-1.26.45-2.28 1.18-3.08-.12-.29-.51-1.46.11-3.04 0 0 .97-.31 3.18 1.18a11.05 11.05 0 0 1 5.79 0c2.2-1.49 3.18-1.18 3.18-1.18.62 1.58.23 2.75.11 3.04.74.8 1.18 1.82 1.18 3.08 0 4.43-2.7 5.4-5.27 5.69.41.36.78 1.06.78 2.14v3.17c0 .31.21.68.8.56C20.21 21.38 23.5 17.08 23.5 12 23.5 5.65 18.35.5 12 .5z" />
-          </svg>
-        </a>
-        <a className="docs-icon-btn" href="https://npmjs.com" title="npm" target="_blank" rel="noreferrer">
+        <a className="docs-icon-btn" href="https://www.npmjs.com/package/decane-connect-kit" title="npm" target="_blank" rel="noreferrer">
           <span style={{ fontFamily: "var(--doc-font-mono)", fontSize: 12, fontWeight: 600, color: "var(--doc-text-secondary)" }}>
             npm
           </span>

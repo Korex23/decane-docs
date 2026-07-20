@@ -4,12 +4,14 @@ import "./globals.css";
 const SITE_URL = "https://decane.app";
 const TITLE = "decane-connect-kit — connect any wallet, or skip the wallet entirely";
 const DESCRIPTION =
-  "One SDK for EVM, Solana, Tron, and Bitcoin wallet connections, plus non-custodial Google & email sign-in for users who don't have a wallet yet. CAIP-25 sessions, zero window.ethereum, MIT licensed.";
+  "Connect EVM, Solana, Tron & Bitcoin wallets, or skip wallets with non-custodial Google/email sign-in. CAIP-25 sessions, zero window.ethereum, MIT licensed.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: { default: TITLE, template: "%s — decane-connect-kit" },
   description: DESCRIPTION,
+  alternates: { canonical: "/" },
+  robots: { index: true, follow: true },
   keywords: [
     "wallet connect",
     "EVM wallet SDK",
@@ -39,7 +41,11 @@ export const metadata: Metadata = {
   },
 };
 
-const JSON_LD = {
+// SoftwareApplication covers the OSS wallet-connect SDK (free, MIT). The
+// hosted social sign-in product's real tiers/prices are declared separately
+// as Offer entries below, rather than folded into one Offer here — they're
+// two different things (a free library vs. a metered hosted service).
+const SOFTWARE_JSON_LD = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   name: "decane-connect-kit",
@@ -49,6 +55,20 @@ const JSON_LD = {
   offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
   softwareVersion: "1.0.0",
   license: "https://opensource.org/licenses/MIT",
+  downloadUrl: "https://www.npmjs.com/package/decane-connect-kit",
+};
+
+// Real tier prices, kept in sync with src/app/pricing/page.tsx's TIERS array.
+const PRICING_JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "Product",
+  name: "decane social sign-in",
+  description: "Hosted non-custodial Google/email sign-in that creates a real EVM and Solana wallet.",
+  offers: [
+    { "@type": "Offer", name: "Free", price: "0", priceCurrency: "USD", url: `${SITE_URL}/pricing` },
+    { "@type": "Offer", name: "Scale (500–2,499 MAU)", price: "254", priceCurrency: "USD", url: `${SITE_URL}/pricing` },
+    { "@type": "Offer", name: "Scale (2,500–9,999 MAU)", price: "424", priceCurrency: "USD", url: `${SITE_URL}/pricing` },
+  ],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -58,7 +78,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script
           type="application/ld+json"
           // eslint-disable-next-line react/no-danger
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(SOFTWARE_JSON_LD) }}
+        />
+        <script
+          type="application/ld+json"
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(PRICING_JSON_LD) }}
         />
       </head>
       <body>{children}</body>

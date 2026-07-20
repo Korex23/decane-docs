@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 import { Topbar } from "./components/Topbar";
 import { Sidebar } from "./components/Sidebar";
 import { Toc } from "./components/Toc";
@@ -10,12 +11,18 @@ import { useTheme } from "@/lib/theme";
 
 export default function DocsPage() {
   const [theme, toggleTheme] = useTheme();
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   return (
     <div className="docs-root" data-theme={theme}>
       <div className="docs-app">
-        <Topbar theme={theme} onThemeToggle={toggleTheme} />
-        <Sidebar />
+        <Topbar
+          theme={theme}
+          onThemeToggle={toggleTheme}
+          menuOpen={mobileNavOpen}
+          onMenuToggle={() => setMobileNavOpen((v) => !v)}
+        />
+        <Sidebar mobileOpen={mobileNavOpen} onClose={() => setMobileNavOpen(false)} />
 
         <main className="docs-main" id="docs-main">
           {/* ── Overview ── */}
@@ -94,7 +101,13 @@ export default function DocsPage() {
               <span className="tok-k">install</span>{" "}
               <span className="tok-s">decane-connect-kit</span>
             </CodeBlock>
-            <p>React 18 or later is required as a peer dependency.</p>
+            <p>
+              React 18 or later is required as a peer dependency. Package details, versions, and
+              weekly download stats are on{" "}
+              <a href="https://www.npmjs.com/package/decane-connect-kit" target="_blank" rel="noreferrer">
+                npmjs.com/package/decane-connect-kit
+              </a>.
+            </p>
           </section>
 
           {/* ── Quick start ── */}

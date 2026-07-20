@@ -1160,7 +1160,7 @@ function SignInDemo() {
   return (
     <div
       style={{
-        width: 320,
+        width: "min(320px, 100%)",
         background: "var(--doc-surface)",
         border: "1px solid var(--doc-border)",
         borderRadius: 16,
@@ -1743,7 +1743,11 @@ export default function Page() {
                 <path d="M5 12h14M12 5l7 7-7 7" />
               </svg>
             </Link>
-            <div
+            <a
+              href="https://www.npmjs.com/package/decane-connect-kit"
+              target="_blank"
+              rel="noreferrer"
+              title="View on npm"
               style={{
                 display: "inline-flex",
                 alignItems: "center",
@@ -1760,7 +1764,7 @@ export default function Page() {
             >
               <span style={{ color: "var(--doc-text-muted)" }}>$</span>&nbsp;npm
               i decane-connect-kit
-            </div>
+            </a>
           </div>
 
           {/* chain type badge pills */}
@@ -1954,6 +1958,7 @@ export default function Page() {
         style={{ padding: "0 24px 100px", maxWidth: 1160, margin: "0 auto" }}
       >
         <div
+          className="social-mechanism-grid"
           style={{
             display: "grid",
             gridTemplateColumns: "1.05fr 0.95fr",
@@ -2010,7 +2015,7 @@ export default function Page() {
         </div>
 
         <div
-          className="reveal-up"
+          className="reveal-up social-steps-grid"
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(3, 1fr)",
@@ -2056,7 +2061,7 @@ export default function Page() {
       {/* ── SOCIAL: SECURITY — two-halves motif ── */}
       <section style={{ padding: "0 24px 120px" }}>
         <div
-          className="reveal-up"
+          className="reveal-up social-security-card"
           style={{
             maxWidth: 980,
             margin: "0 auto",
