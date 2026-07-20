@@ -66,7 +66,7 @@ export default function DocsPage() {
               <div className="docs-chain-card" data-chain="evm">
                 <div className="glyph"><ChainTypeIcon type="evm" size={28} /></div>
                 <div className="name">EVM</div>
-                <div className="sub">58 chains · EIP-6963</div>
+                <div className="sub">59 chains · EIP-6963</div>
               </div>
               <div className="docs-chain-card" data-chain="solana">
                 <div className="glyph"><ChainTypeIcon type="solana" size={28} /></div>
@@ -89,6 +89,44 @@ export default function DocsPage() {
                 <div className="sub">Google OAuth · Email magic-link · Non-custodial</div>
               </div>
             </div>
+
+            <div
+              className="docs-callout"
+              data-kind="note"
+              style={{ alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 14 }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                <div className="ico">✦</div>
+                <p>
+                  Wiring up an LLM or coding agent? <code>llms.txt</code> is a self-contained spec —
+                  full code samples and real signatures for both integration paths, no other page needed.
+                </p>
+              </div>
+              <a
+                href="/llms.txt"
+                download="decane-connect-kit-llms.txt"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 8,
+                  padding: "9px 18px",
+                  borderRadius: 8,
+                  background: "var(--doc-accent)",
+                  color: "var(--doc-accent-contrast, #0d0d0b)",
+                  fontWeight: 700,
+                  fontSize: 13.5,
+                  whiteSpace: "nowrap",
+                  flexShrink: 0,
+                }}
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                Download llms.txt
+              </a>
+            </div>
           </section>
 
           {/* ── Install ── */}
@@ -107,14 +145,6 @@ export default function DocsPage() {
               <a href="https://www.npmjs.com/package/decane-connect-kit" target="_blank" rel="noreferrer">
                 npmjs.com/package/decane-connect-kit
               </a>.
-            </p>
-            <p>
-              Wiring up an LLM or coding agent to integrate decane-connect-kit? Grab{" "}
-              <a href="/llms.txt" download="decane-connect-kit-llms.txt">
-                llms.txt
-              </a>{" "}
-              — a machine-readable reference covering both the wallet-connect SDK and the hosted
-              social sign-in integration.
             </p>
           </section>
 
