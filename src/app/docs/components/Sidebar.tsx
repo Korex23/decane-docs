@@ -34,6 +34,8 @@ const NAV = [
       { href: "#useSocialAuth", label: "useSocialAuth()", mono: true },
       { href: "#useSocialWallet", label: "useSocialWallet()", mono: true },
       { href: "#social-wallet-modal", label: "SocialWalletModal", mono: true },
+      { href: "#send-erc20", label: "Send ERC-20" },
+      { href: "#send-solana", label: "Send Solana" },
     ],
   },
   {

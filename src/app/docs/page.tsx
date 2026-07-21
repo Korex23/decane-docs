@@ -884,6 +884,69 @@ export default function DocsPage() {
               Sepolia. Override any with <code>social.rpcUrls</code>.
             </p>
 
+            <h3 id="send-erc20">Send an ERC-20 token</h3>
+            <p>
+              An ERC-20 transfer is a contract call: <code>to</code> is the token contract,{" "}
+              <code>value</code> is zero, and the <code>data</code> field carries the encoded{" "}
+              <code>transfer(recipient, amount)</code> call. The SDK broadcasts it the same way and
+              returns a transaction hash.
+            </p>
+            <CodeBlock lang="tsx">
+{`import { Interface, parseUnits } from "ethers";
+
+const { sendTransaction } = useSocialWallet();
+
+const iface = new Interface(["function transfer(address to, uint256 amount)"]);
+const data = iface.encodeFunctionData("transfer", [
+  recipient,
+  parseUnits("1.5", 6), // 1.5 USDC (6 decimals — check the token)
+]);
+
+const hash = await sendTransaction({
+  chain: "eip155:1",
+  to: tokenContractAddress, // the ERC-20 contract, not the recipient
+  value: 0n,
+  data,
+});`}
+            </CodeBlock>
+
+            <h3 id="send-solana">Send a Solana transaction</h3>
+            <p>
+              <code>sendTransaction</code> is EVM-only. For Solana, build and serialize the
+              transaction yourself, hand it to <code>signSolanaTransaction</code> — which returns the
+              fully signed transaction bytes — then broadcast those to the cluster.
+            </p>
+            <CodeBlock lang="tsx">
+{`import {
+  Connection, Transaction, SystemProgram, PublicKey, LAMPORTS_PER_SOL,
+} from "@solana/web3.js";
+
+const { signSolanaTransaction, addresses } = useSocialWallet();
+
+const conn = new Connection("https://api.devnet.solana.com", "confirmed");
+const from = new PublicKey(addresses!.solana!);
+const { blockhash } = await conn.getLatestBlockhash();
+
+const tx = new Transaction({ feePayer: from, recentBlockhash: blockhash }).add(
+  SystemProgram.transfer({
+    fromPubkey: from,
+    toPubkey: new PublicKey(recipient),
+    lamports: BigInt(0.01 * LAMPORTS_PER_SOL),
+  }),
+);
+
+// TEE signs and returns broadcast-ready bytes
+const signed = await signSolanaTransaction(
+  new Uint8Array(tx.serialize({ requireAllSignatures: false })),
+);
+const signature = await conn.sendRawTransaction(signed);`}
+            </CodeBlock>
+            <p>
+              The TEE signs on whichever Solana chain is listed in <code>social.chains</code>. The
+              signature is cluster-agnostic, so you can build against and broadcast to either mainnet
+              or devnet.
+            </p>
+
             <div className="docs-callout" data-kind="security">
               <div className="ico">🔒</div>
               <div>
