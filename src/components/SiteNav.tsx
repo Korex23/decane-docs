@@ -95,6 +95,9 @@ export function SiteNav({ theme, onToggleTheme }: { theme: Theme; onToggleTheme:
         <Link href="/docs" style={navLinkStyle} onClick={() => setMobileOpen(false)}>
           Docs
         </Link>
+        <Link href="/recovery" style={navLinkStyle} onClick={() => setMobileOpen(false)}>
+          Recovery
+        </Link>
         <a
           href="https://www.npmjs.com/package/decane-connect-kit"
           target="_blank"
