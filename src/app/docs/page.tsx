@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { Topbar } from "./components/Topbar";
 import { Sidebar } from "./components/Sidebar";
 import { Toc } from "./components/Toc";
@@ -8,6 +8,38 @@ import { ChainTable } from "./components/ChainTable";
 import { FrameworkTabs } from "./components/FrameworkTabs";
 import { ChainTypeIcon } from "@/components/ChainIcon";
 import { useTheme } from "@/lib/theme";
+
+// Lightweight highlighter emitting the same tok-* classes the hand-written
+// code blocks use, so string-authored snippets match the rest visually.
+const HL_KEYWORDS = new Set([
+  "const", "let", "var", "await", "async", "new", "import", "export",
+  "from", "return", "function", "interface", "type", "true", "false",
+  "null", "undefined", "as", "of", "in",
+]);
+
+function hl(code: string): ReactNode[] {
+  const re = /(\/\/[^\n]*)|("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')|(\b\d+(?:\.\d+)?n?\b)|([A-Za-z_$][A-Za-z0-9_$]*)|(\s+)|([^\s])/g;
+  const out: ReactNode[] = [];
+  let m: RegExpExecArray | null;
+  let i = 0;
+  while ((m = re.exec(code)) !== null) {
+    const key = i++;
+    if (m[1] !== undefined) out.push(<span key={key} className="tok-c">{m[1]}</span>);
+    else if (m[2] !== undefined) out.push(<span key={key} className="tok-s">{m[2]}</span>);
+    else if (m[3] !== undefined) out.push(<span key={key} className="tok-n">{m[3]}</span>);
+    else if (m[4] !== undefined) {
+      const w = m[4];
+      const next = code[re.lastIndex];
+      if (HL_KEYWORDS.has(w)) out.push(<span key={key} className="tok-k">{w}</span>);
+      else if (next === "(") out.push(<span key={key} className="tok-f">{w}</span>);
+      else if (/^[A-Z]/.test(w)) out.push(<span key={key} className="tok-t">{w}</span>);
+      else out.push(<span key={key} className="tok-id">{w}</span>);
+    }
+    else if (m[5] !== undefined) out.push(m[5]);
+    else out.push(<span key={key} className="tok-p">{m[6]}</span>);
+  }
+  return out;
+}
 
 export default function DocsPage() {
   const [theme, toggleTheme] = useTheme();
@@ -892,7 +924,7 @@ export default function DocsPage() {
               returns a transaction hash.
             </p>
             <CodeBlock lang="tsx">
-{`import { Interface, parseUnits } from "ethers";
+              {hl(`import { Interface, parseUnits } from "ethers";
 
 const { sendTransaction } = useSocialWallet();
 
@@ -907,7 +939,7 @@ const hash = await sendTransaction({
   to: tokenContractAddress, // the ERC-20 contract, not the recipient
   value: 0n,
   data,
-});`}
+});`)}
             </CodeBlock>
 
             <h3 id="send-solana">Send a Solana transaction</h3>
@@ -917,19 +949,19 @@ const hash = await sendTransaction({
               fully signed transaction bytes — then broadcast those to the cluster.
             </p>
             <CodeBlock lang="tsx">
-{`import {
+              {hl(`import {
   Connection, Transaction, SystemProgram, PublicKey, LAMPORTS_PER_SOL,
 } from "@solana/web3.js";
 
 const { signSolanaTransaction, addresses } = useSocialWallet();
 
 const conn = new Connection("https://api.devnet.solana.com", "confirmed");
-const from = new PublicKey(addresses!.solana!);
+const fromPk = new PublicKey(addresses.solana);
 const { blockhash } = await conn.getLatestBlockhash();
 
-const tx = new Transaction({ feePayer: from, recentBlockhash: blockhash }).add(
+const tx = new Transaction({ feePayer: fromPk, recentBlockhash: blockhash }).add(
   SystemProgram.transfer({
-    fromPubkey: from,
+    fromPubkey: fromPk,
     toPubkey: new PublicKey(recipient),
     lamports: BigInt(0.01 * LAMPORTS_PER_SOL),
   }),
@@ -939,7 +971,7 @@ const tx = new Transaction({ feePayer: from, recentBlockhash: blockhash }).add(
 const signed = await signSolanaTransaction(
   new Uint8Array(tx.serialize({ requireAllSignatures: false })),
 );
-const signature = await conn.sendRawTransaction(signed);`}
+const signature = await conn.sendRawTransaction(signed);`)}
             </CodeBlock>
             <p>
               The TEE signs on whichever Solana chain is listed in <code>social.chains</code>. The
