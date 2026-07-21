@@ -118,7 +118,7 @@ const FAQS: Array<{ q: string; a: string }> = [
   },
   {
     q: "Do you ever see a full private key?",
-    a: "No. The key is split in two the moment it's generated — see how it works. Our half alone can't sign anything.",
+    a: "No. The key is split into separate shares the moment it's generated, and our share alone can't sign anything.",
   },
 ];
 

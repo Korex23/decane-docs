@@ -978,27 +978,6 @@ const signature = await conn.sendRawTransaction(signed);`)}
               signature is cluster-agnostic, so you can build against and broadcast to either mainnet
               or devnet.
             </p>
-
-            <div className="docs-callout" data-kind="security">
-              <div className="ico">🔒</div>
-              <div>
-                <p><strong>How social wallets work — 2-of-3 key split</strong></p>
-                <p>
-                  The private key is generated entirely in the browser and split with Shamir secret
-                  sharing into three shares, any two of which reconstruct it. The <em>device share</em>{" "}
-                  is stored in IndexedDB, wrapped by a passkey or PIN. The <em>server share</em> is
-                  encrypted at rest on the decane key server. The <em>recovery share</em> is the
-                  user&apos;s to keep, handled by the built-in wallet modal. Any single share on its
-                  own reveals nothing.
-                </p>
-                <p>
-                  Reconstruction happens only inside the TEE signer during an active unlocked session,
-                  which verifies that the reconstructed key controls the account&apos;s recorded wallet
-                  before it will sign. The server never holds a full key and never signs on behalf of
-                  the user.
-                </p>
-              </div>
-            </div>
           </section>
 
           {/* ── Hooks ── */}
