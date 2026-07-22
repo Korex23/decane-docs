@@ -139,7 +139,7 @@ Props (for reference — you control it via `useWalletSelector()`, you don't ren
 
 ## Part 2 — Social sign-in (hosted, Google/email embedded wallets)
 
-Non-custodial embedded wallets for users with no wallet installed at all. On first sign-in, a private key is generated client-side and immediately split in two via XOR (device share + server share) — the server share alone is meaningless without the device share, and vice versa. Signing happens by sending both shares into a TEE (Trusted Execution Environment, a hardware-isolated enclave) which reconstructs the key only inside isolated memory, signs, and discards it — the full private key never exists in plaintext outside that enclave, and never touches the server's own process memory or disk. Requires an API key from the developer dashboard (has its own pricing — Free/Scale/Enterprise tiers, see https://decane.app/pricing).
+Non-custodial embedded wallets for users with no wallet installed at all. On first sign-in, a private key is generated client-side and immediately split with Shamir secret sharing into three shares — device (stored in IndexedDB, wrapped by a passkey or PIN), server (encrypted at rest on the key server), and recovery (the user's to keep) — any two of which reconstruct the key; one alone reveals nothing. Signing happens inside a TEE (Trusted Execution Environment, a hardware-isolated enclave) which reconstructs the key only in isolated memory, verifies it controls the account's recorded wallet, signs, and discards it — the full private key never exists in plaintext outside that enclave, and never touches the server's own process memory or disk. Requires an API key from the developer dashboard (has its own pricing — Free/Scale/Enterprise tiers, see https://decane.app/pricing).
 
 ### Standalone usage (no React)
 
@@ -157,6 +157,17 @@ const { addresses, isNewUser } = await connect.connectWithGoogle();
 
 const sig = await connect.signMessage({ chain: 'evm:1', message: 'hello' });
 const txHash = await connect.sendTransaction({ chain: 'evm:1', to: '0x...', value: 1000000000000000n });
+
+// ERC-20 transfer = a contract call: `to` is the token contract, value 0n, `data` is the encoded transfer().
+import { Interface, parseUnits } from 'ethers';
+const data = new Interface(['function transfer(address,uint256)'])
+  .encodeFunctionData('transfer', [recipient, parseUnits('1.5', 6)]); // 6 = token decimals
+const erc20Hash = await connect.sendTransaction({ chain: 'evm:1', to: TOKEN_ADDRESS, value: 0n, data });
+
+// Solana: sendTransaction is EVM-only. Build + serialize an unsigned tx, sign it (returns
+// broadcast-ready bytes), then broadcast yourself via @solana/web3.js:
+const signed = await connect.signSolanaTransaction(serializedUnsignedTx); // Uint8Array -> signed Uint8Array
+// await new Connection(rpcUrl).sendRawTransaction(signed);
 ```
 
 `createDecaneConnect(config: DecaneConnectConfig): Promise<DecaneConnect>` throws a plain `Error` (not `DecaneConnectError`) if `apiKey` is missing or `chains` is empty.
@@ -175,9 +186,16 @@ interface DecaneConnectConfig {
   rpName?: string;                    // WebAuthn RP display name
   rpcUrls?: Record<string, string>;   // override built-in public RPCs per chain
   teeUrl?: string;                    // advanced/self-hosted override only
-  offerPhraseAtSignup?: boolean;      // default true — offer a recovery phrase at signup
-  onPhraseGenerated?: (result: PhraseGenerationResult) => Promise<{ userConfirmed: boolean; userAnswers: Array<{ position: number; word: string }> }>;
-  promptForRecoveryPhrase?: () => Promise<string | null>;
+  // Recovery. The key is split 2-of-3 (device/server/recovery); a user on a new
+  // device recovers automatically via a synced passkey (Flow A), or falls back to
+  // a saved recovery file (Flow B). Flow B requires the two callbacks marked below.
+  offerRecoveryAtSignup?: boolean;    // default true — offer to save a recovery file at signup
+  onRecoveryShareOffer?: (addresses: { evmAddress: string; solanaAddress: string })
+    => Promise<{ wants: boolean; password?: string; passwordHint?: string }>;
+  onRecoveryFileReady?: (file: RecoveryShareFile, filename: string) => Promise<void>;
+  promptForRecoveryFile?: () => Promise<{ file: RecoveryShareFile; password: string } | null>; // Flow B
+  onRecoveryRotated?: (addresses: { evmAddress: string; solanaAddress: string })
+    => Promise<{ password: string; passwordHint?: string }>;  // Flow B — REQUIRED; recovery throws without it
   onRecoveryProgress?: (event: RecoveryProgress) => void;
 }
 ```
@@ -198,10 +216,13 @@ interface DecaneConnect {
   signSolanaTransaction(tx: Uint8Array): Promise<Uint8Array>;
   disconnect(): Promise<void>;
   getAddresses(): { evm?: string; solana?: string } | null;
-  generateRecoveryPhrase(): Promise<PhraseGenerationResult>;       // re-prompts unlock; does not cache the share
-  markPhraseSaved(challenge, userAnswers): Promise<boolean>;
-  hasBackup(): Promise<boolean>;
-  deleteBackup(): Promise<void>;                                   // disables phrase-based recovery
+  rotateShares(opts: { password: string; passwordHint?: string }): Promise<RecoveryShareFile>;      // new recovery file; invalidates the old one. Needs a fresh WebAuthn assertion.
+  exportPortableBackup(opts: { password: string; passwordHint?: string }): Promise<PortableBackup>; // two-share bearer file (device+recovery); also rotates the set
+  hasRecoveryShare(): Promise<boolean>;                            // UX flag — has the user ever saved a recovery file
+  shouldPromptRecovery(): Promise<boolean>;                        // true at most once — time to nudge saving one
+  dismissRecoveryPrompt(): Promise<void>;                          // call regardless of answer; the nudge fires once ever
+  hasBackup(): Promise<boolean>;                                   // is a server-side wrapped-share backup present (Flow A)
+  deleteBackup(): Promise<void>;                                   // delete it — disables Flow A passkey-sync recovery
   on(event: SdkEvent, handler: (...args: unknown[]) => void): void;
   off(event: SdkEvent, handler: (...args: unknown[]) => void): void;
 }
@@ -251,6 +272,7 @@ All extend `DecaneConnectError` (`{ code: string; message: string; retryable: bo
 | `OriginNotAllowedError` | `ORIGIN_NOT_ALLOWED` | no | Calling origin isn't in the API key's allowlist |
 | `SessionExpiredError` | `SESSION_EXPIRED` | yes | Session TTL elapsed — call `unlock()` |
 | `UnlockRequiredError` | `UNLOCK_REQUIRED` | yes | Signing attempted before unlocking |
+| `ReconnectRequiredError` | `RECONNECT_REQUIRED` | yes | Session ended and JWT expired — sign in again |
 | `UserCancelledError` | `USER_CANCELLED` | yes | User dismissed a passkey/PIN/OAuth prompt |
 | `WebAuthnNotSupportedError` | `WEBAUTHN_UNSUPPORTED` | no | Browser has no WebAuthn support and no `promptPin` configured |
 | `InvalidPinError` | `INVALID_PIN` | yes | Incorrect PIN entered |
@@ -260,8 +282,11 @@ All extend `DecaneConnectError` (`{ code: string; message: string; retryable: bo
 | `NewDeviceError` | `NEW_DEVICE` | no | No device share found on this device — re-authenticate to provision it |
 | `PromptPinNotConfiguredError` | `PROMPT_PIN_NOT_CONFIGURED` | no | Passkey unavailable and no `promptPin` callback was provided |
 | `AttestationError` | `ATTESTATION_FAILED` | no | TEE attestation quote failed verification |
-| `RecoveryFailedError` | `RECOVERY_FAILED` | yes | Recovery-phrase flow failed |
-| `InvalidPhraseError` | `INVALID_PHRASE` | yes | Recovery phrase is invalid or corrupted |
+| `RecoveryFailedError` | `RECOVERY_FAILED` | yes | Recovery flow failed |
+| `InvalidRecoveryFileError` | `INVALID_RECOVERY_FILE` | no | Uploaded file isn't a valid recovery file |
+| `WrongPasswordError` | `WRONG_PASSWORD` | yes | Incorrect password for the recovery file |
+| `RecoveryWalletMismatchError` | `RECOVERY_WALLET_MISMATCH` | no | Recovery file is for a different wallet than the signed-in account |
+| `ExportNotAuthorizedError` | `EXPORT_NOT_AUTHORIZED` | yes | Export needs a fresh security check first |
 
 ---
 
