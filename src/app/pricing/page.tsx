@@ -47,7 +47,7 @@ const TIERS: Tier[] = [
     price: "$254",
     period: "/mo",
     tagline: "For apps that have outgrown the free tier.",
-    cta: { label: "Talk to us", href: "mailto:hello@decane.app?subject=Scale%20plan" },
+    cta: { label: "Talk to us", href: "mailto:info@decane.app?subject=Scale%20plan" },
     highlighted: true,
     features: [
       "Up to 2,499 monthly active wallets",
@@ -63,7 +63,7 @@ const TIERS: Tier[] = [
     price: "$424",
     period: "/mo",
     tagline: "For apps with real, sustained usage.",
-    cta: { label: "Talk to us", href: "mailto:hello@decane.app?subject=Scale%20plan" },
+    cta: { label: "Talk to us", href: "mailto:info@decane.app?subject=Scale%20plan" },
     features: [
       "Up to 9,999 monthly active wallets",
       "Unlimited projects",
@@ -77,7 +77,7 @@ const TIERS: Tier[] = [
     band: "10,000+ MAU",
     price: "Custom",
     tagline: "Dedicated infrastructure, custom terms.",
-    cta: { label: "Contact us", href: "mailto:hello@decane.app?subject=Enterprise%20plan" },
+    cta: { label: "Contact us", href: "mailto:info@decane.app?subject=Enterprise%20plan" },
     features: [
       "Unlimited monthly active wallets",
       "Dedicated TEE signer instance",
