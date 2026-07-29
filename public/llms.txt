@@ -8,6 +8,28 @@ npm install decane-connect-kit
 
 ---
 
+## Version and freshness
+
+```yaml
+version: 2.2.0
+document-revision: 2026-07-29
+canonical: https://decane.app/llms.txt
+version-manifest: https://decane.app/llms-version.json
+```
+
+`version` is the npm package version whose API surface this document describes.
+
+If you are working from a cached or previously-read copy of this file, compare
+its `version` against the one at `version-manifest` — a ~200-byte JSON document
+that is cheap to fetch. If the manifest reports a higher version, re-read this
+file before relying on it: the API surface has changed. The manifest also lists
+what changed in each release, so you can decide whether the delta affects you.
+
+This file is served as a plain-text document at the canonical URL above. It is
+not a download — fetch it directly, any time, no auth or headers required.
+
+---
+
 ## Part 1 — Wallet connect (open source, free, no backend required)
 
 Detects installed wallets and manages CAIP-25 sessions across chains. Never uses `window.ethereum` — detection is via EIP-6963 (`window.addEventListener('eip6963:announceProvider', ...)`) for EVM, the Solana Wallet Standard for Solana, TronLink's injected provider for Tron, and Unisat/Xverse/OKX-style providers for Bitcoin.
@@ -186,6 +208,14 @@ interface DecaneConnectConfig {
   rpName?: string;                    // WebAuthn RP display name
   rpcUrls?: Record<string, string>;   // override built-in public RPCs per chain
   teeUrl?: string;                    // advanced/self-hosted override only
+  // Require a fresh passkey assertion for EVERY signature (TEE-verified,
+  // single-use 60s challenge) instead of letting an unlocked session sign
+  // freely until expiry. Does NOT shorten the session — see "Signing
+  // authority model" below. Default false. Needs a passkey; PIN-only wallets
+  // have no authenticator to assert with and signing fails rather than
+  // falling back. Also available as SocialConfig.requireAssertionPerSignature
+  // on the React <DecaneKit> path.
+  requireAssertionPerSignature?: boolean;
   // Recovery. The key is split 2-of-3 (device/server/recovery); a user on a new
   // device recovers automatically via a synced passkey (Flow A), or falls back to
   // a saved recovery file (Flow B). Flow B requires the two callbacks marked below.
@@ -208,6 +238,7 @@ interface DecaneConnect {
   connectWithGoogle(): Promise<ConnectResult>;
   connectWithEmail(email: string): Promise<{ codeRequired: true }>;
   verifyEmailCode(email: string, code: string): Promise<ConnectResult>;
+  connectWithToken(token: string, opts?: { providerId?: string }): Promise<ConnectResult>; // custom auth — see below
   unlock(): Promise<void>;                                        // re-authenticate an expired session
   isUnlocked(): boolean;
   sessionExpiresAt(): number | null;
@@ -257,10 +288,82 @@ function SignInButton() {
 }
 ```
 
-- **`useSocialAuth()`** — sign-in flow: `{ isConnected, isUnlocked, isNewUser, addresses, sessionExpiresAt, googleLoading, emailLoading, error, clearError(), signInWithGoogle(), sendEmailCode(email): Promise<{codeRequired:true}>, confirmEmailCode(email, code), unlock(), disconnect() }`.
+- **`useSocialAuth()`** — sign-in flow: `{ isConnected, isUnlocked, isNewUser, addresses, sessionExpiresAt, needsReconnect, googleLoading, emailLoading, tokenLoading, customLoading, customAuthLabel, error, clearError(), signInWithGoogle(), sendEmailCode(email): Promise<{codeRequired:true}>, confirmEmailCode(email, code), signInWithToken(token, opts?), signInWithCustomAuth?(), unlock(), disconnect() }`. `signInWithCustomAuth` is `undefined` unless `social.customAuth` is configured.
 - **`useSocialWallet()`** — sign-in + signing + modal control: everything in `useSocialAuth()` plus `{ modalOpen, openModal(), closeModal(), signMessage(chain, message), sendTransaction(req), signSolanaTransaction(tx), loading, error }`.
 
 `<SocialWalletModal>` is rendered automatically by `<DecaneKit>` (props: `{ open, onClose, theme?, socialAuth, onUnlock, onDisconnect }`) — control it via `useSocialWallet().openModal()`/`.closeModal()`, don't render it directly.
+
+### Signing authority model — per-signature assertion since 2.2.0
+
+Two modes, and the distinction matters when comparing against other embedded-wallet SDKs.
+
+**Default (session authority).** `unlock()` opens a TEE session with a TTL (`sessionDurationMinutes`, default 30). For that window a live session is sufficient authority: signatures need no further prompt. Authority is bounded by *time* and dies on expiry or `pagehide` — it is not standing.
+
+**`requireAssertionPerSignature: true` (per-signature authority).** The session still stays warm — this is the point, since tearing it down would cost a fresh TDX attestation and a full re-auth per signature — but a live session stops being sufficient. Each signature requires a fresh WebAuthn assertion answered against a single-use, 60-second challenge, verified *inside the enclave* (the same gate already protecting `rotateShares` / `exportPortableBackup`). Client-side refusal is not the mechanism; the TEE will not sign without it.
+
+```ts
+// standalone
+await createDecaneConnect({ apiKey, chains, authMethods, requireAssertionPerSignature: true });
+// React
+<DecaneKit config={{ social: { apiKey, requireAssertionPerSignature: true } }}>
+```
+
+Consequences worth stating explicitly:
+
+- **It does not shorten the session.** The countdown is unchanged; `sessionDurationMinutes` is the separate knob for that. Turning this on and expecting a shorter timer is the common misreading.
+- **Multi-step flows prompt per leg.** ERC-20 approve + swap is two prompts.
+- **Requires a passkey.** PIN-only wallets fail rather than degrade.
+- **A declined prompt is not an expired session.** It surfaces as `ExportNotAuthorizedError` and the session handle stays valid, so no reconnect is forced.
+- **Scope limit, stated plainly:** the policy is declared by the client at session open. It makes a leaked session *handle* worthless without the authenticator, but a fully compromised page could open a session without the flag. Server-sourced policy (per user / per project) would be needed to make it unbypassable; not implemented.
+
+Requires TEE signer v0.2.3+. Sessions that don't opt in behave exactly as before, so older clients are unaffected.
+
+### Custom auth (bring your own JWT issuer) — since 2.1.0
+
+Instead of Google/email, a dApp can sign users in with a token from its own identity system (Auth0, Clerk, Firebase, Cognito, or its own backend). The developer registers an issuer + JWKS URL against their project in the dashboard; the SDK exchanges a token that issuer already signed for a Decane session. Everything downstream — wallet creation, signing, recovery — is identical to Google/email sign-in. Decane never sees a credential, only a signed token, its issuer, and one claim.
+
+The user's wallet is derived from `HMAC(providerId + ':' + <identity claim value>)`, so the same claim value always resolves to the same wallet. The dashboard therefore treats `issuer` and `identity_claim` as immutable after creation, and refuses to delete a provider that has users (disable it instead) — changing either would silently re-identify existing users onto empty wallets.
+
+Two ways to use it:
+
+```tsx
+// A. Built-in UI — renders a button in WalletSelector and SocialWalletModal
+//    alongside Google/email. getToken() runs when the user clicks it.
+<DecaneKit config={{
+  appId: '<project id>',
+  mode: 'all',
+  social: {
+    apiKey: 'dck_live_...',
+    authMethods: ['google', 'email'],
+    customAuth: {
+      label: 'Continue with Acme Inc',    // button text
+      providerId: undefined,              // only needed with >1 provider configured
+      getToken: async () => (await myAuthClient.getSession()).accessToken,
+    },
+  },
+}}>{children}</DecaneKit>
+
+// B. Headless — you already have the token, drive your own UI
+const { signInWithToken, tokenLoading } = useSocialAuth();
+await signInWithToken(token /*, { providerId } */);
+
+// ...or with no React at all:
+const { addresses, isNewUser } = await connect.connectWithToken(token);
+```
+
+`SocialConfig.customAuth?: { label: string; providerId?: string; getToken: () => Promise<string> }`.
+
+`providerId` is only required when a project has more than one enabled provider — with several configured the backend will not guess, because trying each issuer in turn would let a token from a weak provider be accepted as if it came from a strong one.
+
+The backend (`POST /auth/external`) verifies, in order: signature against the published JWKS (key rotation handled automatically — an unrecognized `kid` triggers a refetch), issuer, expiry, audience if one is configured, and that the identity claim is a non-empty string or number. Failures 1–4 collapse into one opaque `INVALID_TOKEN` so error messages can't be used to probe for forgeable gaps. Config-level problems report distinctly: `NO_PROVIDER`, `AMBIGUOUS_PROVIDER`, `MISSING_CLAIM`.
+
+The JWKS URL must return a standard key set and must be `https://` (or localhost in dev) — a downgraded fetch would let an on-path attacker serve a forged key set and mint tokens for any user:
+
+```json
+{ "keys": [ { "kty": "RSA", "kid": "key-1", "use": "sig", "alg": "RS256", "n": "0vx7ago...", "e": "AQAB" } ] }
+```
+
+EC keys work too (`kty: "EC"`, `crv`, `x`, `y` instead of `n`/`e`). The `kid` must match the JWT header's `kid`. Multiple keys in the array is how rotation works.
 
 ### Errors
 

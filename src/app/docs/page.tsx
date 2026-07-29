@@ -130,13 +130,21 @@ export default function DocsPage() {
               <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
                 <div className="ico">✦</div>
                 <p>
-                  Wiring up an LLM or coding agent? <code>llms.txt</code> is a self-contained spec —
-                  full code samples and real signatures for both integration paths, no other page needed.
+                  Wiring up an LLM or coding agent? Point it at{" "}
+                  <code>https://decane.app/llms.txt</code> — a self-contained spec with full code
+                  samples and real signatures for every integration path, readable in place at a
+                  stable URL. It carries a version, and{" "}
+                  <a href="/llms-version.json" target="_blank" rel="noreferrer">
+                    <code>llms-version.json</code>
+                  </a>{" "}
+                  is a tiny manifest an agent can check to tell whether the copy it already has is
+                  out of date.
                 </p>
               </div>
               <a
                 href="/llms.txt"
-                download="decane-connect-kit-llms.txt"
+                target="_blank"
+                rel="noreferrer"
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
@@ -152,11 +160,11 @@ export default function DocsPage() {
                 }}
               >
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                  <polyline points="7 10 12 15 17 10" />
-                  <line x1="12" y1="15" x2="12" y2="3" />
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                  <polyline points="15 3 21 3 21 9" />
+                  <line x1="10" y1="14" x2="21" y2="3" />
                 </svg>
-                Download llms.txt
+                Open llms.txt
               </a>
             </div>
           </section>
@@ -650,9 +658,57 @@ export default function DocsPage() {
               <span className="tok-p">&gt;;</span>
               {"  "}
               <span className="tok-c">// override built-in public RPCs</span>
+              {"\n  "}
+              <span className="tok-id">requireAssertionPerSignature</span>
+              <span className="tok-p">?:</span>{" "}
+              <span className="tok-t">boolean</span>
+              <span className="tok-p">;</span>
+              {"  "}
+              <span className="tok-c">// default: false — see below</span>
               {"\n"}
               <span className="tok-p">{"}"}</span>
             </CodeBlock>
+
+            <h3 id="per-signature-assertion">Per-signature assertion</h3>
+            <p>
+              By default an unlocked session signs freely until it expires — one unlock, then no
+              further prompts for the session&rsquo;s lifetime. Setting{" "}
+              <code>requireAssertionPerSignature: true</code> instead demands a fresh passkey
+              assertion for <em>every</em> signature, verified inside the TEE against a single-use
+              challenge with a 60-second TTL. The same gate already protects{" "}
+              <code>rotateShares</code> and <code>exportPortableBackup</code>.
+            </p>
+            <CodeBlock lang="tsx">
+              {hl(`social: {
+  apiKey: "dck_live_…",
+  requireAssertionPerSignature: true,
+}`)}
+            </CodeBlock>
+            <div className="docs-callout" data-kind="warn">
+              <div className="ico">!</div>
+              <p>
+                <strong>This does not shorten the session.</strong> The session stays warm for its
+                full duration — deliberately, so there is no re-attestation and no re-authentication
+                per signature. What changes is that a live session alone stops being sufficient
+                authority: each signature is re-proven. If you want a shorter window as well,
+                that&rsquo;s the separate <code>sessionDurationMinutes</code> knob.
+              </p>
+            </div>
+            <p>
+              Two practical consequences. Multi-step flows prompt per leg — an ERC-20 approve plus a
+              swap is two prompts, not one. And it needs a passkey: a PIN-only wallet has no
+              authenticator to assert with, so signing fails rather than falling back.
+            </p>
+            <div className="docs-callout" data-kind="note">
+              <div className="ico">i</div>
+              <p>
+                Scope, stated plainly: the policy is declared by the client when the session opens.
+                That makes a <em>leaked session handle</em> worthless without the authenticator, but
+                a fully compromised page could open a session without the flag. Making it
+                unbypassable requires the policy to come from the server per user or per project,
+                which is not implemented yet.
+              </p>
+            </div>
 
             <h3>Setup example</h3>
             <CodeBlock lang="tsx">
@@ -978,6 +1034,198 @@ const signature = await conn.sendRawTransaction(signed);`)}
               signature is cluster-agnostic, so you can build against and broadcast to either mainnet
               or devnet.
             </p>
+          </section>
+
+          {/* ── Custom auth ── */}
+          <section>
+            <h2 id="custom-auth">
+              Custom auth <a className="docs-anchor" href="#custom-auth">#</a>
+            </h2>
+            <p>
+              Google and email are the default social sign-in methods, but you can also bring your
+              own identity provider — Auth0, Clerk, Firebase, Cognito, or your own backend&rsquo;s JWT
+              issuer. Register the issuer once in the dashboard; from then on the SDK exchanges a
+              token your system already issues for a Decane session, and everything downstream
+              (wallet creation, signing, recovery) is identical to Google/email sign-in. You write no
+              auth code and store no secret with Decane — only public information (issuer URL, JWKS
+              URL) ever reaches the dashboard.
+            </p>
+
+            <h3 id="custom-auth-register">Register a provider</h3>
+            <p>Dashboard → your project → <strong>Custom Auth</strong> → Add provider.</p>
+            <div className="docs-table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th style={{ width: "22%" }}>Field</th>
+                    <th>What it is</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>Issuer</strong></td>
+                    <td>The <code>iss</code> claim your tokens carry. Must match exactly.</td>
+                  </tr>
+                  <tr>
+                    <td><strong>JWKS URL</strong></td>
+                    <td>
+                      Where your public signing keys live. Must be <code>https://</code> (or{" "}
+                      <code>localhost</code> for local dev) — a downgraded fetch would let an
+                      on-path attacker serve a forged key set.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><strong>Identity claim</strong></td>
+                    <td>Which claim identifies the user. Defaults to <code>sub</code>.</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Audience</strong></td>
+                    <td>Expected <code>aud</code> claim. Optional — omit to accept any audience.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div className="docs-callout" data-kind="warn">
+              <div className="ico">!</div>
+              <p>
+                <strong>Issuer and identity claim are immutable once created.</strong> Every user&rsquo;s
+                wallet is derived from <code>HMAC(providerId + claim value)</code> — changing either
+                would silently re-identify existing users with no error anywhere, just an
+                empty-looking wallet. Register a second provider instead. For the same reason, a
+                provider can&rsquo;t be deleted once it has signed in at least one user — disable it
+                instead; existing users keep working, no new ones are admitted.
+              </p>
+            </div>
+
+            <h3 id="custom-auth-config">Config</h3>
+            <p>
+              Add <code>customAuth</code> to <code>SocialConfig</code>. <code>getToken</code> runs
+              when the user clicks the button — wire it to however you already obtain a token from
+              your auth system (often: after your own login flow completes).
+            </p>
+            <CodeBlock lang="tsx">
+              {hl(`<DecaneKit
+  config={{
+    appId: "<your project id>",
+    mode: "all",
+    social: {
+      apiKey: "<your api key>",
+      authMethods: ["google", "email"],
+      chains: ["evm:1", "solana:mainnet"],
+      customAuth: {
+        label: "Continue with Acme Inc",   // button text
+        providerId: undefined,             // only needed with >1 provider
+        getToken: async () => {
+          const session = await myAuthClient.getSession();
+          return session.accessToken;
+        },
+      },
+    },
+  }}
+>
+  {children}
+</DecaneKit>`)}
+            </CodeBlock>
+            <p>
+              This renders a button in both <code>WalletSelector</code> and{" "}
+              <code>SocialWalletModal</code>&rsquo;s sign-in view, alongside Google/email — no other UI
+              work needed.
+            </p>
+
+            <h3 id="custom-auth-headless">Headless</h3>
+            <p>Driving your own sign-in UI instead of the built-in modal:</p>
+            <CodeBlock lang="tsx">
+              {hl(`import { useSocialAuth } from "decane-connect-kit";
+
+function MySignInButton() {
+  const { signInWithToken, tokenLoading } = useSocialAuth();
+
+  async function handleClick() {
+    const token = await myAuthClient.getAccessToken();
+    await signInWithToken(token /*, { providerId: "..." } if you have >1 provider */);
+  }
+
+  return <button onClick={handleClick} disabled={tokenLoading}>Sign in</button>;
+}`)}
+            </CodeBlock>
+            <p>Or fully outside React, via the standalone social SDK:</p>
+            <CodeBlock lang="ts">
+              {hl(`import { createDecaneConnect } from "decane-connect-kit";
+
+const connect = await createDecaneConnect({
+  appId: "<your project id>",
+  apiKey: "<your api key>",
+  authMethods: ["google", "email"],
+  chains: ["evm:1", "solana:mainnet"],
+});
+
+const token = await myAuthClient.getAccessToken();
+const { addresses, isNewUser } = await connect.connectWithToken(token);`)}
+            </CodeBlock>
+            <p>
+              <code>connectWithToken</code> returns the same <code>ConnectResult</code> shape as{" "}
+              <code>connectWithGoogle</code> / <code>verifyEmailCode</code>.
+            </p>
+
+            <h3 id="custom-auth-jwks">JWKS format</h3>
+            <p>
+              Your JWKS URL must return a standard key set — a <code>keys</code> array containing
+              the public key your tokens are signed with, matched by <code>kid</code>. RSA (
+              <code>RS256</code> — the default for Auth0, Clerk, and Firebase):
+            </p>
+            <CodeBlock lang="json">
+              {hl(`{
+  "keys": [
+    {
+      "kty": "RSA",
+      "kid": "your-key-id-1",
+      "use": "sig",
+      "alg": "RS256",
+      "n": "0vx7agoebGcQSuuPiLJXZptN9nndrQmbXEps2aiAFbWhM78LhWx4cbbfAAtV...",
+      "e": "AQAB"
+    }
+  ]
+}`)}
+            </CodeBlock>
+            <p>
+              EC (<code>ES256</code>) is also supported — <code>{"{ kty: \"EC\", crv: \"P-256\", x, y }"}</code>{" "}
+              instead of <code>n</code>/<code>e</code>. Multiple keys in the array is how rotation
+              works: the moment a token shows up with an unrecognized <code>kid</code>, the backend
+              refetches your JWKS automatically — no coordination needed when you rotate your signing
+              key.
+            </p>
+
+            <h3 id="custom-auth-multi">Multiple providers</h3>
+            <p>
+              With more than one enabled custom provider on a project, pass <code>providerId</code>{" "}
+              so the backend knows which issuer/JWKS to verify against — without it, trying every
+              configured issuer in turn would let a token from a weak provider be accepted as if it
+              came from a strong one. With exactly one provider configured, <code>providerId</code>{" "}
+              can always be omitted.
+            </p>
+
+            <h3 id="custom-auth-testing">Testing locally</h3>
+            <p>
+              <code>packages/backend/mock-idp.mjs</code> is a throwaway identity provider for exactly
+              this — generates a keypair on boot, publishes a JWKS, and mints tokens on demand, no
+              external account needed.
+            </p>
+            <CodeBlock lang="bash">
+              {hl(`node packages/backend/mock-idp.mjs
+# then:
+curl "http://localhost:4000/token?sub=alice&email=alice@example.com"`)}
+            </CodeBlock>
+
+            <div className="docs-callout" data-kind="security">
+              <div className="ico">✓</div>
+              <p>
+                Decane never sees your users&rsquo; credentials — only a token they already have, and
+                only its signature, issuer, and one claim. A provider&rsquo;s config is trusted for its
+                own project only; a developer who controls it can assert any identity within their
+                own project, which is inherent to &ldquo;bring your own issuer&rdquo; and not a
+                Decane-specific risk.
+              </p>
+            </div>
           </section>
 
           {/* ── Hooks ── */}

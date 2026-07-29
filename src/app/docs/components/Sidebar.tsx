@@ -31,6 +31,8 @@ const NAV = [
       { href: "#social", label: "Overview" },
       { href: "#connect-mode", label: "ConnectMode" },
       { href: "#social-config", label: "SocialConfig" },
+      { href: "#per-signature-assertion", label: "Per-signature assertion" },
+      { href: "#custom-auth", label: "Custom auth" },
       { href: "#useSocialAuth", label: "useSocialAuth()", mono: true },
       { href: "#useSocialWallet", label: "useSocialWallet()", mono: true },
       { href: "#social-wallet-modal", label: "SocialWalletModal", mono: true },
