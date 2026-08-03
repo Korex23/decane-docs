@@ -11,11 +11,16 @@ npm install decane-connect-kit
 ## Version and freshness
 
 ```yaml
-version: 2.2.0
-document-revision: 2026-07-29
+version: 2.5.0
+document-revision: 2026-08-03
 canonical: https://decane.app/llms.txt
 version-manifest: https://decane.app/llms-version.json
 ```
+
+Since 2.4.0 every social account also gets a **Tron** wallet — three wallets
+(EVM, Solana, Tron) from one sign-in, all derived from one key. Since 2.5.0 the
+SDK records a per-user **transaction history** you can read back. Server-side
+token verification has its own package, **`decane-node`** (see Part 3).
 
 `version` is the npm package version whose API surface this document describes.
 
@@ -242,11 +247,14 @@ interface DecaneConnect {
   unlock(): Promise<void>;                                        // re-authenticate an expired session
   isUnlocked(): boolean;
   sessionExpiresAt(): number | null;
-  signMessage(req: SignMessageRequest): Promise<string>;
-  sendTransaction(req: SendTransactionRequest): Promise<string>;
+  signMessage(req: SignMessageRequest): Promise<string>;        // EVM, Solana, or Tron chain
+  sendTransaction(req: SendTransactionRequest): Promise<string>; // EVM; auto-records to history
   signSolanaTransaction(tx: Uint8Array): Promise<Uint8Array>;
+  signTronTransaction(rawDataHex: string): Promise<string>;      // sign a TronWeb-built tx's raw_data
+  recordTransaction(tx: RecordTransactionInput): Promise<TransactionRecord>;  // record a tx you broadcast
+  getTransactionHistory(limit?: number): Promise<TransactionRecord[]>;        // most recent first
   disconnect(): Promise<void>;
-  getAddresses(): { evm?: string; solana?: string } | null;
+  getAddresses(): { evm?: string; solana?: string; tron?: string } | null;   // three wallets
   rotateShares(opts: { password: string; passwordHint?: string }): Promise<RecoveryShareFile>;      // new recovery file; invalidates the old one. Needs a fresh WebAuthn assertion.
   exportPortableBackup(opts: { password: string; passwordHint?: string }): Promise<PortableBackup>; // two-share bearer file (device+recovery); also rotates the set
   hasRecoveryShare(): Promise<boolean>;                            // UX flag — has the user ever saved a recovery file
@@ -257,9 +265,26 @@ interface DecaneConnect {
   on(event: SdkEvent, handler: (...args: unknown[]) => void): void;
   off(event: SdkEvent, handler: (...args: unknown[]) => void): void;
 }
-// ConnectResult = { addresses: { evm?: string; solana?: string }; isNewUser: boolean }
+// ConnectResult = { addresses: { evm?: string; solana?: string; tron?: string }; isNewUser: boolean }
 // SdkEvent = 'connected' | 'disconnected' | 'session-expired' | 'session-started'
+// TransactionRecord = { id, chain, kind, txHash, to, value, status, metadata, createdAt }
+// RecordTransactionInput = { chain, txHash?, to?, value?, kind?, status?, metadata? }
 ```
+
+**Three wallets from one sign-in.** Every account has an EVM address, a Solana
+address, and a Tron address — the Tron and EVM addresses share one secp256k1 key
+(Tron is the EVM address re-encoded), so there is no extra key to manage.
+`getAddresses()` returns all three. Tron uses CAIP-style chain ids
+`tron:mainnet` (also `tron:shasta` / `tron:nile`); `signMessage` accepts a Tron
+chain, and `signTronTransaction(rawDataHex)` signs a transaction you built with
+TronWeb (the enclave computes the txID and signs — you broadcast the result).
+
+**Transaction history.** `sendTransaction` records itself automatically. For
+Solana/Tron transactions your dApp broadcasts, call
+`recordTransaction({ chain, txHash, to?, value?, metadata? })` so they appear in
+the user's history; read it back with `getTransactionHistory()`. This is a plain
+data API — the SDK renders no history UI; you build it. Records are keyed by
+`(user, txHash)`, so re-recording a hash with a new `status` updates in place.
 
 Email sign-in is the two-step `connectWithEmail(email)` → `verifyEmailCode(email, code)` flow — a 6-digit code is emailed, `connectWithEmail` always resolves the same way regardless of whether the address has an account (prevents email enumeration).
 
@@ -289,7 +314,7 @@ function SignInButton() {
 ```
 
 - **`useSocialAuth()`** — sign-in flow: `{ isConnected, isUnlocked, isNewUser, addresses, sessionExpiresAt, needsReconnect, googleLoading, emailLoading, tokenLoading, customLoading, customAuthLabel, error, clearError(), signInWithGoogle(), sendEmailCode(email): Promise<{codeRequired:true}>, confirmEmailCode(email, code), signInWithToken(token, opts?), signInWithCustomAuth?(), unlock(), disconnect() }`. `signInWithCustomAuth` is `undefined` unless `social.customAuth` is configured.
-- **`useSocialWallet()`** — sign-in + signing + modal control: everything in `useSocialAuth()` plus `{ modalOpen, openModal(), closeModal(), signMessage(chain, message), sendTransaction(req), signSolanaTransaction(tx), loading, error }`.
+- **`useSocialWallet()`** — sign-in + signing + modal control: everything in `useSocialAuth()` plus `{ modalOpen, openModal(), closeModal(), signMessage(chain, message), sendTransaction(req), signSolanaTransaction(tx), signTronTransaction(rawDataHex), recordTransaction(tx), getTransactionHistory(limit?), loading, error }`.
 
 `<SocialWalletModal>` is rendered automatically by `<DecaneKit>` (props: `{ open, onClose, theme?, socialAuth, onUnlock, onDisconnect }`) — control it via `useSocialWallet().openModal()`/`.closeModal()`, don't render it directly.
 
@@ -390,6 +415,42 @@ All extend `DecaneConnectError` (`{ code: string; message: string; retryable: bo
 | `WrongPasswordError` | `WRONG_PASSWORD` | yes | Incorrect password for the recovery file |
 | `RecoveryWalletMismatchError` | `RECOVERY_WALLET_MISMATCH` | no | Recovery file is for a different wallet than the signed-in account |
 | `ExportNotAuthorizedError` | `EXPORT_NOT_AUTHORIZED` | yes | Export needs a fresh security check first |
+
+---
+
+## Part 3 — Server-side token verification (`decane-node`)
+
+When a signed-in user calls your own backend, send the Decane access token
+(`getAccessToken()` on the client) as `Authorization: Bearer <token>` and verify
+it server-side with the **`decane-node`** package — the `@privy-io/node`
+equivalent. `npm install decane-node` (Node 18+).
+
+```ts
+import { DecaneClient } from 'decane-node';
+
+// Two verification modes:
+//  1. Static verification key (Privy-style, offline) — copy your project's ES256
+//     public key from the dashboard (API Keys page) into DECANE_VERIFICATION_KEY.
+//  2. JWKS (default) — omit the key; the SDK fetches/caches Decane's public JWKS.
+// appId is checked against the token's project_id (the audience-equivalent).
+const decane = new DecaneClient({
+  appId: process.env.DECANE_APP_ID,
+  verificationKey: process.env.DECANE_VERIFICATION_KEY, // optional; JWKS if unset
+});
+
+const claims = await decane.verifyAccessToken(token);   // throws DecaneAuthError if invalid
+claims.userId;                                           // stable Decane user id (uid)
+
+// Or fail-closed without throwing, and resolve addresses:
+const safe = await decane.safeVerifyAccessToken(token); // DecaneClaims | null
+const user = await decane.getUser(token);               // { id, addresses, linkedAccounts }
+```
+
+`verificationKey` also reads from the `DECANE_VERIFICATION_KEY` env var, so a
+backend can pass only `appId` in code. A standalone
+`verifyAccessToken({ token, appId, verificationKey })` is also exported for a
+drop-in replacement of Privy's function. npm:
+https://www.npmjs.com/package/decane-node
 
 ---
 
