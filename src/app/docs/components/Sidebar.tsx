@@ -41,6 +41,19 @@ const NAV = [
     ],
   },
   {
+    title: "React Native",
+    items: [
+      { href: "#react-native", label: "Overview" },
+      { href: "#rn-install", label: "Install" },
+      { href: "#rn-config", label: "Configuration" },
+      { href: "#rn-unlock", label: "Unlock tiers" },
+      { href: "#rn-auth", label: "Signing in" },
+      { href: "#rn-api", label: "Using the wallet" },
+      { href: "#rn-recovery", label: "Getting back in" },
+      { href: "#rn-attestation", label: "Attestation" },
+    ],
+  },
+  {
     title: "Hooks",
     items: [
       { href: "#useDecane", label: "useDecane()", mono: true },

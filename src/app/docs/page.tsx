@@ -1228,6 +1228,248 @@ curl "http://localhost:4000/token?sub=alice&email=alice@example.com"`)}
             </div>
           </section>
 
+          {/* ── React Native ── */}
+          <section>
+            <h2 id="react-native">
+              React Native <a className="docs-anchor" href="#react-native">#</a>
+            </h2>
+            <p>
+              <code>decane-connect-kit-expo</code> brings the same wallets to iOS and Android. It is
+              <strong> headless</strong> — functions only, no components — so the wallet UI is entirely
+              yours. Everything below is in addition to the web SDK, not a replacement for it: a user who
+              signs in on your website and in your app gets the <em>same wallet</em>, provided both use the
+              same <code>appId</code>.
+            </p>
+
+            <h3 id="rn-install">Install</h3>
+            <CodeBlock lang="bash">
+              {hl(`npx expo install decane-connect-kit-expo \\
+  expo-secure-store expo-crypto expo-local-authentication expo-web-browser
+
+// optional — unlocks the passkey tier
+npx expo install react-native-passkeys
+
+// optional — native Google Sign-In
+npx expo install @react-native-google-signin/google-signin`)}
+            </CodeBlock>
+            <p>
+              <code>crypto.getRandomValues</code> and <code>Buffer</code> are polyfilled by the SDK on
+              import, so you do not need <code>react-native-get-random-values</code>.
+            </p>
+
+            <div className="docs-callout" data-kind="warn">
+              <div className="ico">!</div>
+              <p>
+                <strong>Expo Go will not work.</strong> These are native modules, so the app must be a
+                development build. Expo Go has no binary for them and rejects the project before any
+                JavaScript runs — which presents as the app opening and closing instantly with nothing in
+                the Metro logs. Run <code>npx expo prebuild</code> then{" "}
+                <code>npx expo run:android</code> (or <code>run:ios</code>).
+              </p>
+            </div>
+
+            <h3 id="rn-config">Configuration</h3>
+            <CodeBlock lang="tsx">
+              {hl(`import { createDecaneConnect } from "decane-connect-kit-expo";
+
+const decane = await createDecaneConnect({
+  appId:       "proj_…",
+  apiKey:      "dck_live_…",
+  chains:      ["evm:8453", "solana:mainnet"],
+  authMethods: ["email", "google"],
+
+  redirectUri: "yourapp://auth",    // Google and KingsChat return here
+  promptPin:   async () => showPinSheet(),
+
+  rpId: "app.example.com",          // optional — enables the passkey tier
+});`)}
+            </CodeBlock>
+
+            <p>
+              The native config is a strict superset of the web one — five extra keys, nothing web-only.
+              They all exist for the same reason: <strong>the browser infers them from <code>window</code>
+              or from having WebAssembly, and React Native has neither.</strong>
+            </p>
+            <div className="docs-table-wrap">
+              <table className="docs-table">
+                <thead>
+                  <tr><th>Key</th><th>Why it is native-only</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td><code>verifyAttestation</code></td><td>No WebAssembly, so the DCAP quote verifier cannot run on device</td></tr>
+                  <tr><td><code>insecureSkipAttestation</code></td><td>Development escape hatch; web can always verify locally</td></tr>
+                  <tr><td><code>origin</code></td><td>Android&rsquo;s WebAuthn origin is <code>android:apk-key-hash:…</code>, not a URL</td></tr>
+                  <tr><td><code>redirectUri</code></td><td>No <code>window.location.origin</code> to fall back on</td></tr>
+                  <tr><td><code>unlockPreference</code></td><td>Native has three unlock tiers; web has two</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p>
+              Two shared keys also behave differently. <code>rpId</code> defaults to the hostname on web but
+              has <strong>no default</strong> here — leaving it unset silently drops you to the
+              secure-enclave tier. And <code>persistSession</code> uses <code>sessionStorage</code> on web,
+              which dies with the tab; on native a session survives an app restart until its recorded
+              expiry, because backgrounding an app is not a sign-out.
+            </p>
+
+            <h3 id="rn-unlock">Unlock tiers</h3>
+            <p>
+              The device&rsquo;s share of the key is encrypted at rest. Which key protects it depends on what
+              the device can actually do — the SDK probes each tier in order and uses the first that
+              genuinely works. You do not choose it; the device does.
+            </p>
+            <div className="docs-table-wrap">
+              <table className="docs-table">
+                <thead>
+                  <tr><th>Tier</th><th>Key source</th><th>Passkey sign-in</th><th>New device</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td><code>passkey</code></td><td>WebAuthn PRF output</td><td>yes</td><td>passkey sync</td></tr>
+                  <tr><td><code>secure-enclave</code></td><td>random key in Keychain / Keystore, behind biometrics</td><td>no</td><td>recovery file</td></tr>
+                  <tr><td><code>pin</code></td><td>PBKDF2 over a user PIN</td><td>no</td><td>recovery file</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <CodeBlock lang="tsx">
+              {hl(`const caps = await decane.getCapabilities();
+// { passkeys, passkeyPrf, secureEnclave, activeUnlockMethod }
+
+// narrow or reorder the tiers
+unlockPreference: ["secure-enclave", "pin"]`)}
+            </CodeBlock>
+            <p>
+              The passkey probe is a <strong>real ceremony</strong>, not a feature flag: a device that
+              reports passkey support but returns no PRF output falls through to the next tier rather than
+              ending up with a wallet nothing can unlock.
+            </p>
+            <div className="docs-callout" data-kind="note">
+              <div className="ico">i</div>
+              <p>
+                <strong>Expect two biometric prompts at signup</strong> on the passkey tier — one to create
+                the credential, one to evaluate the PRF salt. That is how the WebAuthn PRF extension
+                behaves on iOS and Android: <code>create()</code> reports only that PRF is
+                <em> available</em>. It does not repeat on later unlocks.
+              </p>
+            </div>
+            <p>
+              The passkey tier also needs an associated domain: <code>webcredentials:&lt;rpId&gt;</code> plus
+              an <code>apple-app-site-association</code> file on iOS, and{" "}
+              <code>assetlinks.json</code> on Android. On Android you must additionally pass{" "}
+              <code>origin</code>, because Android reports an APK key hash rather than a URL.
+            </p>
+
+            <h3 id="rn-auth">Signing in</h3>
+            <CodeBlock lang="tsx">
+              {hl(`// Email — nothing to register
+await decane.connectWithEmail(email);
+await decane.verifyEmailCode(email, code);
+
+// Google — nothing to register with Google at all
+await decane.connectWithGoogle();
+
+// KingsChat
+await decane.connectWithKingsChat();
+
+// Your own identity provider
+await decane.connectWithToken(idToken);
+
+// Returning user who still has their passkey on this device
+if (await decane.canSignInWithPasskey()) await decane.signInWithPasskey();`)}
+            </CodeBlock>
+            <div className="docs-callout" data-kind="warn">
+              <div className="ico">!</div>
+              <p>
+                <strong>Use <code>connectWithGoogleToken</code>, not <code>connectWithToken</code>, for
+                Google.</strong> The latter goes through the generic external-provider path, which
+                namespaces the identity by provider and would hand the same person a{" "}
+                <em>different wallet</em> than your website does.
+              </p>
+            </div>
+            <p>
+              <code>connectWithGoogle()</code> opens an in-app auth sheet —{" "}
+              <code>ASWebAuthenticationSession</code> on iOS, a Chrome Custom Tab on Android — and returns
+              to <code>redirectUri</code> when the user is done. Your app is never backgrounded.
+            </p>
+            <div className="docs-callout" data-kind="info">
+              <div className="ico">i</div>
+              <p>
+                <strong>Nothing to register in Google Cloud.</strong> The OAuth client is Decane&rsquo;s and
+                the redirect goes to Decane&rsquo;s backend, which then hops to your scheme — so Google never
+                sees your package name, bundle ID or signing fingerprint. That means no per-build SHA-1
+                registration, and nobody blocking your release.
+              </p>
+            </div>
+            <p>
+              A native account sheet is available via{" "}
+              <code>connectWithGoogleToken()</code> if you prefer it, but it is opt-in: Google must then
+              know your exact binary, which means registering a package name and a SHA-1 for every build
+              type (debug, release, and Play App Signing produce three different fingerprints).
+            </p>
+
+            <h3 id="rn-api">Using the wallet</h3>
+            <CodeBlock lang="tsx">
+              {hl(`decane.getAddresses();     // { evm, solana, tron } | null
+decane.isUnlocked();
+decane.needsReconnect();   // known identity, dead session → show sign-in
+decane.getAccessToken();   // Decane JWT, for your own backend
+
+await decane.signMessage({ chain: "evm:8453", message: "gm" });
+await decane.sendTransaction({ chain: "evm:8453", to, value });
+await decane.signTypedData({ chain: "evm:8453", domain, types, message });
+await decane.signSolanaTransaction(serializedTx);  // you broadcast
+await decane.getBalances();
+
+decane.on("wallet-creating", () => showProgress());`)}
+            </CodeBlock>
+            <p>
+              <code>wallet-creating</code> is worth a progress state: it covers key generation, the Shamir
+              split, unlock-tier setup and the first enclave session, and takes several seconds.
+            </p>
+
+            <h3 id="rn-recovery">Getting back in</h3>
+            <p>
+              By default a user who reinstalls your app, or opens it on a new phone, gets their wallet back
+              from <strong>signing in alone</strong> — nothing to write down, nothing to keep.
+            </p>
+            <div className="docs-callout" data-kind="security">
+              <div className="ico">§</div>
+              <p>
+                <strong>What this costs you.</strong> Enrolling stores a second Shamir share sealed to the
+                enclave, so the enclave can rebuild a wallet by itself. It is encrypted with a key derived
+                inside the TEE, so your backend and its database still cannot — but a malicious enclave
+                image, or anyone able to mint JWTs, could. That is the deliberate trade for a wallet a
+                person can always get back into.
+              </p>
+            </div>
+            <p>
+              Wire up the recovery-file callbacks regardless — they are the fallback when server-assisted
+              recovery is off or unavailable: <code>onRecoveryShareOffer</code>,{" "}
+              <code>onRecoveryFileReady</code>, <code>promptForRecoveryFile</code> and{" "}
+              <code>onRecoveryRotated</code>. Every recovery and rotation invalidates the previous file, so
+              the last of those must capture a password for the replacement.
+            </p>
+
+            <h3 id="rn-attestation">Attestation</h3>
+            <div className="docs-callout" data-kind="security">
+              <div className="ico">§</div>
+              <p>
+                React Native has <strong>no WebAssembly</strong>, so the Intel DCAP quote verifier the web
+                SDK runs cannot execute on device. Without <code>verifyAttestation</code>, the SDK can only
+                check that the enclave <em>reports</em> the measurement you pinned — which the enclave
+                asserts about itself. That is a consistency check, not a proof. Supply the hook in
+                production and verify the quote server-side.
+              </p>
+            </div>
+
+            <h3 id="rn-performance">Performance</h3>
+            <p>
+              PBKDF2 runs in pure JavaScript here — there is no native implementation to call — so 600,000
+              iterations costs <strong>seconds, not milliseconds</strong>. It is paid only on PIN unlock and
+              on recovery-file encrypt/decrypt; never on the passkey or biometric path, and never per
+              signature. Show a spinner on those two flows.
+            </p>
+          </section>
+
           {/* ── Hooks ── */}
           <section>
             <h2 id="hooks">

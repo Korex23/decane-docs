@@ -6,6 +6,10 @@
 npm install decane-connect-kit
 ```
 
+**Building a React Native / Expo app?** That is a different package with a
+different API — no components, no hooks — and its own spec:
+https://decane.app/llms-expo.txt (`decane-connect-kit-expo`).
+
 ---
 
 ## Version and freshness

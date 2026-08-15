@@ -1,26 +1,37 @@
 {
-  "$comment": "Freshness manifest for https://decane.app/llms.txt — fetch this (small) document to check whether a cached copy of llms.txt is stale, instead of re-reading the full spec.",
+  "$comment": "Freshness manifest for https://decane.app/llms.txt \u2014 fetch this (small) document to check whether a cached copy of llms.txt is stale, instead of re-reading the full spec.",
   "package": "decane-connect-kit",
-  "version": "2.2.0",
-  "documentRevision": "2026-07-29",
+  "version": "2.6.1",
+  "documentRevision": "2026-08-15",
   "llmsTxt": "https://decane.app/llms.txt",
   "npmRegistry": "https://registry.npmjs.org/decane-connect-kit/latest",
   "docs": "https://decane.app/docs",
   "changelog": [
     {
+      "version": "2.6.1",
+      "date": "2026-08-15",
+      "summary": "React Native / Expo SDK released as decane-connect-kit-expo (see llms-expo.txt). Server-assisted recovery is now always on \u2014 a user who reinstalls gets their wallet back from signing in alone, so the serverAssistedRecovery option was removed. Google sign-in on mobile uses an in-app auth sheet needing nothing registered in Google Cloud. Adds connectWithGoogleToken() so native Google Sign-In resolves to the SAME wallet as the web redirect flow, and connectWithKingsChat()."
+    },
+    {
       "version": "2.2.0",
       "date": "2026-07-29",
-      "summary": "Optional per-signature authority: requireAssertionPerSignature makes every signature need a fresh passkey assertion, verified inside the TEE against a single-use 60s challenge, instead of an unlocked session signing freely until expiry. The session still stays warm — this does NOT shorten sessionDurationMinutes. Available on both DecaneConnectConfig and SocialConfig. Default false, so existing behaviour is unchanged. Requires TEE signer v0.2.3+."
+      "summary": "Optional per-signature authority: requireAssertionPerSignature makes every signature need a fresh passkey assertion, verified inside the TEE against a single-use 60s challenge, instead of an unlocked session signing freely until expiry. The session still stays warm \u2014 this does NOT shorten sessionDurationMinutes. Available on both DecaneConnectConfig and SocialConfig. Default false, so existing behaviour is unchanged. Requires TEE signer v0.2.3+."
     },
     {
       "version": "2.1.0",
       "date": "2026-07-29",
-      "summary": "Custom auth: sign in with a JWT from your own issuer (Auth0, Clerk, Firebase, Cognito, or your own backend). Adds DecaneConnect.connectWithToken(token, opts?), SocialConfig.customAuth, and useSocialAuth().signInWithToken / .signInWithCustomAuth. Backward compatible — no existing API changed."
+      "summary": "Custom auth: sign in with a JWT from your own issuer (Auth0, Clerk, Firebase, Cognito, or your own backend). Adds DecaneConnect.connectWithToken(token, opts?), SocialConfig.customAuth, and useSocialAuth().signInWithToken / .signInWithCustomAuth. Backward compatible \u2014 no existing API changed."
     },
     {
       "version": "2.0.3",
       "date": "2026-07-22",
       "summary": "Baseline for this manifest. Wallet connect (EVM, Solana, Tron, Bitcoin) plus non-custodial social sign-in via Google and email, TEE-backed signing, 2-of-3 Shamir recovery."
     }
-  ]
+  ],
+  "mobile": {
+    "package": "decane-connect-kit-expo",
+    "version": "0.1.1",
+    "llmsTxt": "https://decane.app/llms-expo.txt",
+    "npmRegistry": "https://registry.npmjs.org/decane-connect-kit-expo/latest"
+  }
 }

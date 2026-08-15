@@ -1,0 +1,355 @@
+# decane-connect-kit-expo
+
+> Non-custodial embedded wallets for React Native / Expo apps (`decane-connect-kit-expo`, MIT, TypeScript declarations included). Users sign in with email, Google or KingsChat and get EVM + Solana + Tron wallets — no seed phrase, no extension, no browser popup. The private key is never assembled on the device: it is a 2-of-3 Shamir split, reconstructed only inside an attested TEE for the moment it takes to produce one signature. This package is **headless** — functions only, no UI components. This file is a self-contained integration spec, grounded in the actual package source.
+
+```
+npx expo install decane-connect-kit-expo \
+  expo-secure-store expo-crypto expo-local-authentication expo-web-browser
+```
+
+---
+
+## Version and freshness
+
+```yaml
+package: decane-connect-kit-expo
+version: 0.1.1
+document-revision: 2026-08-15
+canonical: https://decane.app/llms-expo.txt
+web-sibling: https://decane.app/llms.txt
+```
+
+The web SDK (`decane-connect-kit`) is a **separate package** with its own spec at
+`web-sibling`. Do not mix their APIs: this package has no React components, no
+hooks, and no `<DecaneKit>` provider.
+
+---
+
+## Critical: this cannot run in Expo Go
+
+`expo-secure-store` and (optionally) `react-native-passkeys` are native modules.
+Expo Go has no binary for them and rejects the project **before any JavaScript
+runs** — which presents as the app opening and closing instantly with nothing in
+the Metro logs. This is the single most common integration failure.
+
+```
+npx expo prebuild
+npx expo run:android    # or run:ios
+```
+
+A development build is required. There is no workaround.
+
+---
+
+## Minimal working setup
+
+Four required config values. Everything else is opt-in.
+
+```ts
+import { createDecaneConnect } from "decane-connect-kit-expo";
+
+const decane = await createDecaneConnect({
+  appId:       "proj_…",                            // Decane dashboard, public
+  apiKey:      "dck_live_…",                        // Decane dashboard
+  chains:      ["evm:8453", "solana:mainnet"],
+  authMethods: ["email"],
+});
+
+await decane.connectWithEmail("user@example.com");
+await decane.verifyEmailCode("user@example.com", "123456");
+
+const { evm, solana, tron } = decane.getAddresses()!;
+await decane.sendTransaction({ chain: "evm:8453", to: "0x…", value: 10_000n });
+```
+
+`createDecaneConnect` is **async** and returns a client object. Create it once
+and keep it — it restores a persisted session on construction.
+
+---
+
+## Configuration
+
+```ts
+interface DecaneConnectNativeConfig {
+  // Required
+  appId: string;
+  apiKey: string;
+  chains: Chain[];                    // `evm:${number}` | `solana:mainnet|devnet` | `tron:mainnet|shasta|nile`
+  authMethods: Array<'google' | 'email' | 'external' | 'kingschat'>;
+
+  // Needed for Google and KingsChat — must equal `scheme` in app.json,
+  // and be registered as the API key's callback_url in the dashboard.
+  redirectUri?: string;
+
+  // Required if the PIN tier can be reached. Must resolve to 4-8 digits.
+  promptPin?: () => Promise<string>;
+
+  // Passkey tier only. rpId is a domain you control; there is NO default
+  // (unlike web, which uses window.location.hostname). Without it the SDK
+  // silently uses the secure-enclave tier.
+  rpId?: string;
+  rpName?: string;
+  origin?: string;                    // Android: `android:apk-key-hash:<hash>`; iOS defaults to https://<rpId>
+  unlockPreference?: Array<'passkey' | 'secure-enclave' | 'pin'>;
+
+  // Recovery UI hooks
+  offerRecoveryAtSignup?: boolean;    // default true
+  onRecoveryShareOffer?: (a: { evmAddress: string; solanaAddress: string }) =>
+    Promise<{ wants: boolean; password: string; passwordHint?: string }>;
+  onRecoveryFileReady?: (file: RecoveryShareFile, filename: string) => Promise<void>;
+  promptForRecoveryFile?: () =>
+    Promise<{ value: unknown; getPassword: () => Promise<string | null> } | null>;
+  onRecoveryRotated?: (a: { evmAddress: string; solanaAddress: string }) =>
+    Promise<{ password: string; passwordHint?: string }>;
+  onRecoveryProgress?: (e: RecoveryProgress) => void;
+
+  // Advanced
+  sessionDurationMinutes?: number;    // default 120
+  rpcUrls?: Record<string, string>;
+  persistSession?: boolean;           // default true
+  requireAssertionPerSignature?: boolean;
+  kingsChatScopes?: string[];         // default ['send_chat_message']
+  verifyAttestation?: (q: { quote: string; measurement: string; nonce: string }) => Promise<void>;
+  rotateOnNewDeviceRecovery?: boolean;
+}
+```
+
+There is **no** `serverAssistedRecovery` option — login-alone recovery is always
+on (see Recovery). There is **no** Google client ID option: the recommended
+Google flow needs nothing registered in Google Cloud.
+
+---
+
+## Sign-in
+
+```ts
+// Email — nothing to register anywhere
+await decane.connectWithEmail(email);            // { codeRequired: true }
+await decane.verifyEmailCode(email, code);       // ConnectResult
+
+// Google — RECOMMENDED. In-app auth sheet, returns to redirectUri.
+await decane.connectWithGoogle();
+
+// KingsChat
+await decane.connectWithKingsChat();
+await decane.connectWithKingsChatToken(accessToken);
+
+// Your own JWT issuer (Auth0, Clerk, Firebase, …)
+await decane.connectWithToken(idToken, { providerId });
+
+// Google with a token you already hold (native sheet — see below)
+await decane.connectWithGoogleToken(idToken);
+
+// Returning user whose passkey-wrapped share is still on this device
+if (await decane.canSignInWithPasskey()) await decane.signInWithPasskey();
+
+await decane.disconnect();
+```
+
+`ConnectResult` is `{ addresses: { evm?, solana?, tron? }, isNewUser: boolean }`.
+
+### Google: use connectWithGoogle(), not the native sheet
+
+`connectWithGoogle()` opens an in-app auth sheet (`ASWebAuthenticationSession`
+on iOS, Chrome Custom Tab on Android) and returns to `redirectUri`. The app is
+never backgrounded.
+
+**Nothing is registered in Google Cloud.** The OAuth client belongs to Decane and
+the redirect goes to Decane's backend, which then hops to your scheme — so Google
+never sees your package name, bundle ID, or signing fingerprint. No SHA-1
+registration, no per-build-type fingerprints, nothing blocking your release.
+
+`connectWithGoogleToken(idToken)` exists for apps that want the native account
+sheet via `@react-native-google-signin/google-signin`. It is opt-in and costs
+real setup: Google must know your exact binary, meaning a package name plus a
+SHA-1 for **every** build type — debug, release, and Play App Signing each
+produce a different fingerprint. Two failure modes dominate: passing the Android
+client ID instead of the **web** one gives an opaque `INVALID_TOKEN` (the token's
+`aud` always carries the web client ID, on both platforms), and registering only
+the debug SHA-1 gives `DEVELOPER_ERROR` on release builds.
+
+**Never use `connectWithToken()` for Google.** It routes through the generic
+external-provider path, which namespaces the identity by provider id and would
+give the same person a *different* wallet than your website does.
+
+### One wallet across web and app
+
+The wallet derives from **identity**, never device. The same person signing in on
+your website and in your app gets the same addresses, provided both use the same
+`appId`. Two API keys on that one project is normal — the web redirect and the
+app deep link need different `callback_url` values.
+
+---
+
+## Unlock tiers
+
+The device's share is encrypted at rest. Which key protects it depends on what
+the device can do; the SDK probes each tier in order and uses the first that
+genuinely works. The passkey probe is a real ceremony, not a feature flag — a
+device that claims passkey support but returns no PRF output falls through
+rather than ending up with a wallet nothing can unlock.
+
+| tier | key source | passkey sign-in | rotate/export |
+| --- | --- | --- | --- |
+| `passkey` | WebAuthn PRF output | yes | yes |
+| `secure-enclave` | random key in Keychain/Keystore behind biometrics | no | no |
+| `pin` | PBKDF2-SHA256 (600k) over a user PIN | no | no |
+
+```ts
+const caps = await decane.getCapabilities();
+// { passkeys, passkeyPrf, secureEnclave, activeUnlockMethod }
+```
+
+The passkey tier needs `rpId`, an associated domain
+(`webcredentials:<rpId>` + `apple-app-site-association` on iOS,
+`assetlinks.json` on Android), and OS-level PRF support (roughly iOS 18+ /
+Android 14+). Expect **two biometric prompts at signup** on this tier: WebAuthn's
+`create()` only reports that PRF is *available*, so a follow-up assertion is
+needed to evaluate it. It does not repeat on later unlocks.
+
+PBKDF2 runs in pure JavaScript (no native implementation to call), so the PIN
+tier and recovery-file encrypt/decrypt cost **seconds, not milliseconds**. Never
+paid on the passkey or biometric path, and never per signature.
+
+---
+
+## Wallet API
+
+```ts
+decane.getAddresses();        // { evm, solana, tron } | null
+decane.isUnlocked();          // boolean
+decane.needsReconnect();      // identity known, session gone -> show sign-in
+decane.sessionExpiresAt();    // epoch ms | null
+decane.getAccessToken();      // Decane JWT for your own backend | null
+await decane.unlock();
+await decane.getCapabilities();
+
+await decane.signMessage({ chain, message });                   // string | Uint8Array
+await decane.sendTransaction({ chain, to, value?, data?, gasLimit?, gasPrice? });  // EVM only, broadcasts
+await decane.signTypedData({ chain, domain, types, message, primaryType? });       // EIP-712, EVM only
+await decane.signAuthorization({ chainId, address, nonce });    // EIP-7702
+await decane.signSolanaTransaction(serializedTx);               // returns signed bytes; YOU broadcast
+await decane.signTronTransaction(rawDataHex);
+
+await decane.getBalance(chain?);
+await decane.getBalances();
+await decane.recordTransaction({ chain, txHash, to, value, kind });
+await decane.getTransactionHistory(limit);
+
+decane.on(event, handler);   // 'connected' | 'disconnected' | 'session-started'
+                             // | 'session-expired' | 'wallet-creating' | 'wallet-unlocking'
+decane.off(event, handler);
+```
+
+`wallet-creating` covers key generation, the Shamir split, unlock-tier setup and
+the first enclave session — several seconds. Show progress.
+
+Standalone exports usable without a client:
+`detectCapabilities`, `isPasskeySupported`, `isEnclaveAvailable`,
+`startEmailAuth`, `startGoogleAuth`, `loginWithKingsChat`,
+`parseRecoveryShareFile`, `decryptRecoveryShareFile`, `buildRecoveryShareFile`,
+`parsePortableBackup`, `decryptPortableBackup`, `fetchBalance`,
+`formatBalanceDisplay`, `evmToTronAddress`, `clearDeviceState`.
+
+---
+
+## Recovery
+
+A user who reinstalls the app, or opens it on a new phone, gets their wallet back
+from **signing in alone** — nothing to write down, nothing to keep. This is
+always on and is not configurable.
+
+How: at signup the wallet is enrolled by sending the third share once to the
+enclave, which seals it under a key only it can derive; the backend stores
+ciphertext it cannot read. The enclave then holds two shares and can issue a
+fresh device share to anyone who authenticates. Every provisioning re-splits the
+set, so a leaked device share stops working the next time the user signs in
+anywhere.
+
+**The trade, stated plainly:** an enrolled wallet can be reconstructed by the
+enclave alone. Your backend and its database still cannot — but a malicious
+enclave image, or anyone able to mint JWTs, could. Before enrolment no single
+party could reconstruct.
+
+Fallbacks, tried in order after server-assisted provisioning:
+1. **Passkey sync** — the wrapped share is fetched and unwrapped with PRF.
+   Passkey tier only.
+2. **Recovery file** — a JSON envelope holding one 33-byte Shamir share,
+   AES-256-GCM under PBKDF2-SHA256 (600k). Format is identical across the web and
+   native SDKs, so a file written on a phone opens in a web app.
+
+Every recovery and rotation invalidates the previous file, so `onRecoveryRotated`
+must capture a password for the replacement. The SDK refuses to begin a recovery
+that has nowhere to hand the new file.
+
+```ts
+await decane.rotateShares({ password, passwordHint });      // new file; needs a passkey assertion
+await decane.exportPortableBackup({ password });            // BEARER SECRET — two shares in one file
+await decane.hasRecoveryShare();
+await decane.shouldPromptRecovery();                        // true only once a balance exists
+await decane.dismissRecoveryPrompt();
+```
+
+---
+
+## Attestation
+
+Before any share moves, the SDK fetches a TDX attestation quote bound to a fresh
+nonce and checks the measurement against a pinned value.
+
+React Native has **no WebAssembly**, so the Intel DCAP verifier the web SDK runs
+locally cannot execute on device. The SDK therefore posts the quote to Decane's
+backend, which runs the full check: signature chain to Intel's root CA, TCB
+status, nonce binding, and measurement allowlist. This happens automatically.
+
+That catches a third party impersonating the enclave (hijacked `teeUrl`, MITM)
+but cannot catch Decane swapping in a malicious image, since the same party
+vouches for it. Supply `verifyAttestation` to verify independently — throw from
+it to refuse the session.
+
+---
+
+## Errors
+
+Every error is a `DecaneConnectError` with a stable `code` matching the web SDK,
+so shared code can branch identically.
+
+| code | meaning |
+| --- | --- |
+| `UNLOCK_REQUIRED` | session expired — call `unlock()` |
+| `RECONNECT_REQUIRED` | identity known, session gone — show sign-in |
+| `NEW_DEVICE` | no share here and every recovery path exhausted |
+| `STALE_DEVICE_SHARE` | share belongs to a superseded set; cleared, re-recover |
+| `INVALID_PIN` | wrong PIN |
+| `USER_CANCELLED` | user dismissed a prompt |
+| `BIOMETRIC_UNAVAILABLE` | biometrics dismissed, or keystore entry gone |
+| `NATIVE_MODULE_MISSING` | a peer dependency is absent — install and rebuild |
+| `ATTESTATION_FAILED` | the enclave is not the one pinned |
+| `WRONG_PASSWORD` | recovery file password is wrong |
+| `INVALID_API_KEY` | key invalid or revoked |
+| `NETWORK` | request failed |
+
+---
+
+## Platform notes
+
+**iOS**: `scheme` in `app.json` is required for `redirectUri`. The passkey tier
+additionally needs `webcredentials:<rpId>` in associated domains. Everything else
+works without iOS-specific setup.
+
+**Android**: `scheme` in `app.json`. For the passkey tier, `assetlinks.json` plus
+an explicit `origin` (`android:apk-key-hash:<base64url sha256 of signing cert>`),
+because Android does not report a URL origin.
+
+`crypto.getRandomValues` and `Buffer` are polyfilled by the SDK on import —
+`react-native-get-random-values` is not needed.
+
+---
+
+## What this is not
+
+- Not MPC — Shamir splitting, not threshold signatures. The key does exist,
+  briefly, inside the enclave.
+- Not a smart-contract wallet — these are plain EOAs. EIP-7702 authorization is
+  supported for delegating to one.
+- Not a UI library — no components, no hooks. Build your own screens.
