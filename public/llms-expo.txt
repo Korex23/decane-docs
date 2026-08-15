@@ -13,7 +13,7 @@ npx expo install decane-connect-kit-expo \
 
 ```yaml
 package: decane-connect-kit-expo
-version: 0.1.1
+version: 0.1.2
 document-revision: 2026-08-15
 canonical: https://decane.app/llms-expo.txt
 web-sibling: https://decane.app/llms.txt

@@ -15,15 +15,18 @@ https://decane.app/llms-expo.txt (`decane-connect-kit-expo`).
 ## Version and freshness
 
 ```yaml
-version: 2.5.0
-document-revision: 2026-08-03
+version: 2.6.2
+document-revision: 2026-08-15
 canonical: https://decane.app/llms.txt
 version-manifest: https://decane.app/llms-version.json
 ```
 
 Since 2.4.0 every social account also gets a **Tron** wallet — three wallets
 (EVM, Solana, Tron) from one sign-in, all derived from one key. Since 2.5.0 the
-SDK records a per-user **transaction history** you can read back. Server-side
+SDK records a per-user **transaction history** you can read back. Since 2.6.0
+**KingsChat** is a sign-in option alongside email and Google, and login-alone
+recovery is always on — a user who reinstalls gets their wallet back from
+signing in, so the old `serverAssistedRecovery` option is gone. Server-side
 token verification has its own package, **`decane-node`** (see Part 3).
 
 `version` is the npm package version whose API surface this document describes.
