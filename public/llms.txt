@@ -15,7 +15,7 @@ https://decane.app/llms-expo.txt (`decane-connect-kit-expo`).
 ## Version and freshness
 
 ```yaml
-version: 2.6.2
+version: 2.7.1
 document-revision: 2026-08-15
 canonical: https://decane.app/llms.txt
 version-manifest: https://decane.app/llms-version.json
@@ -186,8 +186,9 @@ const connect = await createDecaneConnect({
   authMethods: ['google', 'email'],
 });
 
-const { addresses, isNewUser } = await connect.connectWithGoogle();
+const { addresses, isNewUser, profile } = await connect.connectWithGoogle();
 // addresses: { evm?: string; solana?: string }
+// profile:   { name?: string; email?: string; picture?: string } | undefined
 
 const sig = await connect.signMessage({ chain: 'evm:1', message: 'hello' });
 const txHash = await connect.sendTransaction({ chain: 'evm:1', to: '0x...', value: 1000000000000000n });
@@ -272,7 +273,8 @@ interface DecaneConnect {
   on(event: SdkEvent, handler: (...args: unknown[]) => void): void;
   off(event: SdkEvent, handler: (...args: unknown[]) => void): void;
 }
-// ConnectResult = { addresses: { evm?: string; solana?: string; tron?: string }; isNewUser: boolean }
+// ConnectResult = { addresses: { evm?: string; solana?: string; tron?: string }; isNewUser: boolean; profile?: AuthProfile }
+// AuthProfile   = { name?: string; email?: string; picture?: string }  — pass-through from the provider, never stored
 // SdkEvent = 'connected' | 'disconnected' | 'session-expired' | 'session-started'
 // TransactionRecord = { id, chain, kind, txHash, to, value, status, metadata, createdAt }
 // RecordTransactionInput = { chain, txHash?, to?, value?, kind?, status?, metadata? }
@@ -320,7 +322,7 @@ function SignInButton() {
 }
 ```
 
-- **`useSocialAuth()`** — sign-in flow: `{ isConnected, isUnlocked, isNewUser, addresses, sessionExpiresAt, needsReconnect, googleLoading, emailLoading, tokenLoading, customLoading, customAuthLabel, error, clearError(), signInWithGoogle(), sendEmailCode(email): Promise<{codeRequired:true}>, confirmEmailCode(email, code), signInWithToken(token, opts?), signInWithCustomAuth?(), unlock(), disconnect() }`. `signInWithCustomAuth` is `undefined` unless `social.customAuth` is configured.
+- **`useSocialAuth()`** — sign-in flow: `{ isConnected, isUnlocked, isNewUser, profile, addresses, sessionExpiresAt, needsReconnect, googleLoading, emailLoading, tokenLoading, customLoading, customAuthLabel, error, clearError(), signInWithGoogle(), sendEmailCode(email): Promise<{codeRequired:true}>, confirmEmailCode(email, code), signInWithToken(token, opts?), signInWithCustomAuth?(), unlock(), disconnect() }`. `signInWithCustomAuth` is `undefined` unless `social.customAuth` is configured.
 - **`useSocialWallet()`** — sign-in + signing + modal control: everything in `useSocialAuth()` plus `{ modalOpen, openModal(), closeModal(), signMessage(chain, message), sendTransaction(req), signSolanaTransaction(tx), signTronTransaction(rawDataHex), recordTransaction(tx), getTransactionHistory(limit?), loading, error }`.
 
 `<SocialWalletModal>` is rendered automatically by `<DecaneKit>` (props: `{ open, onClose, theme?, socialAuth, onUnlock, onDisconnect }`) — control it via `useSocialWallet().openModal()`/`.closeModal()`, don't render it directly.
@@ -381,6 +383,12 @@ await signInWithToken(token /*, { providerId } */);
 
 // ...or with no React at all:
 const { addresses, isNewUser } = await connect.connectWithToken(token);
+
+`profile` carries who the provider says the user is — `{ name?, email?, picture? }`
+— and is **absent** when the provider released nothing (email sign-in always, and
+Google when the user withheld it). Decane never stores it: the backend keeps only
+an HMAC and a masked identifier, so there is no profile to fetch later. Cache what
+you need at sign-in if you want to greet the user by name after a reload.
 ```
 
 `SocialConfig.customAuth?: { label: string; providerId?: string; getToken: () => Promise<string> }`.

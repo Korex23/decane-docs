@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
-const SITE_URL = "https://decane.app";
+const SITE_URL = "https://kit.decane.app";
 const TITLE = "decane-connect-kit";
 const DESCRIPTION =
   "Connect EVM, Solana, Tron & Bitcoin wallets, or skip wallets with non-custodial Google/email sign-in. CAIP-25 sessions, zero window.ethereum, MIT licensed.";

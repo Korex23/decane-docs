@@ -1,12 +1,17 @@
 {
   "$comment": "Freshness manifest for https://decane.app/llms.txt \u2014 fetch this (small) document to check whether a cached copy of llms.txt is stale, instead of re-reading the full spec.",
   "package": "decane-connect-kit",
-  "version": "2.6.2",
-  "documentRevision": "2026-08-15",
+  "version": "2.7.1",
+  "documentRevision": "2026-08-16",
   "llmsTxt": "https://decane.app/llms.txt",
   "npmRegistry": "https://registry.npmjs.org/decane-connect-kit/latest",
   "docs": "https://decane.app/docs",
   "changelog": [
+    {
+      "version": "2.7.1",
+      "date": "2026-08-16",
+      "summary": "Sign-in now returns the provider's profile: ConnectResult gains an optional `profile` of { name?, email?, picture? }, so apps can greet the user by name instead of by address. It is passed through from the verified Google or KingsChat response and never stored \u2014 the backend keeps only an HMAC and a masked identifier \u2014 so it is available at sign-in and nowhere else. Absent entirely for email sign-in. Expo SDK 0.2.0 has the same field. useSocialAuth() exposes it as `profile`, null until a sign-in returns one and not restored across reloads."
+    },
     {
       "version": "2.6.2",
       "date": "2026-08-15",
@@ -35,7 +40,7 @@
   ],
   "mobile": {
     "package": "decane-connect-kit-expo",
-    "version": "0.1.2",
+    "version": "0.2.0",
     "llmsTxt": "https://decane.app/llms-expo.txt",
     "npmRegistry": "https://registry.npmjs.org/decane-connect-kit-expo/latest"
   }

@@ -13,7 +13,7 @@ npx expo install decane-connect-kit-expo \
 
 ```yaml
 package: decane-connect-kit-expo
-version: 0.1.2
+version: 0.2.0
 document-revision: 2026-08-15
 canonical: https://decane.app/llms-expo.txt
 web-sibling: https://decane.app/llms.txt
@@ -146,7 +146,14 @@ if (await decane.canSignInWithPasskey()) await decane.signInWithPasskey();
 await decane.disconnect();
 ```
 
-`ConnectResult` is `{ addresses: { evm?, solana?, tron? }, isNewUser: boolean }`.
+`ConnectResult` is `{ addresses: { evm?, solana?, tron? }, isNewUser: boolean,
+profile?: AuthProfile }`.
+
+`profile` carries who the provider says the user is — `{ name?, email?, picture? }`
+— and is **absent** when the provider released nothing (email sign-in always, and
+Google when the user withheld it). Decane never stores it: the backend keeps only
+an HMAC and a masked identifier, so there is no profile to fetch later. Cache what
+you need at sign-in if you want to greet the user by name after a reload.
 
 ### Google: use connectWithGoogle(), not the native sheet
 
