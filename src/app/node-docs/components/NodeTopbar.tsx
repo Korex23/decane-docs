@@ -6,6 +6,15 @@ const SEARCH_INDEX = [
   { id: "overview", title: "Overview", crumb: "Getting started" },
   { id: "install", title: "Install", crumb: "Getting started" },
   { id: "quick-start", title: "Quick start", crumb: "Getting started" },
+  { id: "auth", title: "Server-side sign-in", crumb: "Sign-in" },
+  { id: "auth-api-key", title: "The API key", crumb: "Sign-in" },
+  { id: "auth-email", title: "Email OTP", crumb: "Sign-in" },
+  { id: "auth-google-token", title: "connectWithGoogleToken()", crumb: "Sign-in" },
+  { id: "auth-kingschat-token", title: "connectWithKingsChatToken()", crumb: "Sign-in" },
+  { id: "auth-external", title: "connectWithToken()", crumb: "Sign-in" },
+  { id: "auth-revoke", title: "revokeAccessToken()", crumb: "Sign-in" },
+  { id: "auth-errors", title: "DecaneApiError", crumb: "Sign-in" },
+  { id: "auth-limits", title: "Operational limits", crumb: "Sign-in" },
   { id: "verification-modes", title: "Verification modes", crumb: "Verification" },
   { id: "static-key", title: "Static verification key", crumb: "Verification" },
   { id: "jwks", title: "JWKS", crumb: "Verification" },
@@ -122,7 +131,7 @@ export function NodeTopbar({ theme, onThemeToggle, onMenuToggle, menuOpen }: Nod
             decane<span>node</span>
           </div>
         </div>
-        <div className="docs-version-pill">v1.1</div>
+        <div className="docs-version-pill">v1.2</div>
       </div>
 
       <div className="docs-topbar-search">

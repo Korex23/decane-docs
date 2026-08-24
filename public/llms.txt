@@ -471,10 +471,18 @@ backend can pass only `appId` in code. A standalone
 drop-in replacement of Privy's function. npm:
 https://www.npmjs.com/package/decane-node
 
-This is a summary. The full `decane-node` spec — verification modes, error
-reasons, config env fallbacks, revocation caveats, Privy migration — is its own
-self-contained document at https://decane.app/llms-node.txt (human docs:
-https://decane.app/node-docs).
+Since decane-node 1.2.0 the server can also **sign users in** — email OTP,
+Google/KingsChat token exchange, and custom-auth JWT exchange run as pure HTTP
+with the project's `dck_` API key (`new DecaneClient({ appId, apiKey })` then
+`connectWithEmail`/`verifyEmailCode`, `connectWithGoogleToken`,
+`connectWithKingsChatToken`, `connectWithToken`). Browser-bound flows (Google
+redirect, KingsChat popup, passkeys) and wallet creation/signing remain
+client-side.
+
+This is a summary. The full `decane-node` spec — sign-in methods, verification
+modes, error codes, config env fallbacks, revocation caveats, Privy migration —
+is its own self-contained document at https://decane.app/llms-node.txt (human
+docs: https://decane.app/node-docs).
 
 ---
 

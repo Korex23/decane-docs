@@ -1,6 +1,6 @@
 # decane-node
 
-> Server-side SDK for Decane Connect Kit (`decane-node`, MIT, TypeScript declarations included) — the `@privy-io/node` equivalent. Verify a caller's Decane access token and resolve their wallet addresses from any Node backend. No app secret required: tokens are ES256-signed JWTs, so verification needs only a public key — either your project's static verification key (offline, no network call) or Decane's published JWKS, which the SDK fetches, caches, and auto-rotates. This file is a self-contained integration spec, grounded in the actual package source.
+> Server-side SDK for Decane Connect Kit (`decane-node`, MIT, TypeScript declarations included) — the `@privy-io/node` equivalent. Verify a caller's Decane access token, resolve their wallet addresses, and — with a developer API key — sign users in from any Node backend (email OTP, Google/KingsChat token exchange, custom-auth JWT exchange). No app secret required: tokens are ES256-signed JWTs, so verification needs only a public key — either your project's static verification key (offline, no network call) or Decane's published JWKS, which the SDK fetches, caches, and auto-rotates. This file is a self-contained integration spec, grounded in the actual package source.
 
 ```
 npm install decane-node
@@ -15,7 +15,7 @@ client options. Dual ESM + CJS build. Single runtime dependency: `jose`.
 
 ```yaml
 package: decane-node
-version: 1.1.1
+version: 1.2.0
 document-revision: 2026-08-24
 canonical: https://decane.app/llms-node.txt
 version-manifest: https://decane.app/llms-version.json   # under the "node" key
@@ -27,24 +27,24 @@ This package runs **only on the server**. The browser SDK
 (`decane-connect-kit`) and the React Native SDK (`decane-connect-kit-expo`) are
 separate packages with their own specs at the sibling URLs above. Do not mix
 their APIs: `decane-node` has no React components, no hooks, no wallet UI, and
-never touches key material — it verifies tokens and reads public addresses.
+never touches key material — it authenticates users, verifies tokens, and reads
+public addresses. Wallet creation and signing stay in the client SDKs.
 
 ---
 
 ## What it is for
 
-When a user signs in with a Decane client SDK, the client can mint a Decane
-**access token** (an ES256 JWT) and send it to *your* backend as
-`Authorization: Bearer <token>`. This package answers, server-side:
-
-1. **Is this token genuine and unexpired?** → `verifyAccessToken`
-2. **Which user is it?** → `claims.userId` (stable Decane user id — a UUID)
-3. **Was it issued for my app?** → `appId` vs the token's `project_id`
-4. **What are the user's wallet addresses?** → `getAddresses` / `getUser`
+1. **Verify** an access token presented to your API → `verifyAccessToken`
+2. **Identify** the caller → `claims.userId` (stable Decane user id — a UUID)
+3. **Scope** to your app → `appId` vs the token's `project_id`
+4. **Resolve addresses** → `getAddresses` / `getUser` (`{ evm, solana, tron }`)
+5. **Sign users in server-side** (since 1.2.0) → `connectWithEmail` +
+   `verifyEmailCode`, `connectWithGoogleToken`, `connectWithKingsChatToken`,
+   `connectWithToken` (custom auth), `revokeAccessToken`
 
 ---
 
-## Minimal working setup
+## Minimal working setup — verification
 
 ```ts
 import { DecaneClient } from "decane-node";
@@ -76,6 +76,49 @@ unknown key id, so Decane key rotation needs no redeploy.
 
 ---
 
+## Minimal working setup — server-side sign-in (1.2.0+)
+
+Sign-in calls need your **developer API key** (`dck_live_…`, from the Decane
+dashboard), passed as `apiKey` or via the `DECANE_API_KEY` env var. It is sent
+as `X-API-Key`. **Treat it as a secret** — a server request carries no Origin
+header, so the browser-SDK origin allowlist does not protect it; the key alone
+is the credential. Verify-only usage never needs it.
+
+```ts
+const decane = new DecaneClient({
+  appId: process.env.DECANE_APP_ID,
+  apiKey: process.env.DECANE_API_KEY,
+});
+
+// Email OTP — two steps
+await decane.connectWithEmail("user@example.com");            // emails a 6-digit code
+const session = await decane.verifyEmailCode("user@example.com", "123456");
+
+// Token exchanges — one step each
+await decane.connectWithGoogleToken(googleIdToken);      // Google ID token you already hold
+await decane.connectWithKingsChatToken(kcAccessToken);   // KingsChat OAuth access token
+await decane.connectWithToken(jwtFromYourIssuer);        // custom auth (your own issuer)
+
+// Every sign-in resolves to:
+interface DecaneAuthResult {
+  accessToken: string;   // Decane JWT (~30 min expiry, NO refresh token)
+  userId: string;        // stable Decane user id
+  isNewUser: boolean;
+  hasShare: boolean;     // false = no wallet yet (creation is client-side)
+  profile?: { name?: string; email?: string; picture?: string }; // google/kingschat only
+}
+
+// Compose with the rest of the SDK:
+const user = await decane.getUser(session.accessToken);  // id + addresses
+await decane.revokeAccessToken(session.accessToken);      // sign-out
+```
+
+**Not available server-side** (they need a browser or a device authenticator):
+the Google redirect flow, the interactive KingsChat popup, passkey sign-in,
+wallet creation, and signing. Do not look for them here.
+
+---
+
 ## Verification modes
 
 Exactly one strategy is active per client, chosen at construction:
@@ -103,16 +146,19 @@ require the token's `project_id` to equal it. Decane tokens set no `iss`/`aud`
 
 ```ts
 interface DecaneClientOptions {
-  appId?: string;           // reject tokens whose project_id differs; omit = accept any project
+  appId?: string;           // reject tokens whose project_id differs; also sent as X-App-Id on sign-in calls
   verificationKey?: string; // ES256 SPKI PEM → offline verification. Env fallback: DECANE_VERIFICATION_KEY
+  apiKey?: string;          // dck_live_… key, required only for sign-in methods. Env fallback: DECANE_API_KEY
   apiBase?: string;         // env fallback DECANE_API_BASE, default "https://backend.decane.app"
   jwksUrl?: string;         // default `${apiBase}/.well-known/jwks.json`; ignored when verificationKey is set
-  fetch?: typeof fetch;     // injected fetch for /share/addresses (tests, Node < 18); default global fetch
+  fetch?: typeof fetch;     // injected fetch for REST calls (tests, Node < 18); default global fetch
 }
 ```
 
 Constructor throws (plain `Error`) only when no global `fetch` exists and none
-was injected (Node < 18).
+was injected (Node < 18). A missing `apiKey` throws — as a plain config
+`Error`, not a `DecaneApiError` — on the first sign-in call, never at
+construction.
 
 ### `decane.verifyAccessToken(token: string): Promise<DecaneClaims>`
 
@@ -150,7 +196,7 @@ Fetches the token owner's public wallet addresses from the Decane backend
 if the backend rejects the token. Never contains key material.
 
 ```ts
-interface DecaneAddresses { evm: string | null; solana: string | null; }
+interface DecaneAddresses { evm: string | null; solana: string | null; tron: string | null; }
 ```
 
 ### `decane.getUser(token): Promise<DecaneUser>`
@@ -167,9 +213,44 @@ interface DecaneUser {
 }
 interface DecaneLinkedAccount {
   type: "wallet";
-  chainType: "ethereum" | "solana";
+  chainType: "ethereum" | "solana" | "tron";
   address: string;
 }
+```
+
+### Sign-in methods (all require `apiKey`; all reject with `DecaneApiError` on failure)
+
+```ts
+decane.connectWithEmail(email): Promise<void>
+// POST /auth/email/start. ALWAYS resolves, known address or not
+// (anti-enumeration). Code: 6 digits, 10-min TTL, max 3/hour per address.
+
+decane.verifyEmailCode(email, code): Promise<DecaneAuthResult>
+// POST /auth/email/verify. Wrong/expired code → DecaneApiError code "INVALID_CODE".
+
+decane.connectWithGoogleToken(idToken): Promise<DecaneAuthResult>
+// POST /auth/google/token. idToken's `aud` must be the Google client id
+// configured for Decane. Resolves to the SAME wallet as the browser redirect
+// flow. result.profile: { name?, email?, picture? }.
+
+decane.connectWithKingsChatToken(accessToken): Promise<DecaneAuthResult>
+// POST /auth/kingschat. accessToken is a KingsChat OAuth ACCESS token, not a
+// JWT. 503 → code "KINGSCHAT_UNAVAILABLE" (upstream down — distinct from a
+// bad token, which is 401 "AUTH_FAILED"). result.profile: { name?, email? }.
+
+decane.connectWithToken(token, opts?: { providerId?: string }): Promise<DecaneAuthResult>
+// POST /auth/external — custom auth. Exchange a JWT from your own issuer
+// (Auth0, Clerk, Firebase, your backend), registered as an auth provider in
+// the Decane dashboard (issuer + JWKS URL + identity claim). providerId is
+// required only when >1 provider is enabled ("AMBIGUOUS_PROVIDER" otherwise).
+
+decane.getKingsChatConfig(): Promise<{ clientId: string; authorizationUrl: string }>
+// GET /auth/kingschat/config. 400 "KINGSCHAT_NOT_CONFIGURED" when unset.
+
+decane.revokeAccessToken(token): Promise<void>
+// POST /auth/revoke, bearer-only — the ONE auth call that needs no apiKey.
+// Adds the jti to the revocation list: backend calls (getAddresses) reject it
+// immediately; stateless verifyAccessToken still accepts it until exp.
 ```
 
 ### Standalone `verifyAccessToken(args)` — the Privy drop-in
@@ -187,23 +268,33 @@ const claims = await verifyAccessToken({
 ```
 
 Caches a client per unique config internally, so it is cheap to call per
-request — the JWKS is not refetched each time.
+request — the JWKS is not refetched each time. There are deliberately NO
+standalone sign-in helpers — the apiKey is a secret tied to a constructed
+client.
 
-### Other exports
+### Errors
 
 ```ts
 export const DEFAULT_DECANE_API_BASE = "https://backend.decane.app";
-export class DecaneAuthError extends Error {
-  reason: DecaneAuthErrorReason; // machine-readable
-  cause?: unknown;               // underlying jose error, when present
+
+export class DecaneAuthError extends Error {      // VERIFICATION failures
+  reason: "invalid_token" | "missing_uid" | "project_mismatch";
+  cause?: unknown;
 }
-export type DecaneAuthErrorReason =
-  | "invalid_token"     // signature/format/expiry rejected (includes expired)
-  | "missing_uid"       // verified but no uid claim
-  | "project_mismatch"; // project_id !== configured appId
+
+export class DecaneApiError extends Error {       // SIGN-IN / API failures
+  code: string;    // INVALID_CODE | AUTH_FAILED | INVALID_TOKEN | NO_PROVIDER |
+                   // AMBIGUOUS_PROVIDER | MISSING_CLAIM | BAD_REQUEST |
+                   // INVALID_API_KEY | APP_ID_MISMATCH | KINGSCHAT_NOT_CONFIGURED |
+                   // KINGSCHAT_UNAVAILABLE | REVOKE_FAILED | RATE_LIMITED |
+                   // UNKNOWN | NETWORK_ERROR
+  status: number;  // HTTP status; 0 when the request never completed
+  cause?: unknown;
+}
 ```
 
-Every verification failure is a `DecaneAuthError` — `instanceof`-narrow on it.
+Synthesised codes: bare HTTP 429 → `RATE_LIMITED`; unparseable error body →
+`UNKNOWN`; fetch threw → `NETWORK_ERROR` with `status: 0`.
 
 ---
 
@@ -245,6 +336,31 @@ export async function GET(req: Request) {
 Module scope is correct for the client — the instance (and its JWKS cache) is
 shared across requests.
 
+### Backend-owned login endpoint (server-side sign-in)
+
+```ts
+const decane = new DecaneClient({
+  appId: process.env.DECANE_APP_ID,
+  apiKey: process.env.DECANE_API_KEY,
+});
+
+app.post("/login/email/start", async (req, res) => {
+  await decane.connectWithEmail(req.body.email);
+  res.json({ ok: true }); // always — never reveal whether the email exists
+});
+
+app.post("/login/email/verify", async (req, res) => {
+  try {
+    const session = await decane.verifyEmailCode(req.body.email, req.body.code);
+    res.json({ token: session.accessToken, userId: session.userId });
+  } catch (err) {
+    if (err instanceof DecaneApiError && err.code === "INVALID_CODE")
+      return res.status(400).json({ error: "wrong code" });
+    throw err;
+  }
+});
+```
+
 ### Getting the token on the client
 
 Web (`decane-connect-kit`): `const { getAccessToken } = useSocialAuth();
@@ -252,8 +368,9 @@ const token = await getAccessToken();`
 
 React Native (`decane-connect-kit-expo`): `const token = decane.getAccessToken();`
 
-Both SDKs mint tokens from the same backend, so one `DecaneClient` verifies
-users from web and mobile alike. Send as `Authorization: Bearer <token>`.
+All three SDKs mint tokens from the same backend, so one `DecaneClient`
+verifies users from web, mobile, and server-side sign-ins alike. Send as
+`Authorization: Bearer <token>`.
 
 ---
 
@@ -261,9 +378,22 @@ users from web and mobile alike. Send as `Authorization: Bearer <token>`.
 
 - **Verification is stateless.** Signature + expiry + `project_id` only — it
   does not consult Decane's server-side revocation list. A token stays
-  verifiable until `exp` even after sign-out. For immediate sign-out
-  enforcement, additionally gate sensitive routes on a fresh backend call
-  (`getAddresses(token)` works — the backend rejects revoked tokens).
+  verifiable until `exp` even after sign-out or `revokeAccessToken`. For
+  immediate sign-out enforcement, additionally gate sensitive routes on a
+  fresh backend call (`getAddresses(token)` works — the backend rejects
+  revoked tokens).
+- **No refresh token exists.** Access tokens are ES256 JWTs with ~30-minute
+  expiry; re-authenticating is the only renewal. Do not look for a refresh or
+  session endpoint.
+- **Rate limit: 20 requests / 15 minutes PER IP across all auth endpoints**
+  (plus 3 email codes/hour per address). A server funnels every user through
+  one egress IP — fine for moderate traffic, wrong for proxying high-volume
+  interactive login through a single box.
+- **`hasShare: false` means the user has no wallet yet.** Wallet creation
+  needs device-held key material and happens only in the client SDKs;
+  `getAddresses` returns all-null for such users.
+- **The `dck_live_…` apiKey is a secret** — server env only. The browser
+  origin allowlist does not apply to server calls.
 - **`uid` is a UUID, not `did:privy:…`.** Migrating from Privy: rows keyed by
   a Privy id will not match a Decane `uid`. Map legacy ids during a re-auth
   window before cutting production over.
@@ -271,13 +401,16 @@ users from web and mobile alike. Send as `Authorization: Bearer <token>`.
   key is a public key.
 - **`jwksUrl` is ignored when `verificationKey` is set.** Exactly one
   verification strategy is active per client.
-- **The injectable `fetch` option covers only `/share/addresses`.** JWKS
-  retrieval always uses the runtime's global fetch inside `jose`.
+- **The injectable `fetch` option covers REST calls only** (addresses +
+  sign-in). JWKS retrieval always uses the runtime's global fetch inside
+  `jose`.
 - **Expired tokens throw with `reason: "invalid_token"`** (message
   "Access token has expired."), not a distinct reason.
 - **`getUser` never throws for address failures** — only for verification
   failures. If addresses matter, call `getAddresses` directly and handle its
   errors.
+- **Since 1.2.0 `chainType` includes `"tron"`** — exhaustive switches on
+  `DecaneLinkedAccount.chainType` need a `tron` arm.
 
 ---
 

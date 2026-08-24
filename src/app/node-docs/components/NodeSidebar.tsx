@@ -11,6 +11,20 @@ const NAV = [
     ],
   },
   {
+    title: "Sign-in",
+    items: [
+      { href: "#auth", label: "Overview" },
+      { href: "#auth-api-key", label: "The API key" },
+      { href: "#auth-email", label: "Email OTP" },
+      { href: "#auth-google-token", label: "Google token" },
+      { href: "#auth-kingschat-token", label: "KingsChat token" },
+      { href: "#auth-external", label: "connectWithToken()", mono: true },
+      { href: "#auth-revoke", label: "revokeAccessToken()", mono: true },
+      { href: "#auth-errors", label: "DecaneApiError", mono: true },
+      { href: "#auth-limits", label: "Operational limits" },
+    ],
+  },
+  {
     title: "Verification",
     items: [
       { href: "#verification-modes", label: "Verification modes" },

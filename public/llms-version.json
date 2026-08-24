@@ -46,9 +46,21 @@
   },
   "node": {
     "package": "decane-node",
-    "version": "1.1.1",
+    "version": "1.2.0",
     "llmsTxt": "https://decane.app/llms-node.txt",
     "npmRegistry": "https://registry.npmjs.org/decane-node/latest",
-    "docs": "https://decane.app/node-docs"
+    "docs": "https://decane.app/node-docs",
+    "changelog": [
+      {
+        "version": "1.2.0",
+        "date": "2026-08-24",
+        "summary": "Server-side sign-in: connectWithEmail/verifyEmailCode (email OTP), connectWithGoogleToken, connectWithKingsChatToken, connectWithToken (custom auth), getKingsChatConfig, revokeAccessToken. New `apiKey` option (env DECANE_API_KEY) and DecaneApiError with backend error codes. DecaneAddresses gains `tron`; DecaneLinkedAccount.chainType widens to include \"tron\" — exhaustive switches need a tron arm. Verify-only usage is unchanged and still needs no apiKey."
+      },
+      {
+        "version": "1.1.1",
+        "date": "2026-08-24",
+        "summary": "Baseline: verifyAccessToken (static ES256 key or JWKS), safeVerifyAccessToken, getAddresses, getUser, standalone verifyAccessToken."
+      }
+    ]
   }
 }
