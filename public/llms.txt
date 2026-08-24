@@ -10,6 +10,10 @@ npm install decane-connect-kit
 different API — no components, no hooks — and its own spec:
 https://decane.app/llms-expo.txt (`decane-connect-kit-expo`).
 
+**Verifying users on your own backend?** That is the server-side package
+`decane-node`, summarised in Part 3 below — its full self-contained spec is at
+https://decane.app/llms-node.txt.
+
 ---
 
 ## Version and freshness
@@ -466,6 +470,11 @@ backend can pass only `appId` in code. A standalone
 `verifyAccessToken({ token, appId, verificationKey })` is also exported for a
 drop-in replacement of Privy's function. npm:
 https://www.npmjs.com/package/decane-node
+
+This is a summary. The full `decane-node` spec — verification modes, error
+reasons, config env fallbacks, revocation caveats, Privy migration — is its own
+self-contained document at https://decane.app/llms-node.txt (human docs:
+https://decane.app/node-docs).
 
 ---
 

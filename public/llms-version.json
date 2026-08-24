@@ -43,5 +43,12 @@
     "version": "0.2.0",
     "llmsTxt": "https://decane.app/llms-expo.txt",
     "npmRegistry": "https://registry.npmjs.org/decane-connect-kit-expo/latest"
+  },
+  "node": {
+    "package": "decane-node",
+    "version": "1.1.1",
+    "llmsTxt": "https://decane.app/llms-node.txt",
+    "npmRegistry": "https://registry.npmjs.org/decane-node/latest",
+    "docs": "https://decane.app/node-docs"
   }
 }

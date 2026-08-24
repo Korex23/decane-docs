@@ -23,6 +23,20 @@ const config: NextConfig = {
         ],
       },
       {
+        source: "/llms-expo.txt",
+        headers: [
+          { key: "Content-Type", value: "text/plain; charset=utf-8" },
+          ...readable,
+        ],
+      },
+      {
+        source: "/llms-node.txt",
+        headers: [
+          { key: "Content-Type", value: "text/plain; charset=utf-8" },
+          ...readable,
+        ],
+      },
+      {
         source: "/llms-version.json",
         headers: [
           { key: "Content-Type", value: "application/json; charset=utf-8" },

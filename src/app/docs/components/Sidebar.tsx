@@ -77,6 +77,12 @@ const NAV = [
       { href: "#chain-list", label: "Built-in chains" },
     ],
   },
+  {
+    title: "Server-side",
+    items: [
+      { href: "/node-docs", label: "decane-node docs", mono: true },
+    ],
+  },
 ];
 
 interface SidebarProps {

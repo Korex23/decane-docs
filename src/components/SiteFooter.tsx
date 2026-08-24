@@ -34,6 +34,9 @@ export function SiteFooter() {
         <Link href="/docs" style={{ color: "inherit" }}>
           docs
         </Link>
+        <Link href="/node-docs" style={{ color: "inherit" }}>
+          node-docs
+        </Link>
         <a href="/llms.txt" target="_blank" rel="noreferrer" style={{ color: "inherit" }}>
           llms.txt
         </a>
