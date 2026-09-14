@@ -1,0 +1,358 @@
+# Decane Connect API — provisioning auth for your clients
+
+> The server-to-server API an agency, builder or platform uses to give each of ITS OWN clients an isolated Decane project and API key, from code, in one call. You hold one organization token; each client gets its own users, wallets, analytics and sign-in configuration, fully separated from your other clients. This is the tier ABOVE a single project: if you ship one product, you do not need it — use the dashboard. This file is a self-contained integration spec; everything below is grounded in the actual backend source, not paraphrased documentation.
+
+```
+POST https://backend.decane.app/connect/v1/clients
+Authorization: Bearer dck_org_…
+```
+
+**Building the client app itself?** That is the browser SDK
+`decane-connect-kit` — https://decane.app/llms.txt — or, for React Native,
+`decane-connect-kit-expo` — https://decane.app/llms-expo.txt.
+
+**Verifying a user's token on your own backend?** That is `decane-node` —
+https://decane.app/llms-node.txt.
+
+---
+
+## Version and freshness
+
+```yaml
+api: connect/v1
+document-revision: 2026-09-14
+canonical: https://decane.app/llms-connect.txt
+base-url: https://backend.decane.app
+version-manifest: https://decane.app/llms-version.json
+```
+
+This API is versioned in its path (`/connect/v1`), not by a package version.
+Breaking changes arrive as `/connect/v2`; `v1` keeps working.
+
+---
+
+## What it is for
+
+You build apps for other businesses. Each of those businesses needs its own
+sign-in — its own users, its own wallets, its own analytics — and you do not
+want to click through a dashboard once per client.
+
+The model is one **Decane project per client**. That is not a stylistic
+preference: `users` is `UNIQUE (project_id, sub_hmac)`, so the project is the
+isolation boundary for the end-user pool and therefore for wallets. Two clients
+sharing one project would share one user pool — the same person signing into
+client A and client B would be one user with one wallet. Webhooks and custom
+auth providers are per-project too.
+
+So:
+
+```
+your organization  (one token)
+   └── client A   → project A  → API key(s) → A's users, A's wallets
+   └── client B   → project B  → API key(s) → B's users, B's wallets
+```
+
+Use multiple **keys** within one client's project for environments (production,
+staging, preview) — never for separating clients.
+
+---
+
+## Getting an organization token
+
+1. Sign in at https://dashboard.decane.app
+2. Open **Organization** in the left nav
+3. Create the organization (one per account)
+4. **Generate token** → copy it
+
+The token is shown **once**. Only its HMAC is stored, so nothing can reveal it
+again; if it is lost, revoke it and generate another.
+
+It is deliberately NOT a dashboard server token. An org token is scoped to your
+organization and can do exactly three things: create/read/archive your clients,
+and mint/edit/revoke their keys. It cannot read your other projects, cannot
+list any client's end users, and cannot read a webhook secret. A dashboard
+server token can do all of those, which is why it is refused here — the two
+credentials are separate systems and neither authenticates the other's surface.
+
+Scopes, if you narrow them:
+
+| scope | grants |
+|---|---|
+| `clients:read` | list and read clients, and key metadata |
+| `clients:write` | create, update and deprovision clients |
+| `keys:write` | mint, edit and revoke API keys |
+
+Store it as a secret (`DECANE_PARTNER_TOKEN`). It never goes near a browser.
+
+---
+
+## Minimal working setup
+
+Provision a client, then ship the returned pair to that client's app.
+
+```ts
+const res = await fetch("https://backend.decane.app/connect/v1/clients", {
+  method: "POST",
+  headers: {
+    "Authorization": `Bearer ${process.env.DECANE_PARTNER_TOKEN}`,
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    external_ref: "acme",                          // YOUR id for this client
+    name: "Acme Ltd",
+    allowed_origins: ["acme.example.com"],         // where their app is served
+    callback_url: "https://acme.example.com/auth/callback",
+  }),
+});
+
+const { client, apiKey } = await res.json();
+// client.appId  → "2bf79738-…"          public; the SDK's appId
+// apiKey.key    → "dck_live_OzXQoT…"    SHOWN ONCE — store it now
+```
+
+Those two values are what the client's app needs. In a browser app they are
+both public-facing: the key is sent as `X-API-Key` from the browser and is
+authorised by its origin allowlist, not by secrecy. That is safe **because**
+you set `allowed_origins`.
+
+Response `201`:
+
+```json
+{
+  "client": {
+    "appId": "2bf79738-9e91-429b-8156-865768cdd071",
+    "name": "Acme Ltd",
+    "clientRef": "acme",
+    "createdAt": "2026-09-14T14:13:41.608Z",
+    "archived": false
+  },
+  "apiKey": {
+    "id": "374f5468-…",
+    "key": "dck_live_OzXQoTWpARUR23fdUSiqKiAbRbWPfV5W",
+    "keyPrefix": "dck_live_OzXQoTW"
+  }
+}
+```
+
+---
+
+## What the provisioned key unlocks
+
+The key authorises **sign-in** for that client's app. Every request sends both
+headers; the backend rejects a mismatch with `403 APP_ID_MISMATCH`.
+
+```
+X-API-Key: dck_live_…
+X-App-Id:  <appId>
+```
+
+Identity-only sign-in (no wallet UI, no passkey prompt) is two calls:
+
+```ts
+// 1. send the code
+await fetch(`${BASE}/auth/email/start`, {
+  method: "POST",
+  headers: { "X-API-Key": KEY, "X-App-Id": APP_ID, "Content-Type": "application/json" },
+  body: JSON.stringify({ email }),
+});
+
+// 2. exchange it
+const r = await fetch(`${BASE}/auth/email/verify`, {
+  method: "POST",
+  headers: { "X-API-Key": KEY, "X-App-Id": APP_ID, "Content-Type": "application/json" },
+  body: JSON.stringify({ email, code }),
+});
+const { jwt, userId, isNewUser, hasShare } = await r.json();
+```
+
+`userId` is the stable identity — key your rows on it. The JWT carries
+`project_id` equal to the `appId`, so your own backend can verify it offline
+with `decane-node` and know which client it belongs to.
+
+Also available with the same two headers: `/auth/phone/start` + `/verify`,
+`/auth/google/init` (redirect), `/auth/google/token` (native id token),
+`/auth/kingschat`, `/auth/external` (your own JWT issuer), and the WebAuthn
+login pair.
+
+If you want embedded wallets too, ignore `hasShare` at your peril — that is the
+wallet SDK's job, and `decane-connect-kit` handles it. For identity alone,
+`hasShare` is simply unused.
+
+---
+
+## API
+
+Base: `https://backend.decane.app/connect/v1`
+Auth: `Authorization: Bearer dck_org_…` on every call.
+
+`:ref` accepts **either** your `external_ref` **or** the `appId`, so you never
+have to store our UUID.
+
+### `POST /clients` — provision a client
+
+Body: `external_ref`, `name`, `allowed_origins[]`, `callback_url?`
+
+- `201` with `{ client, apiKey }` on creation.
+- `200` with `{ client, alreadyExisted: true, apiKey: null }` when the
+  `external_ref` already exists. **Idempotent** — see Gotchas.
+- `400 BAD_REQUEST` — empty `allowed_origins`, malformed `external_ref`,
+  unreachable `callback_url`.
+- `403 QUOTA_EXCEEDED` — organization client limit reached.
+
+Project and key are created in one transaction: you never get a client with no
+key.
+
+### `GET /clients` — list
+
+`200` → `{ clients: [{ appId, name, clientRef, createdAt, archived, activeKeys }] }`
+
+### `GET /clients/:ref` — one client and its key metadata
+
+`200` → `{ client, keys: [...] }`. Key rows carry `key_prefix`,
+`allowed_origins`, `callback_url`, `origin_policy`, `last_used_at`,
+`revoked_at` — never the secret.
+
+### `POST /clients/:ref/keys` — an additional key
+
+Body: `name`, `allowed_origins[]`, `callback_url?` → `201 { id, key, keyPrefix }`.
+
+Use for a second environment or a second domain. `403 QUOTA_EXCEEDED` when the
+per-client active-key limit is reached.
+
+### `PATCH /clients/:ref/keys/:keyId` — change origins or callback
+
+Body: any of `allowed_origins[]`, `callback_url`, `name` → `200 { ok: true }`.
+
+This is the republish / custom-domain path. The cache is invalidated before the
+response returns, so a `200` means the new allowlist is already in force.
+
+### `DELETE /clients/:ref/keys/:keyId` — revoke one key
+
+`200 { ok: true }`. Immediate and permanent; there is no un-revoke.
+
+### `DELETE /clients/:ref` — deprovision
+
+`200 { ok: true, revokedKeys: 2 }`. Archives the client **and revokes every
+live key**, awaiting cache invalidation before replying.
+
+There is no hard-delete in this API, by design. See Gotchas.
+
+### Errors
+
+Every error is `{ "error": { "code": "...", "message": "..." } }`.
+
+| status | code | meaning |
+|---|---|---|
+| 400 | `BAD_REQUEST` | validation failed; `message` says what |
+| 401 | `UNAUTHORIZED` | token missing, malformed, expired or revoked |
+| 403 | `INSUFFICIENT_SCOPE` | token lacks the scope this route needs |
+| 403 | `QUOTA_EXCEEDED` | client or key limit reached |
+| 404 | `NOT_FOUND` | no such client **in your organization** |
+
+---
+
+## Recipes
+
+### Provision when a client's app is first created
+
+```ts
+async function ensureAuth(clientRef: string, name: string, host: string) {
+  const r = await connect("POST", "/clients", {
+    external_ref: clientRef,
+    name,
+    allowed_origins: [host],
+    callback_url: `https://${host}/auth/callback`,
+  });
+  // Safe to call on every build: a repeat returns the existing client.
+  if (r.apiKey) await storeSecret(clientRef, r.apiKey.key);
+  return r.client.appId;
+}
+```
+
+### Widen the allowlist when the app is republished or gets a domain
+
+`allowed_origins` is **replaced**, not appended, so send the full desired set.
+Keep old hostnames that are still serving — a link already in someone's hands
+should keep working.
+
+```ts
+await connect("PATCH", `/clients/${ref}/keys/${keyId}`, {
+  allowed_origins: [customDomain, currentHost, ...recentHosts].filter(Boolean),
+  callback_url: `https://${customDomain}/auth/callback`,
+});
+```
+
+### Deprovision when a client leaves
+
+```ts
+const { revokedKeys } = await connect("DELETE", `/clients/${ref}`);
+```
+
+---
+
+## Gotchas an agent should not re-derive
+
+**The API key is shown once.** Only its HMAC is stored. Persist it at creation
+or mint a new one; there is no read-back and no rotation endpoint.
+
+**A retry does not return a new key.** `POST /clients` is idempotent on
+`external_ref` via a database unique index, so a retry after a timeout returns
+`200` with `alreadyExisted: true` and `apiKey: null` — deliberately, because
+silently minting a second live credential you did not record is worse than
+making you ask. If you genuinely need another, call `POST /clients/:ref/keys`.
+
+**`external_ref` rejects whitespace.** `[A-Za-z0-9._:-]{1,128}` only. `"acme"`
+and `"acme "` becoming two clients is exactly what this field exists to prevent.
+
+**Empty `allowed_origins` is refused here.** On a hand-managed dashboard key an
+empty list means *allow every origin*. A key minted for someone else must never
+be open, so this API requires at least one host.
+
+**Origins match on hostname only.** Scheme and port are ignored — an entry of
+`app.acme.com` matches `http://app.acme.com:3000`. There is no wildcard and no
+subdomain matching; list every host literally. `*.acme.com` will not work.
+
+**Connector keys refuse header-less requests.** Keys minted here are
+`origin_policy: strict`: a request carrying neither `Origin` nor `Referer` is
+rejected with `403 ORIGIN_REQUIRED`, not waved through. This closes the replay
+of a key scraped from a published bundle. Consequence: **you cannot call the
+sign-in endpoints with a connector key from a server or from `curl`** without
+setting an `Origin` header. That is intended — these keys are for browsers.
+(Keys created by hand in the dashboard keep the older lenient behaviour.)
+
+**`callback_url` lives on the key, not the request.** Google sign-in redirects
+to whatever the key says, and `GET /auth/google/init` fails with
+`400 CALLBACK_URL_NOT_SET` when it is absent. Since it is a single value, a
+client serving Google sign-in from two domains needs **two keys**. Email and
+phone OTP need no callback at all.
+
+**Passkeys are bound to a hostname.** WebAuthn `rpId` defaults to the page's
+host, so a passkey registered on `client-a.com` is unusable on `client-b.com`.
+This is the browser's rule, not ours.
+
+**Archiving is not revoking — but deprovision does both.** The API-key check
+never looks at a project's archived flag, so archiving alone would leave keys
+signing users in. `DELETE /clients/:ref` revokes every key as well; if you
+build your own teardown, do the same.
+
+**There is no hard-delete, deliberately.** Destroying a project cascades to its
+users and thence to their server shares — one leg of the 2-of-3 split that
+protects every end user's wallet. An agency tidying its own records must not be
+able to destroy funds belonging to people who have never heard of it. Archive
+is the strongest operation this API offers.
+
+**`appId` is the project UUID and is public.** It appears as the `project_id`
+claim in every token the browser already holds. Ship it freely; pair it with
+the key via `X-App-Id` so a wrong key/app combination fails loudly rather than
+authenticating into the wrong client.
+
+**Org token revocation is immediate.** Unlike API keys, org tokens are not
+cached, so a revoked token stops working on the next request with no TTL to
+wait out.
+
+**404, not 403, for another organization's client.** A partner cannot probe for
+the existence of another partner's clients.
+
+**No CORS on this surface.** `/connect/*` sends no
+`Access-Control-Allow-Origin`, so a browser cannot read a response even if a
+page somehow obtained a token. Call it from a server.

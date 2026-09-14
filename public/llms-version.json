@@ -1,5 +1,5 @@
 {
-  "$comment": "Freshness manifest for https://decane.app/llms.txt — fetch this (small) document to check whether a cached copy of llms.txt is stale, instead of re-reading the full spec.",
+  "$comment": "Freshness manifest for https://decane.app/llms.txt \u2014 fetch this (small) document to check whether a cached copy of llms.txt is stale, instead of re-reading the full spec.",
   "package": "decane-connect-kit",
   "version": "2.8.0",
   "documentRevision": "2026-08-24",
@@ -10,12 +10,12 @@
     {
       "version": "2.8.0",
       "date": "2026-08-24",
-      "summary": "Phone-number sign-in via SMS (Termii). connectWithPhone(phone) + verifyPhoneCode(phone, code), 'phone' in authMethods, and a phone form in both built-in UIs. Numbers must be E.164 (+2348012345678) — local formats are rejected rather than guessed at, because the wallet is derived from the number and inferring a country would merge two users onto one wallet or split one across two. Identity is HMAC(E.164), so a phone user is a DIFFERENT user from the same human's email or Google sign-in, exactly as email and Google already differ. Available in all three SDKs."
+      "summary": "Phone-number sign-in via SMS (Termii). connectWithPhone(phone) + verifyPhoneCode(phone, code), 'phone' in authMethods, and a phone form in both built-in UIs. Numbers must be E.164 (+2348012345678) \u2014 local formats are rejected rather than guessed at, because the wallet is derived from the number and inferring a country would merge two users onto one wallet or split one across two. Identity is HMAC(E.164), so a phone user is a DIFFERENT user from the same human's email or Google sign-in, exactly as email and Google already differ. Available in all three SDKs."
     },
     {
       "version": "2.7.1",
       "date": "2026-08-16",
-      "summary": "Sign-in now returns the provider's profile: ConnectResult gains an optional `profile` of { name?, email?, picture? }, so apps can greet the user by name instead of by address. It is passed through from the verified Google or KingsChat response and never stored — the backend keeps only an HMAC and a masked identifier — so it is available at sign-in and nowhere else. Absent entirely for email sign-in. Expo SDK 0.2.0 has the same field. useSocialAuth() exposes it as `profile`, null until a sign-in returns one and not restored across reloads."
+      "summary": "Sign-in now returns the provider's profile: ConnectResult gains an optional `profile` of { name?, email?, picture? }, so apps can greet the user by name instead of by address. It is passed through from the verified Google or KingsChat response and never stored \u2014 the backend keeps only an HMAC and a masked identifier \u2014 so it is available at sign-in and nowhere else. Absent entirely for email sign-in. Expo SDK 0.2.0 has the same field. useSocialAuth() exposes it as `profile`, null until a sign-in returns one and not restored across reloads."
     },
     {
       "version": "2.6.2",
@@ -25,17 +25,17 @@
     {
       "version": "2.6.1",
       "date": "2026-08-15",
-      "summary": "React Native / Expo SDK released as decane-connect-kit-expo (see llms-expo.txt). Server-assisted recovery is now always on — a user who reinstalls gets their wallet back from signing in alone, so the serverAssistedRecovery option was removed. Google sign-in on mobile uses an in-app auth sheet needing nothing registered in Google Cloud. Adds connectWithGoogleToken() so native Google Sign-In resolves to the SAME wallet as the web redirect flow, and connectWithKingsChat()."
+      "summary": "React Native / Expo SDK released as decane-connect-kit-expo (see llms-expo.txt). Server-assisted recovery is now always on \u2014 a user who reinstalls gets their wallet back from signing in alone, so the serverAssistedRecovery option was removed. Google sign-in on mobile uses an in-app auth sheet needing nothing registered in Google Cloud. Adds connectWithGoogleToken() so native Google Sign-In resolves to the SAME wallet as the web redirect flow, and connectWithKingsChat()."
     },
     {
       "version": "2.2.0",
       "date": "2026-07-29",
-      "summary": "Optional per-signature authority: requireAssertionPerSignature makes every signature need a fresh passkey assertion, verified inside the TEE against a single-use 60s challenge, instead of an unlocked session signing freely until expiry. The session still stays warm — this does NOT shorten sessionDurationMinutes. Available on both DecaneConnectConfig and SocialConfig. Default false, so existing behaviour is unchanged. Requires TEE signer v0.2.3+."
+      "summary": "Optional per-signature authority: requireAssertionPerSignature makes every signature need a fresh passkey assertion, verified inside the TEE against a single-use 60s challenge, instead of an unlocked session signing freely until expiry. The session still stays warm \u2014 this does NOT shorten sessionDurationMinutes. Available on both DecaneConnectConfig and SocialConfig. Default false, so existing behaviour is unchanged. Requires TEE signer v0.2.3+."
     },
     {
       "version": "2.1.0",
       "date": "2026-07-29",
-      "summary": "Custom auth: sign in with a JWT from your own issuer (Auth0, Clerk, Firebase, Cognito, or your own backend). Adds DecaneConnect.connectWithToken(token, opts?), SocialConfig.customAuth, and useSocialAuth().signInWithToken / .signInWithCustomAuth. Backward compatible — no existing API changed."
+      "summary": "Custom auth: sign in with a JWT from your own issuer (Auth0, Clerk, Firebase, Cognito, or your own backend). Adds DecaneConnect.connectWithToken(token, opts?), SocialConfig.customAuth, and useSocialAuth().signInWithToken / .signInWithCustomAuth. Backward compatible \u2014 no existing API changed."
     },
     {
       "version": "2.0.3",
@@ -64,12 +64,26 @@
       {
         "version": "1.2.0",
         "date": "2026-08-24",
-        "summary": "Server-side sign-in: connectWithEmail/verifyEmailCode (email OTP), connectWithGoogleToken, connectWithKingsChatToken, connectWithToken (custom auth), getKingsChatConfig, revokeAccessToken. New `apiKey` option (env DECANE_API_KEY) and DecaneApiError with backend error codes. DecaneAddresses gains `tron`; DecaneLinkedAccount.chainType widens to include \"tron\" — exhaustive switches need a tron arm. Verify-only usage is unchanged and still needs no apiKey."
+        "summary": "Server-side sign-in: connectWithEmail/verifyEmailCode (email OTP), connectWithGoogleToken, connectWithKingsChatToken, connectWithToken (custom auth), getKingsChatConfig, revokeAccessToken. New `apiKey` option (env DECANE_API_KEY) and DecaneApiError with backend error codes. DecaneAddresses gains `tron`; DecaneLinkedAccount.chainType widens to include \"tron\" \u2014 exhaustive switches need a tron arm. Verify-only usage is unchanged and still needs no apiKey."
       },
       {
         "version": "1.1.1",
         "date": "2026-08-24",
         "summary": "Baseline: verifyAccessToken (static ES256 key or JWKS), safeVerifyAccessToken, getAddresses, getUser, standalone verifyAccessToken."
+      }
+    ]
+  },
+  "connect": {
+    "$comment": "Server-to-server provisioning API for agencies/builders: one project + API key per end-client. Path-versioned, not package-versioned.",
+    "api": "connect/v1",
+    "documentRevision": "2026-09-14",
+    "baseUrl": "https://backend.decane.app",
+    "llmsTxt": "https://decane.app/llms-connect.txt",
+    "changelog": [
+      {
+        "api": "connect/v1",
+        "date": "2026-09-14",
+        "summary": "Initial release. Organization tier above projects, with org-scoped provisioning tokens (dck_org_) minted from the dashboard's Organization page. POST /connect/v1/clients creates a client's project and first API key in one transaction, idempotent on your own external_ref. Keys minted here are origin_policy=strict: a non-empty allowed_origins list is required and a request carrying neither Origin nor Referer is refused, closing the replay of a key scraped from a published bundle. Deprovision archives AND revokes every key; there is no hard-delete, because destroying a project cascades to end users' wallet shares."
       }
     ]
   }

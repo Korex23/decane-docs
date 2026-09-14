@@ -14,6 +14,12 @@ https://decane.app/llms-expo.txt (`decane-connect-kit-expo`).
 `decane-node`, summarised in Part 3 below — its full self-contained spec is at
 https://decane.app/llms-node.txt.
 
+**Shipping apps to your own clients?** If you are an agency, builder or
+platform and each client needs their OWN isolated sign-in, there is a
+server-to-server provisioning API that creates a project and API key per client
+in one call: https://decane.app/llms-connect.txt (`/connect/v1`). You do not
+need it for a single product.
+
 ---
 
 ## Version and freshness
