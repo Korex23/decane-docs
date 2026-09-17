@@ -149,7 +149,7 @@ interface DecaneClientOptions {
   appId?: string;           // reject tokens whose project_id differs; also sent as X-App-Id on sign-in calls
   verificationKey?: string; // ES256 SPKI PEM → offline verification. Env fallback: DECANE_VERIFICATION_KEY
   apiKey?: string;          // dck_live_… key, required only for sign-in methods. Env fallback: DECANE_API_KEY
-  apiBase?: string;         // env fallback DECANE_API_BASE, default "https://backend.decane.app"
+  apiBase?: string;         // env fallback DECANE_API_BASE, default "https://backend.decane.app"; an EMPTY value (option or env) counts as unset
   jwksUrl?: string;         // default `${apiBase}/.well-known/jwks.json`; ignored when verificationKey is set
   fetch?: typeof fetch;     // injected fetch for REST calls (tests, Node < 18); default global fetch
 }
@@ -276,6 +276,10 @@ client.
 
 ```ts
 export const DEFAULT_DECANE_API_BASE = "https://backend.decane.app";
+
+// The resolved base is readable: `client.apiBase`. Resolution is option → DECANE_API_BASE env → default,
+// and an empty or whitespace value at any step is treated as unset (1.3.1). Deploy templates that write
+// `DECANE_API_BASE: ${DECANE_API_BASE:-}` therefore no longer send every request to a relative URL.
 
 export class DecaneAuthError extends Error {      // VERIFICATION failures
   reason: "invalid_token" | "missing_uid" | "project_mismatch";
