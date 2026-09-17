@@ -15,8 +15,8 @@ npx expo install decane-connect-kit-expo \
 package: decane-connect-kit-expo
 version: 0.2.0
 document-revision: 2026-08-15
-canonical: https://decane.app/llms-expo.txt
-web-sibling: https://decane.app/llms.txt
+canonical: https://kit.decane.app/llms-expo.txt
+web-sibling: https://kit.decane.app/llms.txt
 ```
 
 The web SDK (`decane-connect-kit`) is a **separate package** with its own spec at

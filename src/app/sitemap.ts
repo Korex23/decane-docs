@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-const SITE_URL = "https://decane.app";
+const SITE_URL = "https://kit.decane.app";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();

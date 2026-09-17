@@ -8,11 +8,11 @@ Authorization: Bearer dck_org_…
 ```
 
 **Building the client app itself?** That is the browser SDK
-`decane-connect-kit` — https://decane.app/llms.txt — or, for React Native,
-`decane-connect-kit-expo` — https://decane.app/llms-expo.txt.
+`decane-connect-kit` — https://kit.decane.app/llms.txt — or, for React Native,
+`decane-connect-kit-expo` — https://kit.decane.app/llms-expo.txt.
 
 **Verifying a user's token on your own backend?** That is `decane-node` —
-https://decane.app/llms-node.txt.
+https://kit.decane.app/llms-node.txt.
 
 ---
 
@@ -21,9 +21,9 @@ https://decane.app/llms-node.txt.
 ```yaml
 api: connect/v1
 document-revision: 2026-09-14
-canonical: https://decane.app/llms-connect.txt
+canonical: https://kit.decane.app/llms-connect.txt
 base-url: https://backend.decane.app
-version-manifest: https://decane.app/llms-version.json
+version-manifest: https://kit.decane.app/llms-version.json
 ```
 
 This API is versioned in its path (`/connect/v1`), not by a package version.

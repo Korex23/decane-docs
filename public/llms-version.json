@@ -1,11 +1,11 @@
 {
-  "$comment": "Freshness manifest for https://decane.app/llms.txt \u2014 fetch this (small) document to check whether a cached copy of llms.txt is stale, instead of re-reading the full spec.",
+  "$comment": "Freshness manifest for https://kit.decane.app/llms.txt \u2014 fetch this (small) document to check whether a cached copy of llms.txt is stale, instead of re-reading the full spec.",
   "package": "decane-connect-kit",
   "version": "2.8.0",
   "documentRevision": "2026-08-24",
-  "llmsTxt": "https://decane.app/llms.txt",
+  "llmsTxt": "https://kit.decane.app/llms.txt",
   "npmRegistry": "https://registry.npmjs.org/decane-connect-kit/latest",
-  "docs": "https://decane.app/docs",
+  "docs": "https://kit.decane.app/docs",
   "changelog": [
     {
       "version": "2.8.0",
@@ -46,15 +46,15 @@
   "mobile": {
     "package": "decane-connect-kit-expo",
     "version": "0.3.0",
-    "llmsTxt": "https://decane.app/llms-expo.txt",
+    "llmsTxt": "https://kit.decane.app/llms-expo.txt",
     "npmRegistry": "https://registry.npmjs.org/decane-connect-kit-expo/latest"
   },
   "node": {
     "package": "decane-node",
     "version": "1.3.0",
-    "llmsTxt": "https://decane.app/llms-node.txt",
+    "llmsTxt": "https://kit.decane.app/llms-node.txt",
     "npmRegistry": "https://registry.npmjs.org/decane-node/latest",
-    "docs": "https://decane.app/node-docs",
+    "docs": "https://kit.decane.app/node-docs",
     "changelog": [
       {
         "version": "1.3.0",
@@ -78,7 +78,7 @@
     "api": "connect/v1",
     "documentRevision": "2026-09-14",
     "baseUrl": "https://backend.decane.app",
-    "llmsTxt": "https://decane.app/llms-connect.txt",
+    "llmsTxt": "https://kit.decane.app/llms-connect.txt",
     "changelog": [
       {
         "api": "connect/v1",

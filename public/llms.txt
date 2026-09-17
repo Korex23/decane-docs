@@ -8,16 +8,16 @@ npm install decane-connect-kit
 
 **Building a React Native / Expo app?** That is a different package with a
 different API — no components, no hooks — and its own spec:
-https://decane.app/llms-expo.txt (`decane-connect-kit-expo`).
+https://kit.decane.app/llms-expo.txt (`decane-connect-kit-expo`).
 
 **Verifying users on your own backend?** That is the server-side package
 `decane-node`, summarised in Part 3 below — its full self-contained spec is at
-https://decane.app/llms-node.txt.
+https://kit.decane.app/llms-node.txt.
 
 **Shipping apps to your own clients?** If you are an agency, builder or
 platform and each client needs their OWN isolated sign-in, there is a
 server-to-server provisioning API that creates a project and API key per client
-in one call: https://decane.app/llms-connect.txt (`/connect/v1`). You do not
+in one call: https://kit.decane.app/llms-connect.txt (`/connect/v1`). You do not
 need it for a single product.
 
 ---
@@ -27,8 +27,8 @@ need it for a single product.
 ```yaml
 version: 2.7.1
 document-revision: 2026-08-15
-canonical: https://decane.app/llms.txt
-version-manifest: https://decane.app/llms-version.json
+canonical: https://kit.decane.app/llms.txt
+version-manifest: https://kit.decane.app/llms-version.json
 ```
 
 Since 2.4.0 every social account also gets a **Tron** wallet — three wallets
@@ -183,7 +183,7 @@ Props (for reference — you control it via `useWalletSelector()`, you don't ren
 
 ## Part 2 — Social sign-in (hosted, Google/email embedded wallets)
 
-Non-custodial embedded wallets for users with no wallet installed at all. On first sign-in, a private key is generated client-side and immediately split with Shamir secret sharing into three shares — device (stored in IndexedDB, wrapped by a passkey or PIN), server (encrypted at rest on the key server), and recovery (the user's to keep) — any two of which reconstruct the key; one alone reveals nothing. Signing happens inside a TEE (Trusted Execution Environment, a hardware-isolated enclave) which reconstructs the key only in isolated memory, verifies it controls the account's recorded wallet, signs, and discards it — the full private key never exists in plaintext outside that enclave, and never touches the server's own process memory or disk. Requires an API key from the developer dashboard (has its own pricing — Free/Scale/Enterprise tiers, see https://decane.app/pricing).
+Non-custodial embedded wallets for users with no wallet installed at all. On first sign-in, a private key is generated client-side and immediately split with Shamir secret sharing into three shares — device (stored in IndexedDB, wrapped by a passkey or PIN), server (encrypted at rest on the key server), and recovery (the user's to keep) — any two of which reconstruct the key; one alone reveals nothing. Signing happens inside a TEE (Trusted Execution Environment, a hardware-isolated enclave) which reconstructs the key only in isolated memory, verifies it controls the account's recorded wallet, signs, and discards it — the full private key never exists in plaintext outside that enclave, and never touches the server's own process memory or disk. Requires an API key from the developer dashboard (has its own pricing — Free/Scale/Enterprise tiers, see https://kit.decane.app/pricing).
 
 ### Standalone usage (no React)
 
@@ -495,8 +495,8 @@ client-side.
 
 This is a summary. The full `decane-node` spec — sign-in methods, verification
 modes, error codes, config env fallbacks, revocation caveats, Privy migration —
-is its own self-contained document at https://decane.app/llms-node.txt (human
-docs: https://decane.app/node-docs).
+is its own self-contained document at https://kit.decane.app/llms-node.txt (human
+docs: https://kit.decane.app/node-docs).
 
 ---
 
@@ -510,6 +510,6 @@ docs: https://decane.app/node-docs).
 
 ## Optional (human-readable pages)
 
-- Full documentation: https://decane.app/docs
-- Landing page: https://decane.app
-- Pricing (social sign-in hosted tiers): https://decane.app/pricing
+- Full documentation: https://kit.decane.app/docs
+- Landing page: https://kit.decane.app
+- Pricing (social sign-in hosted tiers): https://kit.decane.app/pricing

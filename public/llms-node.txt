@@ -17,10 +17,10 @@ client options. Dual ESM + CJS build. Single runtime dependency: `jose`.
 package: decane-node
 version: 1.2.0
 document-revision: 2026-08-24
-canonical: https://decane.app/llms-node.txt
-version-manifest: https://decane.app/llms-version.json   # under the "node" key
-web-sibling: https://decane.app/llms.txt                 # decane-connect-kit (browser)
-expo-sibling: https://decane.app/llms-expo.txt           # decane-connect-kit-expo (React Native)
+canonical: https://kit.decane.app/llms-node.txt
+version-manifest: https://kit.decane.app/llms-version.json   # under the "node" key
+web-sibling: https://kit.decane.app/llms.txt                 # decane-connect-kit (browser)
+expo-sibling: https://kit.decane.app/llms-expo.txt           # decane-connect-kit-expo (React Native)
 ```
 
 This package runs **only on the server**. The browser SDK
@@ -429,6 +429,6 @@ verifies users from web, mobile, and server-side sign-ins alike. Send as
 
 ## Optional (human-readable pages)
 
-- Node SDK documentation: https://decane.app/node-docs
-- Web SDK documentation: https://decane.app/docs
-- Landing page: https://decane.app
+- Node SDK documentation: https://kit.decane.app/node-docs
+- Web SDK documentation: https://kit.decane.app/docs
+- Landing page: https://kit.decane.app
