@@ -15,8 +15,8 @@ client options. Dual ESM + CJS build. Single runtime dependency: `jose`.
 
 ```yaml
 package: decane-node
-version: 1.2.0
-document-revision: 2026-08-24
+version: 1.3.1
+document-revision: 2026-09-17
 canonical: https://kit.decane.app/llms-node.txt
 version-manifest: https://kit.decane.app/llms-version.json   # under the "node" key
 web-sibling: https://kit.decane.app/llms.txt                 # decane-connect-kit (browser)
