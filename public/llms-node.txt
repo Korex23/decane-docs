@@ -101,7 +101,7 @@ await decane.connectWithToken(jwtFromYourIssuer);        // custom auth (your ow
 
 // Every sign-in resolves to:
 interface DecaneAuthResult {
-  accessToken: string;   // Decane JWT (~30 min expiry, NO refresh token)
+  accessToken: string;   // Decane JWT (~2 h expiry, NO refresh token)
   userId: string;        // stable Decane user id
   isNewUser: boolean;
   hasShare: boolean;     // false = no wallet yet (creation is client-side)

@@ -225,7 +225,7 @@ interface DecaneConnectConfig {
   chains: Chain[];
   authMethods: Array<'google' | 'email'>;
   apiBaseUrl?: string;                // default: https://api.decane.app — self-host override only
-  sessionDurationMinutes?: number;    // default: 30
+  sessionDurationMinutes?: number;    // default: 120 (capped by the JWT and signer TTL)
   promptPin?: () => Promise<string>;  // required if the browser has no passkey support
   rpId?: string;                      // WebAuthn RP ID, defaults to window.location.hostname
   rpName?: string;                    // WebAuthn RP display name
@@ -349,7 +349,7 @@ function SignInButton() {
 
 Two modes, and the distinction matters when comparing against other embedded-wallet SDKs.
 
-**Default (session authority).** `unlock()` opens a TEE session with a TTL (`sessionDurationMinutes`, default 30). For that window a live session is sufficient authority: signatures need no further prompt. Authority is bounded by *time* and dies on expiry or `pagehide` — it is not standing.
+**Default (session authority).** `unlock()` opens a TEE session with a TTL (`sessionDurationMinutes`, default 120; the effective lifetime is the shortest of this, the JWT expiry and the signer TTL, so `sessionExpiresAt` is the value to trust). For that window a live session is sufficient authority: signatures need no further prompt. Authority is bounded by *time* and dies on expiry or `pagehide` — it is not standing.
 
 **`requireAssertionPerSignature: true` (per-signature authority).** The session still stays warm — this is the point, since tearing it down would cost a fresh TDX attestation and a full re-auth per signature — but a live session stops being sufficient. Each signature requires a fresh WebAuthn assertion answered against a single-use, 60-second challenge, verified *inside the enclave* (the same gate already protecting `rotateShares` / `exportPortableBackup`). Client-side refusal is not the mechanism; the TEE will not sign without it.
 
