@@ -4,9 +4,9 @@ import { Topbar } from "./components/Topbar";
 import { Sidebar } from "./components/Sidebar";
 import { Toc } from "./components/Toc";
 import { CodeBlock } from "./components/CodeBlock";
+import { ApiTable } from "./components/ApiTable";
 import { ChainTable } from "./components/ChainTable";
 import { FrameworkTabs } from "./components/FrameworkTabs";
-import { ChainTypeIcon } from "@/components/ChainIcon";
 import { useTheme } from "@/lib/theme";
 
 // Lightweight highlighter emitting the same tok-* classes the hand-written
@@ -81,46 +81,12 @@ export default function DocsPage() {
               framework.
             </p>
 
-            <div className="docs-hero-meta">
-              <span className="docs-badge">
-                <span className="dot" />
-                Stable · v1.0.0
-              </span>
-              <span className="docs-badge gold">React 18+</span>
-              <span className="docs-badge">MIT</span>
-              <span className="docs-badge">~22 KB gzipped</span>
-              <span className="docs-badge">
-                Zero dependencies on <code style={{ background: "none", border: 0, padding: 0, color: "inherit" }}>window.ethereum</code>
-              </span>
-            </div>
-
-            <div className="docs-chain-grid">
-              <div className="docs-chain-card" data-chain="evm">
-                <div className="glyph"><ChainTypeIcon type="evm" size={28} /></div>
-                <div className="name">EVM</div>
-                <div className="sub">59 chains · EIP-6963</div>
-              </div>
-              <div className="docs-chain-card" data-chain="solana">
-                <div className="glyph"><ChainTypeIcon type="solana" size={28} /></div>
-                <div className="name">Solana</div>
-                <div className="sub">Wallet Standard</div>
-              </div>
-              <div className="docs-chain-card" data-chain="tron">
-                <div className="glyph"><ChainTypeIcon type="tron" size={28} /></div>
-                <div className="name">Tron</div>
-                <div className="sub">TronLink</div>
-              </div>
-              <div className="docs-chain-card" data-chain="bitcoin">
-                <div className="glyph"><ChainTypeIcon type="bitcoin" size={28} /></div>
-                <div className="name">Bitcoin</div>
-                <div className="sub">Unisat · OKX · Snap</div>
-              </div>
-              <div className="docs-chain-card" data-chain="social" style={{ gridColumn: "1 / -1" }}>
-                <div className="glyph"><ChainTypeIcon type="social" size={28} /></div>
-                <div className="name">Social</div>
-                <div className="sub">Google OAuth · Email magic-link · Non-custodial</div>
-              </div>
-            </div>
+            <dl className="docs-facts">
+              <div><dt>Networks</dt><dd>EVM (59 chains) · Solana · Tron · Bitcoin</dd></div>
+              <div><dt>No wallet yet</dt><dd>Google, email, KingsChat or X sign-in with a non-custodial embedded wallet</dd></div>
+              <div><dt>Requires</dt><dd>React 18+ · any framework</dd></div>
+              <div><dt>Size</dt><dd>~22 KB gzipped · MIT · v2.22</dd></div>
+            </dl>
 
             <div
               className="docs-callout"
@@ -770,152 +736,150 @@ export default function DocsPage() {
             <h3 id="useSocialAuth">
               <code>useSocialAuth()</code>
             </h3>
-            <p>Core auth hook. Use this when you only need sign-in state without signing methods.</p>
-            <CodeBlock lang="tsx">
-              <span className="tok-k">const</span>{" "}
-              <span className="tok-p">{"{"}</span>
-              {"\n  "}
-              <span className="tok-id">isConnected</span>
-              <span className="tok-p">,</span>
-              {"        "}
-              <span className="tok-c">// boolean</span>
-              {"\n  "}
-              <span className="tok-id">isUnlocked</span>
-              <span className="tok-p">,</span>
-              {"         "}
-              <span className="tok-c">// boolean — false until wallet is unlocked</span>
-              {"\n  "}
-              <span className="tok-id">isNewUser</span>
-              <span className="tok-p">,</span>
-              {"          "}
-              <span className="tok-c">// boolean — true on first sign-in</span>
-              {"\n  "}
-              <span className="tok-id">addresses</span>
-              <span className="tok-p">,</span>
-              {"          "}
-              <span className="tok-c">// {"{"} evm?: string; solana?: string {"}"} | null</span>
-              {"\n  "}
-              <span className="tok-id">sessionExpiresAt</span>
-              <span className="tok-p">,</span>
-              {"  "}
-              <span className="tok-c">// number | null — Unix timestamp</span>
-              {"\n\n  "}
-              <span className="tok-c">// Auth flows</span>
-              {"\n  "}
-              <span className="tok-id">signInWithGoogle</span>
-              <span className="tok-p">,</span>
-              {"  "}
-              <span className="tok-c">// () =&gt; Promise&lt;void&gt;</span>
-              {"\n  "}
-              <span className="tok-id">sendEmailCode</span>
-              <span className="tok-p">,</span>
-              {"     "}
-              <span className="tok-c">// (email: string) =&gt; Promise&lt;{"{"} codeRequired: true {"}"}&gt;</span>
-              {"\n  "}
-              <span className="tok-id">confirmEmailCode</span>
-              <span className="tok-p">,</span>
-              {"  "}
-              <span className="tok-c">// (email: string, code: string) =&gt; Promise&lt;void&gt;</span>
-              {"\n  "}
-              <span className="tok-id">unlock</span>
-              <span className="tok-p">,</span>
-              {"            "}
-              <span className="tok-c">// () =&gt; Promise&lt;void&gt;</span>
-              {"\n  "}
-              <span className="tok-id">disconnect</span>
-              <span className="tok-p">,</span>
-              {"        "}
-              <span className="tok-c">// () =&gt; Promise&lt;void&gt;</span>
-              {"\n\n  "}
-              <span className="tok-id">googleLoading</span>
-              <span className="tok-p">,</span>
-              {"     "}
-              <span className="tok-c">// boolean</span>
-              {"\n  "}
-              <span className="tok-id">emailLoading</span>
-              <span className="tok-p">,</span>
-              {"      "}
-              <span className="tok-c">// boolean</span>
-              {"\n  "}
-              <span className="tok-id">error</span>
-              <span className="tok-p">,</span>
-              {"             "}
-              <span className="tok-c">// string | null</span>
-              {"\n  "}
-              <span className="tok-id">clearError</span>
-              <span className="tok-p">,</span>
-              {"         "}
-              <span className="tok-c">// () =&gt; void</span>
-              {"\n"}
-              <span className="tok-p">{"}"}</span>{" "}
-              <span className="tok-p">=</span>{" "}
-              <span className="tok-f">useSocialAuth</span>
-              <span className="tok-p">{"();"}</span>
-            </CodeBlock>
-
+            <p>
+              Sign-in state and the sign-in methods, nothing that signs transactions. Use it in the
+              parts of the app that only need to know who is signed in.
+            </p>
+            <ApiTable
+              groups={[
+                {
+                  title: 'State',
+                  rows: [
+                    { name: 'isConnected', type: 'boolean', desc: 'A session exists.' },
+                    { name: 'isUnlocked', type: 'boolean', desc: 'The wallet can sign right now.' },
+                    { name: 'isNewUser', type: 'boolean', desc: 'This sign-in created the account.' },
+                    { name: 'addresses', type: '{ evm?, solana?, tron? } | null', desc: 'Known before unlock; a restored tab has addresses but no session.' },
+                    { name: 'needsReconnect', type: 'boolean', desc: <>Addresses are known but there is no live session. Route through sign-in; <code>unlock()</code> or a passkey restores it.</> },
+                    { name: 'canUsePasskey', type: 'boolean', desc: <>This device can sign the remembered user back in with one passkey prompt. See <a href="#signing-back-in">signing back in</a>.</> },
+                    { name: 'sessionExpiresAt', type: 'number | null', desc: 'Unix ms.' },
+                    { name: 'profile', type: '{ name?, email?, picture? } | null', desc: 'What the provider revealed at sign-in.' },
+                    { name: 'providerSubject', type: 'string | null', desc: "The provider's stable id for the user, such as X's numeric id." },
+                    { name: 'phase', type: '"creating" | "unlocking" | null', desc: 'Key generation on first sign-in, or reopening a session.' },
+                    { name: 'isCreatingWallet', type: 'boolean', desc: <>Shorthand for <code>phase === &quot;creating&quot;</code>.</> },
+                    { name: 'error', type: 'string | null', desc: <>Last failure; <code>clearError()</code> resets it.</> },
+                  ],
+                },
+                {
+                  title: 'Sign in',
+                  rows: [
+                    { name: 'signInWithGoogle()', type: '() => Promise<void>', desc: 'Redirect flow.' },
+                    { name: 'signInWithKingsChat()', type: '() => Promise<void>', desc: 'Redirect flow.' },
+                    { name: 'signInWithX()', type: '() => Promise<void>', desc: 'Redirect flow. X releases no email; the handle and id come back on the profile.' },
+                    { name: 'sendEmailCode(email)', type: '(email) => Promise<{ codeRequired: true }>', desc: <>Then <code>confirmEmailCode(email, code)</code>.</> },
+                    { name: 'confirmEmailCode(email, code)', type: '(email, code) => Promise<void>', desc: 'Completes the email sign-in.' },
+                    { name: 'sendPhoneCode(phone)', type: '(phone) => Promise<{ codeRequired: true }>', desc: <>Then <code>confirmPhoneCode(phone, code)</code>. E.164 numbers only.</> },
+                    { name: 'confirmPhoneCode(phone, code)', type: '(phone, code) => Promise<void>', desc: 'Completes the phone sign-in.' },
+                    { name: 'signInWithToken(token, opts?)', type: '(token, { providerId? }?) => Promise<void>', desc: <>A token from your own provider. See <a href="#custom-auth">custom auth</a>.</> },
+                    { name: 'signInWithCustomAuth()', type: '(() => Promise<void>) | undefined', desc: <>Only when <code>social.customAuth</code> is configured.</> },
+                    { name: 'signInWithPasskey()', type: '() => Promise<void>', desc: 'One prompt, no provider: a server-verified WebAuthn login mints the session.' },
+                    { name: 'unlock()', type: '() => Promise<void>', desc: 'Reopen a session for a remembered user on this device.' },
+                    { name: 'disconnect()', type: '() => Promise<void>', desc: <>Sign out. Revokes the JWT; keeps the device share and remembers who left. See <a href="#signing-back-in">signing back in</a>.</> },
+                  ],
+                },
+                {
+                  title: 'Progress',
+                  rows: [
+                    { name: 'googleLoading', type: 'boolean', desc: 'Per method, while that sign-in is in flight.' },
+                    { name: 'kingschatLoading', type: 'boolean', desc: '' },
+                    { name: 'xLoading', type: 'boolean', desc: '' },
+                    { name: 'emailLoading', type: 'boolean', desc: '' },
+                    { name: 'phoneLoading', type: 'boolean', desc: '' },
+                    { name: 'tokenLoading', type: 'boolean', desc: '' },
+                    { name: 'customLoading', type: 'boolean', desc: '' },
+                    { name: 'customAuthLabel', type: 'string | undefined', desc: <>The button text you configured, e.g. <code>&quot;Continue with Acme&quot;</code>.</> },
+                  ],
+                },
+              ]}
+            />
             <h3 id="useSocialWallet">
               <code>useSocialWallet()</code>
             </h3>
-            <p>Full hook — includes signing methods and modal control in addition to all auth state.</p>
-            <CodeBlock lang="tsx">
-              <span className="tok-k">const</span>{" "}
-              <span className="tok-p">{"{"}</span>
-              {"\n  "}
-              <span className="tok-c">// All of useSocialAuth() plus:</span>
-              {"\n  "}
-              <span className="tok-id">signMessage</span>
-              <span className="tok-p">,</span>
-              {"           "}
-              <span className="tok-c">// (chain, message) =&gt; Promise&lt;string&gt;</span>
-              {"\n  "}
-              <span className="tok-id">sendTransaction</span>
-              <span className="tok-p">,</span>
-              {"         "}
-              <span className="tok-c">// ({"{"} chain, to, value?, data? {"}"}) =&gt; Promise&lt;string&gt;</span>
-              {"\n  "}
-              <span className="tok-id">signSolanaTransaction</span>
-              <span className="tok-p">,</span>
-              {"   "}
-              <span className="tok-c">// (Uint8Array) =&gt; Promise&lt;Uint8Array&gt;</span>
-              {"\n\n  "}
-              <span className="tok-c">// Modal</span>
-              {"\n  "}
-              <span className="tok-id">openModal</span>
-              <span className="tok-p">,</span>
-              {"             "}
-              <span className="tok-c">// () =&gt; void</span>
-              {"\n  "}
-              <span className="tok-id">closeModal</span>
-              <span className="tok-p">,</span>
-              {"            "}
-              <span className="tok-c">// () =&gt; void</span>
-              {"\n  "}
-              <span className="tok-id">modalOpen</span>
-              <span className="tok-p">,</span>
-              {"             "}
-              <span className="tok-c">// boolean</span>
-              {"\n\n  "}
-              <span className="tok-id">loading</span>
-              <span className="tok-p">,</span>
-              {"               "}
-              <span className="tok-c">// boolean — signing in progress</span>
-              {"\n  "}
-              <span className="tok-id">error</span>
-              <span className="tok-p">,</span>
-              {"                 "}
-              <span className="tok-c">// string | null</span>
-              {"\n  "}
-              <span className="tok-id">clearError</span>
-              <span className="tok-p">,</span>
-              {"            "}
-              <span className="tok-c">// () =&gt; void</span>
-              {"\n"}
-              <span className="tok-p">{"}"}</span>{" "}
-              <span className="tok-p">=</span>{" "}
-              <span className="tok-f">useSocialWallet</span>
-              <span className="tok-p">{"();"}</span>
-            </CodeBlock>
+            <p>
+              Everything in <code>useSocialAuth()</code>, plus signing, balances, the device&apos;s
+              passkey and password, recovery, and control of the built-in modal.
+            </p>
+            <ApiTable
+              groups={[
+                {
+                  title: 'Modal',
+                  rows: [
+                    { name: 'modalOpen', type: 'boolean', desc: '' },
+                    { name: 'openModal()', type: '() => void', desc: <>Opens <a href="#social-wallet-modal"><code>SocialWalletModal</code></a>.</> },
+                    { name: 'closeModal()', type: '() => void', desc: '' },
+                  ],
+                },
+                {
+                  title: 'Signing',
+                  rows: [
+                    { name: 'signMessage(chain, message)', type: '(chain, message) => Promise<string>', desc: 'Personal-sign on EVM, raw message on Solana.' },
+                    { name: 'sendTransaction(req)', type: '(req) => Promise<string>', desc: <>Returns the hash. See <a href="#send-erc20">sending ERC-20</a>.</> },
+                    { name: 'signTypedData(req)', type: '({ chain, domain, types, message }) => Promise<string>', desc: 'EIP-712.' },
+                    { name: 'signAuthorization(req)', type: '(req) => Promise<SignedAuthorization>', desc: 'EIP-7702 delegation.' },
+                    { name: 'signSolanaTransaction(tx)', type: '(tx) => Promise<Uint8Array>', desc: <>See <a href="#send-solana">sending on Solana</a>.</> },
+                    { name: 'signTronTransaction(rawDataHex)', type: '(rawDataHex) => Promise<string>', desc: '' },
+                    { name: 'getEthereumProvider(opts?)', type: '({ chainId? }?) => Eip1193Provider', desc: 'For viem, ethers or wagmi. Stable across renders.' },
+                  ],
+                },
+                {
+                  title: 'Balances and history',
+                  rows: [
+                    { name: 'getBalance(chain?)', type: '(chain?) => Promise<BalanceResult>', desc: 'Native balance; works while locked.' },
+                    { name: 'getBalances()', type: '() => Promise<{ chain, balance }[]>', desc: 'Every configured chain; a dead RPC gives null for that chain, not a rejection.' },
+                    { name: 'recordTransaction(tx)', type: '(tx) => Promise<TransactionRecord>', desc: 'For transactions your app broadcast itself.' },
+                    { name: 'getTransactionHistory(limit?)', type: '(limit?) => Promise<TransactionRecord[]>', desc: 'Most recent first. Needs a live session.' },
+                    { name: 'getAccessToken()', type: '() => string | null', desc: 'The session JWT, for your own backend.' },
+                  ],
+                },
+                {
+                  title: 'Passkey and password, this device',
+                  rows: [
+                    { name: 'hasPasskey()', type: '() => Promise<boolean>', desc: '' },
+                    { name: 'addPasskey()', type: '() => Promise<void>', desc: 'Needs a live session.' },
+                    { name: 'setUnlockPassword(password)', type: '(password) => Promise<void>', desc: <>Needs a live session. Throws <code>WeakPasswordError</code> for a password too weak to carry a session.</> },
+                    { name: 'canUnlockWithPassword()', type: '() => Promise<boolean>', desc: 'Signed out: can this device open a session from the password alone?' },
+                    { name: 'unlockWithPassword(password)', type: '(password) => Promise<void>', desc: 'Signed out: opens one. No provider, no passkey.' },
+                    { name: 'removeUnlockPassword()', type: '() => Promise<void>', desc: 'Turns the password path off, account-wide.' },
+                    { name: 'forgetLastUser()', type: '() => void', desc: <>&ldquo;Use a different account.&rdquo; Drops the memory of who signed out so they stop being offered; device shares are untouched.</> },
+                  ],
+                },
+                {
+                  title: 'Recovery',
+                  rows: [
+                    { name: 'rotateShares(opts)', type: '({ password, passwordHint? }) => Promise<RecoveryShareFile>', desc: 'Re-issues the share set and returns the recovery file.' },
+                    { name: 'exportPortableBackup(opts)', type: '({ password, passwordHint? }) => Promise<PortableBackup>', desc: '' },
+                    { name: 'hasRecoveryShare()', type: '() => Promise<boolean>', desc: '' },
+                    { name: 'shouldPromptRecovery()', type: '() => Promise<boolean>', desc: 'Whether to nudge the user to set recovery up.' },
+                    { name: 'dismissRecoveryPrompt()', type: '() => Promise<void>', desc: '' },
+                  ],
+                },
+                {
+                  title: 'Status',
+                  rows: [
+                    { name: 'loading', type: 'boolean', desc: 'A signing call is in flight.' },
+                    { name: 'error', type: 'string | null', desc: <><code>clearError()</code> resets it.</> },
+                  ],
+                },
+              ]}
+            />
 
+            <h4 id="signing-back-in">Signing back in after sign-out</h4>
+            <p>
+              <code>disconnect()</code> ends the session, revoking the JWT, but deliberately keeps the
+              device&apos;s passkey- or password-wrapped share, so a returning user is one prompt from a
+              session instead of a full sign-in. Since 2.22 it also remembers <em>which</em> account signed
+              out. That is what lets <code>canUsePasskey</code> and <code>canUnlockWithPassword()</code> offer
+              that account&apos;s own way back even when several accounts are enrolled on the same browser.
+              The remembered id is a lookup key, not a credential: <code>signInWithPasskey()</code> still
+              needs a server-verified WebAuthn assertion and <code>unlockWithPassword()</code> still needs
+              the password.
+            </p>
+            <p>
+              Offer the shortcut when <code>canUsePasskey</code> (prefer it) or{" "}
+              <code>await canUnlockWithPassword()</code> is true, and show the full method list otherwise.
+              &ldquo;Use a different account&rdquo; is <code>forgetLastUser()</code>. Only these explicit
+              entry points consult the memory; <code>connect()</code> and <code>unlock()</code> keep the
+              strict lookup, so an ordinary sign-in never silently re-offers the account the user just left.
+            </p>
             <h3 id="social-wallet-modal">
               <code>SocialWalletModal</code>
             </h3>
