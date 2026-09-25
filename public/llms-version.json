@@ -1,12 +1,17 @@
 {
   "$comment": "Freshness manifest for https://kit.decane.app/llms.txt — fetch this (small) document to check whether a cached copy of llms.txt is stale, instead of re-reading the full spec.",
   "package": "decane-connect-kit",
-  "version": "2.23.0",
+  "version": "2.24.0",
   "documentRevision": "2026-09-25",
   "llmsTxt": "https://kit.decane.app/llms.txt",
   "npmRegistry": "https://registry.npmjs.org/decane-connect-kit/latest",
   "docs": "https://kit.decane.app/docs",
   "changelog": [
+    {
+      "version": "2.24.0",
+      "date": "2026-09-25",
+      "summary": "Handing a session between apps of one project: connectWithAccessToken(token) / useSocialAuth().signInWithAccessToken(token) adopts a Decane access token another app handed over (in a URL), signed in at once and unlocked on the first signature — with deferDeviceProtection that prompts for nothing; the session lasts as long as the token and ends with session-expired. Everything the client persists (identity, last signed-out user, live session) is now keyed by the app id rather than the API key, so two apps of one project under different keys on one origin see the same signed-in user and a same-tab navigation between them resumes the full session; entries written under the old key are read once and moved. New InvalidAccessTokenError (INVALID_ACCESS_TOKEN)."
+    },
     {
       "version": "2.23.0",
       "date": "2026-09-25",
