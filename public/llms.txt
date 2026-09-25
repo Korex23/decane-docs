@@ -25,7 +25,7 @@ need it for a single product.
 ## Version and freshness
 
 ```yaml
-version: 2.24.0
+version: 2.24.1
 document-revision: 2026-09-25
 canonical: https://kit.decane.app/llms.txt
 version-manifest: https://kit.decane.app/llms-version.json
@@ -265,7 +265,7 @@ interface DecaneConnect {
   unlock(): Promise<void>;                                        // re-authenticate an expired session
   isUnlocked(): boolean;
   sessionExpiresAt(): number | null;
-  signMessage(req: SignMessageRequest): Promise<string>;        // EVM, Solana, or Tron chain
+  signMessage(req: SignMessageRequest): Promise<string>;        // EVM, Solana, or Tron chain. message: string | Uint8Array — on EVM/Tron the enclave hashes TEXT, so bytes must be valid UTF-8 (decoded losslessly; SIWE and every hex personal_sign a dApp sends qualify) or the call throws CallSequenceError. Solana signs raw bytes.
   sendTransaction(req: SendTransactionRequest): Promise<string>; // EVM; auto-records to history
   signSolanaTransaction(tx: Uint8Array): Promise<Uint8Array>;
   signTronTransaction(rawDataHex: string): Promise<string>;      // sign a TronWeb-built tx's raw_data

@@ -1,12 +1,17 @@
 {
   "$comment": "Freshness manifest for https://kit.decane.app/llms.txt — fetch this (small) document to check whether a cached copy of llms.txt is stale, instead of re-reading the full spec.",
   "package": "decane-connect-kit",
-  "version": "2.24.0",
+  "version": "2.24.1",
   "documentRevision": "2026-09-25",
   "llmsTxt": "https://kit.decane.app/llms.txt",
   "npmRegistry": "https://registry.npmjs.org/decane-connect-kit/latest",
   "docs": "https://kit.decane.app/docs",
   "changelog": [
+    {
+      "version": "2.24.1",
+      "date": "2026-09-25",
+      "summary": "signMessage on an EVM or Tron chain given a Uint8Array now decodes the bytes to the string the enclave hashes (lossless for UTF-8, which every hex personal_sign a dApp sends — SIWE included — is) and throws CallSequenceError for bytes that are not UTF-8. Before, the bytes went into the JSON body as an object and the signer refused them — which the EIP-1193 provider's personal_sign path hit for every hex message. Solana is unchanged (raw bytes)."
+    },
     {
       "version": "2.24.0",
       "date": "2026-09-25",
@@ -67,7 +72,7 @@
       {
         "version": "0.3.1",
         "date": "2026-09-25",
-        "summary": "Rebuilt against the current infra/tee-measurement.json. 0.3.0 shipped the enclave measurement captured against signer 0.1.3, so every sign-in and unlock() against the live signer (0.2.10+, measurement fb14dc13…) failed with AttestationError \"TEE measurement not accepted\". The previous measurement is retained as a second accepted entry, exactly as in decane-connect-kit 2.22+. No API change."
+        "summary": "Rebuilt against the current infra/tee-measurement.json. 0.3.0 shipped the enclave measurement captured against signer 0.1.3, so every sign-in and unlock() against the live signer (0.2.10+, measurement fb14dc13…) failed with AttestationError \"TEE measurement not accepted\". The previous measurement is retained as a second accepted entry, exactly as in decane-connect-kit 2.22+. No API change. Also: signMessage on EVM/Tron given a Uint8Array now decodes UTF-8 bytes to the string the enclave hashes and refuses non-UTF-8 bytes (CallSequenceError), instead of sending an object the signer rejected."
       }
     ]
   },

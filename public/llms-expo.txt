@@ -231,7 +231,7 @@ decane.getAccessToken();      // Decane JWT for your own backend | null
 await decane.unlock();
 await decane.getCapabilities();
 
-await decane.signMessage({ chain, message });                   // string | Uint8Array
+await decane.signMessage({ chain, message });                   // string | Uint8Array; EVM/Tron bytes must be valid UTF-8 (the enclave hashes text), else CallSequenceError. Solana signs raw bytes.
 await decane.sendTransaction({ chain, to, value?, data?, gasLimit?, gasPrice? });  // EVM only, broadcasts
 await decane.signTypedData({ chain, domain, types, message, primaryType? });       // EIP-712, EVM only
 await decane.signAuthorization({ chainId, address, nonce });    // EIP-7702
