@@ -13,7 +13,7 @@ npx expo install decane-connect-kit-expo \
 
 ```yaml
 package: decane-connect-kit-expo
-version: 0.3.1
+version: 0.4.0
 document-revision: 2026-09-25
 canonical: https://kit.decane.app/llms-expo.txt
 web-sibling: https://kit.decane.app/llms.txt
@@ -75,7 +75,7 @@ interface DecaneConnectNativeConfig {
   appId: string;
   apiKey: string;
   chains: Chain[];                    // `evm:${number}` | `solana:mainnet|devnet` | `tron:mainnet|shasta|nile`
-  authMethods: Array<'google' | 'email' | 'external' | 'kingschat'>;
+  authMethods: Array<'google' | 'x' | 'email' | 'phone' | 'external' | 'kingschat'>;
 
   // Needed for Google and KingsChat — must equal `scheme` in app.json,
   // and be registered as the API key's callback_url in the dashboard.
@@ -130,6 +130,11 @@ await decane.verifyEmailCode(email, code);       // ConnectResult
 // Google — RECOMMENDED. In-app auth sheet, returns to redirectUri.
 await decane.connectWithGoogle();
 
+// X (Twitter) — the same in-app sheet and redirect. X releases no email;
+// profile carries the handle as `username`. Needs X credentials on the backend
+// (503 X_NOT_CONFIGURED otherwise).
+await decane.connectWithX();
+
 // KingsChat
 await decane.connectWithKingsChat();
 await decane.connectWithKingsChatToken(accessToken);
@@ -143,15 +148,20 @@ await decane.connectWithGoogleToken(idToken);
 // Returning user whose passkey-wrapped share is still on this device
 if (await decane.canSignInWithPasskey()) await decane.signInWithPasskey();
 
+// Returning user on ANY tier: the device's own unlock reopens the session
+// (see "Session renewal" under Unlock tiers)
+if (decane.needsReconnect() && (await decane.canUnlock())) await decane.unlock();
+
 await decane.disconnect();
 ```
 
 `ConnectResult` is `{ addresses: { evm?, solana?, tron? }, isNewUser: boolean,
 profile?: AuthProfile }`.
 
-`profile` carries who the provider says the user is — `{ name?, email?, picture? }`
+`profile` carries who the provider says the user is — `{ name?, email?, picture?, username? }`
 — and is **absent** when the provider released nothing (email sign-in always, and
-Google when the user withheld it). Decane never stores it: the backend keeps only
+Google when the user withheld it). X never releases an email; it sends the handle
+as `username`, which can be renamed and is not an id. Decane never stores it: the backend keeps only
 an HMAC and a masked identifier, so there is no profile to fetch later. Cache what
 you need at sign-in if you want to greet the user by name after a reload.
 
@@ -218,6 +228,53 @@ PBKDF2 runs in pure JavaScript (no native implementation to call), so the PIN
 tier and recovery-file encrypt/decrypt cost **seconds, not milliseconds**. Never
 paid on the passkey or biometric path, and never per signature.
 
+### Session renewal — since 0.4.0
+
+The access token lasts **two hours** (the signer's session is clamped to the
+same), and there is no refresh token. On the passkey tier a fresh assertion
+buys a new one. On the secure-enclave and PIN tiers the device now holds a
+**device unlock token** from the backend — 90 days, stored beside the share and
+encrypted under the same key — so the one unlock the device already does
+(biometric, or the PIN) yields both the share and a new JWT:
+
+```ts
+if (decane.needsReconnect() && (await decane.canUnlock())) {
+  await decane.unlock();          // biometric / PIN prompt; no email code, no Google
+} else if (decane.needsReconnect()) {
+  // no token on this device (revoked, expired, or a build before 0.4.0): sign in
+}
+```
+
+- Issued at wallet creation and whenever a device is provisioned or recovered;
+  a normal sign-in re-issues it. A failure to store one costs a sign-in later,
+  never the wallet.
+- `unlock()` prefers a passkey, then the token; an expired JWT in memory is
+  treated as no JWT. A token the backend refuses throws
+  `UNLOCK_TOKEN_REJECTED` and is forgotten, so the next `unlock()` asks for a
+  sign-in instead of failing the same way.
+- `removeDeviceUnlock()` revokes the account's tokens (every device) and forgets
+  this device's copy — the "lost phone" switch. `disconnect()` keeps it, so a
+  user who signs out is one unlock from a session, as on the web.
+- One token per account: setting up a second device revokes the first's.
+
+### Adding a passkey later — since 0.4.0
+
+A device that signed in with email, Google or X and landed on the
+secure-enclave or PIN tier can move to the passkey tier:
+
+```ts
+if (!(await decane.hasPasskey())) await decane.addPasskey();   // needs rpId and a live session
+```
+
+It unwraps the share with the current tier (one biometric or PIN prompt),
+registers a passkey, re-wraps the share and the unlock token under its PRF key,
+and backs the wrapped share up for passkey-sync recovery — after which
+`signInWithPasskey()` and `rotateShares()`/`exportPortableBackup()` work on
+this device. Idempotent on a device already on a passkey; throws
+`WEBAUTHN_NOT_SUPPORTED` without `rpId` or PRF. The Android origin the backend
+accepts is still `https://<rpId>` — pass `origin` for an `android:apk-key-hash`
+build only once the backend allows it.
+
 ---
 
 ## Wallet API
@@ -229,6 +286,9 @@ decane.needsReconnect();      // identity known, session gone -> show sign-in
 decane.sessionExpiresAt();    // epoch ms | null
 decane.getAccessToken();      // Decane JWT for your own backend | null
 await decane.unlock();
+await decane.canUnlock();     // a passkey or a device unlock token is here
+await decane.removeDeviceUnlock();
+await decane.hasPasskey(); await decane.addPasskey();
 await decane.getCapabilities();
 
 await decane.signMessage({ chain, message });                   // string | Uint8Array; EVM/Tron bytes must be valid UTF-8 (the enclave hashes text), else CallSequenceError. Solana signs raw bytes.
@@ -237,6 +297,12 @@ await decane.signTypedData({ chain, domain, types, message, primaryType? });    
 await decane.signAuthorization({ chainId, address, nonce });    // EIP-7702
 await decane.signSolanaTransaction(serializedTx);               // returns signed bytes; YOU broadcast
 await decane.signTronTransaction(rawDataHex);
+
+// An EIP-1193 provider for viem / wagmi / ethers — the same module as the web
+// SDK's. Signing goes through the enclave; reads go to the chain's RPC.
+const provider = decane.getEthereumProvider({ chainId: 8453, rpcUrls? });
+await provider.request({ method: "personal_sign", params: [hex, address] });
+await provider.request({ method: "eth_sendTransaction", params: [tx] });
 
 await decane.getBalance(chain?);
 await decane.getBalances();
@@ -253,7 +319,8 @@ the first enclave session — several seconds. Show progress.
 
 Standalone exports usable without a client:
 `detectCapabilities`, `isPasskeySupported`, `isEnclaveAvailable`,
-`startEmailAuth`, `startGoogleAuth`, `loginWithKingsChat`,
+`startEmailAuth`, `startGoogleAuth`, `startXAuth`, `readRedirectResult`,
+`createEthereumProvider`, `loginWithKingsChat`,
 `parseRecoveryShareFile`, `decryptRecoveryShareFile`, `buildRecoveryShareFile`,
 `parsePortableBackup`, `decryptPortableBackup`, `fetchBalance`,
 `formatBalanceDisplay`, `evmToTronAddress`, `clearDeviceState`.
@@ -328,6 +395,8 @@ so shared code can branch identically.
 | `NEW_DEVICE` | no share here and every recovery path exhausted |
 | `STALE_DEVICE_SHARE` | share belongs to a superseded set; cleared, re-recover |
 | `INVALID_PIN` | wrong PIN |
+| `UNLOCK_TOKEN_REJECTED` | the device unlocked its token but the backend refused it (revoked / expired / account reset); it is forgotten — sign in |
+| `WEBAUTHN_NOT_SUPPORTED` | no `rpId`, no passkey support or no PRF — `addPasskey()` cannot run here |
 | `USER_CANCELLED` | user dismissed a prompt |
 | `BIOMETRIC_UNAVAILABLE` | biometrics dismissed, or keystore entry gone |
 | `NATIVE_MODULE_MISSING` | a peer dependency is absent — install and rebuild |

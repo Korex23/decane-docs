@@ -65,10 +65,15 @@
   ],
   "mobile": {
     "package": "decane-connect-kit-expo",
-    "version": "0.3.1",
+    "version": "0.4.0",
     "llmsTxt": "https://kit.decane.app/llms-expo.txt",
     "npmRegistry": "https://registry.npmjs.org/decane-connect-kit-expo/latest",
     "changelog": [
+      {
+        "version": "0.4.0",
+        "date": "2026-09-25",
+        "summary": "X (Twitter) sign-in: connectWithX() and 'x' in authMethods, the same in-app sheet and redirect as Google; profile carries the handle as username (X releases no email). Session renewal: the access token lasts two hours with no refresh token, so a device on the secure-enclave or PIN tier now holds a 90-day device unlock token (issued at creation/provisioning, stored beside the share under the same key) and unlock() redeems it with the device's own biometric or PIN — no email code; canUnlock() says whether it can, removeDeviceUnlock() is the lost-phone switch, UNLOCK_TOKEN_REJECTED names a refused token. addPasskey()/hasPasskey(): move a device from the enclave or PIN tier to a passkey after signing in with email, Google or X. getEthereumProvider(): the web SDK's EIP-1193 provider, for viem / wagmi / ethers."
+      },
       {
         "version": "0.3.1",
         "date": "2026-09-25",
