@@ -60,9 +60,16 @@
   ],
   "mobile": {
     "package": "decane-connect-kit-expo",
-    "version": "0.3.0",
+    "version": "0.3.1",
     "llmsTxt": "https://kit.decane.app/llms-expo.txt",
-    "npmRegistry": "https://registry.npmjs.org/decane-connect-kit-expo/latest"
+    "npmRegistry": "https://registry.npmjs.org/decane-connect-kit-expo/latest",
+    "changelog": [
+      {
+        "version": "0.3.1",
+        "date": "2026-09-25",
+        "summary": "Rebuilt against the current infra/tee-measurement.json. 0.3.0 shipped the enclave measurement captured against signer 0.1.3, so every sign-in and unlock() against the live signer (0.2.10+, measurement fb14dc13…) failed with AttestationError \"TEE measurement not accepted\". The previous measurement is retained as a second accepted entry, exactly as in decane-connect-kit 2.22+. No API change."
+      }
+    ]
   },
   "node": {
     "package": "decane-node",
