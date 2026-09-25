@@ -83,11 +83,16 @@
   },
   "node": {
     "package": "decane-node",
-    "version": "1.3.1",
+    "version": "1.4.0",
     "llmsTxt": "https://kit.decane.app/llms-node.txt",
     "npmRegistry": "https://registry.npmjs.org/decane-node/latest",
     "docs": "https://kit.decane.app/node-docs",
     "changelog": [
+      {
+        "version": "1.4.0",
+        "date": "2026-09-25",
+        "summary": "Per-user records, the replacement for Privy's custom metadata. Every user carries two flat JSON records (strings, numbers, booleans; ≤100 keys, ≤32 KB): `preferences`, the user's own choices, written with THEIR access token (getPreferences / updatePreferences / setPreferences, backed by GET/PATCH/PUT /me/preferences); and `metadata`, the app's facts about them, written only with the new `projectSecret` option (dck_sk_…, env DECANE_PROJECT_SECRET) by user id (getUserMetadata / updateUserMetadata / setUserMetadata, plus the same trio for preferences) and read-only to the user (getMetadata), so an entitlement may live there. A patch merges and null removes a key. New error codes INVALID_RECORD, NOT_FOUND, UNAUTHORIZED."
+      },
       {
         "version": "1.3.1",
         "date": "2026-09-17",

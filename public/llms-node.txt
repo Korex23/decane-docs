@@ -15,8 +15,8 @@ client options. Dual ESM + CJS build. Single runtime dependency: `jose`.
 
 ```yaml
 package: decane-node
-version: 1.3.1
-document-revision: 2026-09-17
+version: 1.4.0
+document-revision: 2026-09-25
 canonical: https://kit.decane.app/llms-node.txt
 version-manifest: https://kit.decane.app/llms-version.json   # under the "node" key
 web-sibling: https://kit.decane.app/llms.txt                 # decane-connect-kit (browser)
@@ -149,6 +149,7 @@ interface DecaneClientOptions {
   appId?: string;           // reject tokens whose project_id differs; also sent as X-App-Id on sign-in calls
   verificationKey?: string; // ES256 SPKI PEM → offline verification. Env fallback: DECANE_VERIFICATION_KEY
   apiKey?: string;          // dck_live_… key, required only for sign-in methods. Env fallback: DECANE_API_KEY
+  projectSecret?: string;   // dck_sk_… key, required only for the by-user-id record methods (1.4.0). Env fallback: DECANE_PROJECT_SECRET
   apiBase?: string;         // env fallback DECANE_API_BASE, default "https://backend.decane.app"; an EMPTY value (option or env) counts as unset
   jwksUrl?: string;         // default `${apiBase}/.well-known/jwks.json`; ignored when verificationKey is set
   fetch?: typeof fetch;     // injected fetch for REST calls (tests, Node < 18); default global fetch
@@ -253,6 +254,47 @@ decane.revokeAccessToken(token): Promise<void>
 // immediately; stateless verifyAccessToken still accepts it until exp.
 ```
 
+### Per-user records (1.4.0+) — the Privy custom-metadata replacement
+
+Every Decane user carries two flat JSON records, split by WHO may write them:
+
+- `preferences` — the user's own choices. Written with the USER'S access token
+  (or the project secret). What a settings screen stores: a "post my trades"
+  switch, a theme, a terms version the person accepted.
+- `metadata` — the app's facts about the user: plan, flags, ids in your own
+  systems. Written ONLY with the project secret; a user token can read it and
+  never change it. This is where an entitlement may live — the user cannot
+  grant themself one.
+
+```ts
+type DecaneRecord      = Record<string, string | number | boolean>;
+type DecaneRecordPatch = Record<string, string | number | boolean | null>; // null removes the key
+// Keys: [A-Za-z0-9_.-]{1,64}. Strings ≤ 2048 chars. ≤ 100 keys, ≤ 32 KB serialised. Flat — no nesting.
+
+// With the user's token (no apiKey, no secret) — from a route that verified it:
+decane.getPreferences(token): Promise<DecaneRecord>                       // GET   /me/preferences
+decane.updatePreferences(token, patch: DecaneRecordPatch): Promise<DecaneRecord> // PATCH /me/preferences — merge; resolves to the whole record
+decane.setPreferences(token, record: DecaneRecord): Promise<DecaneRecord>  // PUT   /me/preferences — replace
+decane.getMetadata(token): Promise<DecaneRecord>                          // GET   /me/metadata — read-only on this side
+
+// By user id, with `projectSecret` (dck_sk_…, minted on the project's page in the dashboard):
+decane.getUserMetadata(userId)                  // GET   /v1/app/users/:id/metadata
+decane.updateUserMetadata(userId, patch)        // PATCH — merge
+decane.setUserMetadata(userId, record)          // PUT   — replace
+decane.getUserPreferences(userId) / updateUserPreferences(userId, patch) / setUserPreferences(userId, record)
+```
+
+Failures reject with `DecaneApiError`: `INVALID_RECORD` (400; the message
+names the offending key), `NOT_FOUND` (404; no such user in the secret's
+project — the same answer for a user of another app as for a made-up id),
+`UNAUTHORIZED` (401; token expired or revoked, or a bad secret). Calling a
+`*User*` method without a secret throws a plain config `Error` before any
+network call, like a sign-in call without an `apiKey`.
+
+Absent keys are absent — a record that was never written is `{}`. Decide your
+defaults in code (`prefs.shine_perps ?? true`) rather than writing them on
+first read, so "never touched it" stays distinguishable from "chose it".
+
 ### Standalone `verifyAccessToken(args)` — the Privy drop-in
 
 ```ts
@@ -291,6 +333,7 @@ export class DecaneApiError extends Error {       // SIGN-IN / API failures
                    // AMBIGUOUS_PROVIDER | MISSING_CLAIM | BAD_REQUEST |
                    // INVALID_API_KEY | APP_ID_MISMATCH | KINGSCHAT_NOT_CONFIGURED |
                    // KINGSCHAT_UNAVAILABLE | REVOKE_FAILED | RATE_LIMITED |
+                   // INVALID_RECORD | NOT_FOUND | UNAUTHORIZED (1.4.0, the record methods) |
                    // UNKNOWN | NETWORK_ERROR
   status: number;  // HTTP status; 0 when the request never completed
   cause?: unknown;
