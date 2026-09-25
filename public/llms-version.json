@@ -91,10 +91,15 @@
   "connect": {
     "$comment": "Server-to-server provisioning API for agencies/builders: one project + API key per end-client. Path-versioned, not package-versioned.",
     "api": "connect/v1",
-    "documentRevision": "2026-09-14",
+    "documentRevision": "2026-09-25",
     "baseUrl": "https://backend.decane.app",
     "llmsTxt": "https://kit.decane.app/llms-connect.txt",
     "changelog": [
+      {
+        "api": "connect/v1",
+        "date": "2026-09-25",
+        "summary": "Several sign-in callbacks per key: callback_urls[] on POST /clients, POST /clients/:ref/keys and PATCH /clients/:ref/keys/:keyId (replaced whole, like allowed_origins), and on key rows. /auth/google/init and /auth/x/init pick the entry whose host matches the request's Origin (or Referer) — exact host with port first, then hostname — and fall back to the first entry, so one key serves an app from its domain, a preview host and localhost. The single callback_url is still accepted everywhere and reported as the first entry."
+      },
       {
         "api": "connect/v1",
         "date": "2026-09-14",

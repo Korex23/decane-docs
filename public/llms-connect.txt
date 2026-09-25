@@ -20,7 +20,7 @@ https://kit.decane.app/llms-node.txt.
 
 ```yaml
 api: connect/v1
-document-revision: 2026-09-14
+document-revision: 2026-09-25
 canonical: https://kit.decane.app/llms-connect.txt
 base-url: https://backend.decane.app
 version-manifest: https://kit.decane.app/llms-version.json
@@ -101,7 +101,7 @@ const res = await fetch("https://backend.decane.app/connect/v1/clients", {
     external_ref: "acme",                          // YOUR id for this client
     name: "Acme Ltd",
     allowed_origins: ["acme.example.com"],         // where their app is served
-    callback_url: "https://acme.example.com/auth/callback",
+    callback_urls: ["https://acme.example.com/auth/callback"],
   }),
 });
 
@@ -190,13 +190,14 @@ have to store our UUID.
 
 ### `POST /clients` — provision a client
 
-Body: `external_ref`, `name`, `allowed_origins[]`, `callback_url?`
+Body: `external_ref`, `name`, `allowed_origins[]`, `callback_urls[]?` (or the
+single `callback_url?`)
 
 - `201` with `{ client, apiKey }` on creation.
 - `200` with `{ client, alreadyExisted: true, apiKey: null }` when the
   `external_ref` already exists. **Idempotent** — see Gotchas.
-- `400 BAD_REQUEST` — empty `allowed_origins`, malformed `external_ref`,
-  unreachable `callback_url`.
+- `400 BAD_REQUEST` — empty `allowed_origins`, malformed `external_ref`, a
+  callback that is not https (http is allowed on localhost only).
 - `403 QUOTA_EXCEEDED` — organization client limit reached.
 
 Project and key are created in one transaction: you never get a client with no
@@ -209,19 +210,20 @@ key.
 ### `GET /clients/:ref` — one client and its key metadata
 
 `200` → `{ client, keys: [...] }`. Key rows carry `key_prefix`,
-`allowed_origins`, `callback_url`, `origin_policy`, `last_used_at`,
-`revoked_at` — never the secret.
+`allowed_origins`, `callback_urls`, `callback_url` (its first entry),
+`origin_policy`, `last_used_at`, `revoked_at` — never the secret.
 
 ### `POST /clients/:ref/keys` — an additional key
 
-Body: `name`, `allowed_origins[]`, `callback_url?` → `201 { id, key, keyPrefix }`.
+Body: `name`, `allowed_origins[]`, `callback_urls[]?` → `201 { id, key, keyPrefix }`.
 
 Use for a second environment or a second domain. `403 QUOTA_EXCEEDED` when the
 per-client active-key limit is reached.
 
 ### `PATCH /clients/:ref/keys/:keyId` — change origins or callback
 
-Body: any of `allowed_origins[]`, `callback_url`, `name` → `200 { ok: true }`.
+Body: any of `allowed_origins[]`, `callback_urls[]`, `name` → `200 { ok: true }`.
+Both lists are **replaced**, not appended.
 
 This is the republish / custom-domain path. The cache is invalidated before the
 response returns, so a `200` means the new allowlist is already in force.
@@ -261,7 +263,7 @@ async function ensureAuth(clientRef: string, name: string, host: string) {
     external_ref: clientRef,
     name,
     allowed_origins: [host],
-    callback_url: `https://${host}/auth/callback`,
+    callback_urls: [`https://${host}/auth/callback`],
   });
   // Safe to call on every build: a repeat returns the existing client.
   if (r.apiKey) await storeSecret(clientRef, r.apiKey.key);
@@ -276,9 +278,11 @@ Keep old hostnames that are still serving — a link already in someone's hands
 should keep working.
 
 ```ts
+const hosts = [customDomain, currentHost, ...recentHosts].filter(Boolean);
 await connect("PATCH", `/clients/${ref}/keys/${keyId}`, {
-  allowed_origins: [customDomain, currentHost, ...recentHosts].filter(Boolean),
-  callback_url: `https://${customDomain}/auth/callback`,
+  allowed_origins: hosts,
+  // One callback per host; sign-in returns to the one the page came from.
+  callback_urls: hosts.map((h) => `https://${h}/auth/callback`),
 });
 ```
 
@@ -320,10 +324,16 @@ sign-in endpoints with a connector key from a server or from `curl`** without
 setting an `Origin` header. That is intended — these keys are for browsers.
 (Keys created by hand in the dashboard keep the older lenient behaviour.)
 
-**`callback_url` lives on the key, not the request.** Google sign-in redirects
-to whatever the key says, and `GET /auth/google/init` fails with
-`400 CALLBACK_URL_NOT_SET` when it is absent. Since it is a single value, a
-client serving Google sign-in from two domains needs **two keys**. Email and
+**Callbacks live on the key, not the request.** Google and X sign-in redirect
+to one of the key's `callback_urls`, and `GET /auth/google/init` fails with
+`400 CALLBACK_URL_NOT_SET` when the list is empty. A key can carry one
+callback per host it is served from (the domain, a preview host,
+`http://localhost:3001/…` while developing): the init picks the entry whose
+host matches the request's `Origin` (or `Referer`), exact host including port
+first, then hostname, and falls back to the **first entry** — which is
+therefore the default, and what a native app with no Origin gets. Nothing in
+the request can name a URL that is not on the list. `callback_url` (single)
+is still accepted on every route and reported as the first entry. Email and
 phone OTP need no callback at all.
 
 **Passkeys are bound to a hostname.** WebAuthn `rpId` defaults to the page's
