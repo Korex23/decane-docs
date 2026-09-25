@@ -25,8 +25,8 @@ need it for a single product.
 ## Version and freshness
 
 ```yaml
-version: 2.22.0
-document-revision: 2026-09-17
+version: 2.23.0
+document-revision: 2026-09-25
 canonical: https://kit.decane.app/llms.txt
 version-manifest: https://kit.decane.app/llms-version.json
 ```
@@ -333,7 +333,7 @@ function SignInButton() {
 ```
 
 - **`useSocialAuth()`** — sign-in flow: `{ isConnected, isUnlocked, isNewUser, profile, providerSubject, addresses, sessionExpiresAt, needsReconnect, canUsePasskey, phase: "creating" | "unlocking" | null, isCreatingWallet, googleLoading, kingschatLoading, xLoading, emailLoading, phoneLoading, tokenLoading, customLoading, customAuthLabel, error, clearError(), signInWithGoogle(), signInWithKingsChat(), signInWithX(), sendEmailCode(email): Promise<{codeRequired:true}>, confirmEmailCode(email, code), sendPhoneCode(phone): Promise<{codeRequired:true}>, confirmPhoneCode(phone, code), signInWithToken(token, opts?), signInWithCustomAuth?(), signInWithPasskey(), unlock(), disconnect() }`. `signInWithCustomAuth` is `undefined` unless `social.customAuth` is configured. `canUsePasskey` is true when this device can sign the remembered user back in with one passkey prompt — see "Signing back in after sign-out".
-- **`useSocialWallet()`** — sign-in + signing + modal control: everything in `useSocialAuth()` plus `{ modalOpen, openModal(), closeModal(), signMessage(chain, message), sendTransaction(req), signTypedData(req), signAuthorization(req), signSolanaTransaction(tx), signTronTransaction(rawDataHex), getEthereumProvider(opts?): Eip1193Provider, getBalance(chain?), getBalances(), recordTransaction(tx), getTransactionHistory(limit?), getAccessToken(): string | null, hasPasskey(), addPasskey(), setUnlockPassword(password), canUnlockWithPassword(), unlockWithPassword(password), removeUnlockPassword(), forgetLastUser(), rotateShares({ password, passwordHint? }), exportPortableBackup({ password, passwordHint? }), hasRecoveryShare(), shouldPromptRecovery(), dismissRecoveryPrompt(), loading, error, clearError() }`. Passkey and password methods are per DEVICE: `addPasskey`/`setUnlockPassword` need a live session; `canUnlockWithPassword`/`unlockWithPassword` and `signInWithPasskey` are the signed-out pair that open one without an identity provider.
+- **`useSocialWallet()`** — sign-in + signing + modal control: everything in `useSocialAuth()` plus `{ modalOpen, openModal(), closeModal(), signMessage(chain, message), sendTransaction(req), signTypedData(req), signAuthorization(req), signSolanaTransaction(tx), signTronTransaction(rawDataHex), getEthereumProvider(opts?): Eip1193Provider, getBalance(chain?), getBalances(), recordTransaction(tx), getTransactionHistory(limit?), getAccessToken(): string | null, hasPasskey(), addPasskey(), deviceProtected(), protectDevice(), setUnlockPassword(password), canUnlockWithPassword(), unlockWithPassword(password), removeUnlockPassword(), forgetLastUser(), rotateShares({ password, passwordHint? }), exportPortableBackup({ password, passwordHint? }), hasRecoveryShare(), shouldPromptRecovery(), dismissRecoveryPrompt(), loading, error, clearError() }`. Passkey and password methods are per DEVICE: `addPasskey`/`setUnlockPassword` need a live session; `canUnlockWithPassword`/`unlockWithPassword` and `signInWithPasskey` are the signed-out pair that open one without an identity provider.
 
 `<SocialWalletModal>` is rendered automatically by `<DecaneKit>` (props: `{ open, onClose, theme?, socialAuth, onUnlock, onDisconnect }`) — control it via `useSocialWallet().openModal()`/`.closeModal()`, don't render it directly.
 
@@ -344,6 +344,25 @@ function SignInButton() {
 - Offer the shortcut when `canUsePasskey` (prefer it) or `await canUnlockWithPassword()` is true; fall back to the full method list otherwise.
 - "Use a different account" = `forgetLastUser()`. It drops the memory so the previous account stops being offered, and recomputes `canUsePasskey`. Device shares are untouched.
 - Only the explicit entry points consult the memory. `connect()`/`unlock()` keep the strict lookup, so an ordinary sign-in never silently re-offers the account the user just left.
+
+### Deferring wallet protection — since 2.23.0
+
+By default first-time setup wraps the device's share under a passkey (or the unlock password) before the session opens, so the first thing a new user meets is an authenticator sheet. Set `deferDeviceProtection: true` (on `DecaneConnectConfig`, or `social.deferDeviceProtection` on `<DecaneKit>`) and sign-in asks for nothing: the wallet is created, the session opens, signing works. The device just holds no stored share yet — which means no passkey or password unlock on later visits; each one is a full sign-in until the device is protected.
+
+```tsx
+const { deviceProtected, protectDevice } = useSocialWallet();
+
+async function beforeFirstTransaction() {
+  if (await deviceProtected()) return true;
+  // Your own explainer here, then:
+  return protectDevice();   // passkey where the device can hold one, else promptUnlockPassword({ kind: "set" })
+}
+```
+
+- `protectDevice()` needs a live session, provisions a fresh share from the enclave when the device has none, and is idempotent — a protected device resolves true at once. It resolves **false** when the user dismissed the prompt (nothing stored), so the app decides whether to proceed unprotected; anything else throws (`ReconnectRequiredError`, `NewDeviceError`).
+- `deviceProtected()` is the check: whether this device holds a wrapped share for the signed-in account.
+- Unaffected: `hasPasskey()` / `addPasskey()` / `setUnlockPassword()` still work afterwards; recovery is unchanged (the server and recovery shares exist from creation).
+- The server's `wallet_created` event records `unlockMethod: "deferred"` for such a wallet.
 
 ### Signing authority model — per-signature assertion since 2.2.0
 

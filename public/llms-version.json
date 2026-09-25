@@ -1,12 +1,17 @@
 {
   "$comment": "Freshness manifest for https://kit.decane.app/llms.txt — fetch this (small) document to check whether a cached copy of llms.txt is stale, instead of re-reading the full spec.",
   "package": "decane-connect-kit",
-  "version": "2.22.0",
-  "documentRevision": "2026-09-17",
+  "version": "2.23.0",
+  "documentRevision": "2026-09-25",
   "llmsTxt": "https://kit.decane.app/llms.txt",
   "npmRegistry": "https://registry.npmjs.org/decane-connect-kit/latest",
   "docs": "https://kit.decane.app/docs",
   "changelog": [
+    {
+      "version": "2.23.0",
+      "date": "2026-09-25",
+      "summary": "Deferred wallet protection: deferDeviceProtection (DecaneConnectConfig and SocialConfig) makes sign-in ask for no passkey or password — the wallet is created and the session opens with no stored device share — and the new protectDevice() wraps and stores one later, at the app's own moment (before the first transaction, say): passkey where the device can hold one, otherwise promptUnlockPassword. Resolves false on a dismissed prompt rather than throwing. deviceProtected() reports whether this device holds a wrapped share. Both on useSocialWallet(). Until protected, a device has no passkey/password unlock and every visit is a full sign-in; recovery is unchanged. The server's wallet_created event records unlockMethod \"deferred\"."
+    },
     {
       "version": "2.22.0",
       "date": "2026-09-17",
