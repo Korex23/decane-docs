@@ -1,5 +1,6 @@
 "use client";
 import { useRef, useState } from "react";
+import { CopyIcon, CheckIcon } from "@/components/Icons";
 
 interface CodeBlockProps {
   lang: string;
@@ -24,8 +25,8 @@ export function CodeBlock({ lang, file, children }: CodeBlockProps) {
       <div className="docs-code-head">
         <span className="docs-code-lang">{lang}</span>
         {file && <span className="docs-code-file">{file}</span>}
-        <button className={`docs-copy-btn${copied ? " copied" : ""}`} onClick={handleCopy}>
-          {copied ? "✓ Copied" : "Copy"}
+        <button className={`docs-copy-btn${copied ? " copied" : ""}`} onClick={handleCopy} aria-label={copied ? "Copied" : "Copy code"} title="Copy">
+          {copied ? <CheckIcon size={14} /> : <CopyIcon size={14} />}
         </button>
       </div>
       <pre ref={preRef}><code>{children}</code></pre>

@@ -9,6 +9,7 @@ import { ChainTable } from "./components/ChainTable";
 import { FrameworkTabs } from "./components/FrameworkTabs";
 import { DocsCards } from "./components/DocsCards";
 import { useTheme } from "@/lib/theme";
+import { CookieNotice } from "@/components/CookieNotice";
 import { VERSIONS } from "@/lib/versions";
 
 // Lightweight highlighter emitting the same tok-* classes the hand-written
@@ -2210,6 +2211,7 @@ decane.on("wallet-creating", () => showProgress());`)}
 
         <Toc current="web" />
       </div>
+      <CookieNotice />
     </div>
   );
 }

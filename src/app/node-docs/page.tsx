@@ -6,6 +6,7 @@ import { Toc } from "../docs/components/Toc";
 import { CodeBlock } from "../docs/components/CodeBlock";
 import { DocsCards } from "../docs/components/DocsCards";
 import { useTheme } from "@/lib/theme";
+import { CookieNotice } from "@/components/CookieNotice";
 import { VERSIONS } from "@/lib/versions";
 
 // Lightweight highlighter emitting the same tok-* classes the hand-written
@@ -834,6 +835,7 @@ const claims = await verifyAccessToken({ token, appId, verificationKey });`)}
 
         <Toc current="node" />
       </div>
+      <CookieNotice />
     </div>
   );
 }

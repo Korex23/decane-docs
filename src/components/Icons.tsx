@@ -60,3 +60,20 @@ export function KeyIcon({ size = 18 }: P) {
     </svg>
   );
 }
+
+export function CopyIcon({ size = 15 }: P) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" {...line} aria-hidden>
+      <rect x="9" y="9" width="11" height="11" rx="2.5" />
+      <path d="M5 15V6.5A2.5 2.5 0 0 1 7.5 4H15" />
+    </svg>
+  );
+}
+
+export function CheckIcon({ size = 15 }: P) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" {...line} strokeWidth={2.2} aria-hidden>
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  );
+}

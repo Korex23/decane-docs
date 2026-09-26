@@ -6,7 +6,7 @@ import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { SiteNav } from "@/components/SiteNav";
 import { SiteFooter } from "@/components/SiteFooter";
 import { ChainTypeIcon } from "@/components/ChainIcon";
-import { GoogleMark, XLogo, MailIcon, PhoneIcon, KeyIcon } from "@/components/Icons";
+import { GoogleMark, XLogo, MailIcon, PhoneIcon, KeyIcon, CopyIcon, CheckIcon } from "@/components/Icons";
 import { Reveal, Stagger, Item } from "@/components/motion";
 import { useTheme, DASHBOARD_URL } from "@/lib/theme";
 import { VERSIONS, NPM } from "@/lib/versions";
@@ -36,8 +36,8 @@ function InstallLine() {
     <div className="install">
       <span className="prompt">$</span>
       <span>{cmd}</span>
-      <button type="button" className={`copy${done ? " done" : ""}`} onClick={copy} aria-label="Copy install command">
-        {done ? "Copied" : "Copy"}
+      <button type="button" className={`copy${done ? " done" : ""}`} onClick={copy} aria-label={done ? "Copied" : "Copy install command"} title="Copy">
+        {done ? <CheckIcon size={14} /> : <CopyIcon size={14} />}
       </button>
     </div>
   );
@@ -195,7 +195,9 @@ function CodePanel() {
           ))}
         </div>
         <span className="file">{s.file}</span>
-        <button type="button" className={`copy-btn${done ? " done" : ""}`} onClick={copy}>{done ? "Copied" : "Copy"}</button>
+        <button type="button" className={`copy-btn${done ? " done" : ""}`} onClick={copy} aria-label={done ? "Copied" : "Copy code"} title="Copy">
+          {done ? <CheckIcon /> : <CopyIcon />}
+        </button>
       </div>
       <AnimatePresence mode="wait" initial={false}>
         <motion.div key={tab} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.22 }}>
