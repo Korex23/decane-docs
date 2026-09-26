@@ -25,8 +25,8 @@ need it for a single product.
 ## Version and freshness
 
 ```yaml
-version: 2.24.1
-document-revision: 2026-09-25
+version: 2.27.0
+document-revision: 2026-09-26
 canonical: https://kit.decane.app/llms.txt
 version-manifest: https://kit.decane.app/llms-version.json
 ```
@@ -38,6 +38,12 @@ SDK records a per-user **transaction history** you can read back. Since 2.6.0
 recovery is always on — a user who reinstalls gets their wallet back from
 signing in, so the old `serverAssistedRecovery` option is gone. Server-side
 token verification has its own package, **`decane-node`** (see Part 3).
+Since 2.26 sessions last **eight hours** and renew themselves while the user is
+active (see "Sessions"). Since 2.27 an app can choose the **identity tier**
+(`protection: 'identity'`): no passkey, no password, no recovery file — signing
+in is the whole ceremony (see "Protection tiers"). Wallet creation now waits
+for the enclave to enrol the wallet and throws `WalletEnrolmentError` instead
+of leaving a wallet that only ever worked on one device.
 
 `version` is the npm package version whose API surface this document describes.
 
@@ -239,10 +245,24 @@ interface DecaneConnectConfig {
   // falling back. Also available as SocialConfig.requireAssertionPerSignature
   // on the React <DecaneKit> path.
   requireAssertionPerSignature?: boolean;
-  // Recovery. The key is split 2-of-3 (device/server/recovery); a user on a new
-  // device recovers automatically via a synced passkey (Flow A), or falls back to
-  // a saved recovery file (Flow B). Flow B requires the two callbacks marked below.
-  offerRecoveryAtSignup?: boolean;    // default true — offer to save a recovery file at signup
+  // How this device holds its share of the wallet — see "Protection tiers".
+  // 'device' (default): wrapped at rest under a passkey or the unlock password.
+  // 'identity': nothing stored, nothing asked; every visit is a sign-in and the
+  // enclave provisions a fresh share against it. Same key either way.
+  protection?: 'identity' | 'device';
+  /** @deprecated alias for protection: 'identity' */
+  deferDeviceProtection?: boolean;
+  // Resume the live session in a NEW tab, not only after a reload. Default
+  // false in the device tier, true in the identity tier. The session handle is
+  // the signing credential, so this widens where it can be read from one tab
+  // to the whole origin — pair with requireAssertionPerSignature if that matters.
+  resumeSessionAcrossTabs?: boolean;
+  persistSession?: boolean;           // default true — reload resumes the session
+  // Recovery. The key is split 2-of-3 (device/server/recovery). A user on a new
+  // device is restored by signing in (the enclave holds a sealed share — "Flow
+  // S"); a synced passkey (Flow A) and a saved recovery file (Flow B) are the
+  // fallbacks. Flow B requires the two callbacks marked below.
+  offerRecoveryAtSignup?: boolean;    // default false since 2.7.4 — opt in to offer a recovery file at signup
   onRecoveryShareOffer?: (addresses: { evmAddress: string; solanaAddress: string })
     => Promise<{ wants: boolean; password?: string; passwordHint?: string }>;
   onRecoveryFileReady?: (file: RecoveryShareFile, filename: string) => Promise<void>;
@@ -285,7 +305,8 @@ interface DecaneConnect {
 }
 // ConnectResult = { addresses: { evm?: string; solana?: string; tron?: string }; isNewUser: boolean; profile?: AuthProfile }
 // AuthProfile   = { name?: string; email?: string; picture?: string }  — pass-through from the provider, never stored
-// SdkEvent = 'connected' | 'disconnected' | 'session-expired' | 'session-started'
+// SdkEvent = 'connected' | 'disconnected' | 'session-expired' | 'session-renewed' | 'session-started'
+//          | 'wallet-creating' | 'wallet-unlocking' | 'enrolment-failed' | 'migrated-to-identity'
 // TransactionRecord = { id, chain, kind, txHash, to, value, status, metadata, createdAt }
 // RecordTransactionInput = { chain, txHash?, to?, value?, kind?, status?, metadata? }
 ```
@@ -345,24 +366,64 @@ function SignInButton() {
 - "Use a different account" = `forgetLastUser()`. It drops the memory so the previous account stops being offered, and recomputes `canUsePasskey`. Device shares are untouched.
 - Only the explicit entry points consult the memory. `connect()`/`unlock()` keep the strict lookup, so an ordinary sign-in never silently re-offers the account the user just left.
 
-### Deferring wallet protection — since 2.23.0
+### Sessions — since 2.26.0
 
-By default first-time setup wraps the device's share under a passkey (or the unlock password) before the session opens, so the first thing a new user meets is an authenticator sheet. Set `deferDeviceProtection: true` (on `DecaneConnectConfig`, or `social.deferDeviceProtection` on `<DecaneKit>`) and sign-in asks for nothing: the wallet is created, the session opens, signing works. The device just holds no stored share yet — which means no passkey or password unlock on later visits; each one is a full sign-in until the device is protected.
+An access token lasts **eight hours**. The SDK renews it at 75% of its life
+while the user is active (`POST /auth/refresh`, emitting `session-renewed`),
+and the backend caps the chain at **seven days** from the sign-in, after which
+the user signs in again. The enclave's signing session has its own life; when
+it lapses with the token still valid, `unlock()` reopens it without a sign-in
+(no prompt in the identity tier; the passkey/password in the device tier).
+With `resumeSessionAcrossTabs` a new tab resumes the live session instead of
+reading as signed out. `disconnect()` stops the renewal.
 
-```tsx
-const { deviceProtected, protectDevice } = useSocialWallet();
+### Protection tiers — since 2.27.0 (`deferDeviceProtection` since 2.23.0)
 
-async function beforeFirstTransaction() {
-  if (await deviceProtected()) return true;
-  // Your own explainer here, then:
-  return protectDevice();   // passkey where the device can hold one, else promptUnlockPassword({ kind: "set" })
-}
-```
+Every wallet is a 2-of-3 split {device, server, recovery}. At creation the
+recovery share is sealed by the enclave ("enrolment"); with it, `/signer/provision`
+hands any signed-in session a fresh device share on the JWT alone. The tier is
+**how this device holds that share** — never which key the wallet is.
 
-- `protectDevice()` needs a live session, provisions a fresh share from the enclave when the device has none, and is idempotent — a protected device resolves true at once. It resolves **false** when the user dismissed the prompt (nothing stored), so the app decides whether to proceed unprotected; anything else throws (`ReconnectRequiredError`, `NewDeviceError`).
-- `deviceProtected()` is the check: whether this device holds a wrapped share for the signed-in account.
-- Unaffected: `hasPasskey()` / `addPasskey()` / `setUnlockPassword()` still work afterwards; recovery is unchanged (the server and recovery shares exist from creation).
-- The server's `wallet_created` event records `unlockMethod: "deferred"` for such a wallet.
+| | `protection: 'device'` (default) | `protection: 'identity'` |
+|---|---|---|
+| At creation | share wrapped under a passkey (or `promptUnlockPassword`) | nothing stored, nothing asked |
+| Later visits | passkey/password unlock, or sign in | sign in; the enclave provisions |
+| `requireAssertionPerSignature` | available | not applicable |
+| Lost device | sign in again | sign in again |
+
+**The identity tier's security statement, verbatim:** a wallet is exactly as
+safe as the user's identity-provider account plus Decane (the JWT signing key
+and the attested enclave). Anyone who can obtain a valid Decane session for the
+user can sign. There is no device-bound factor. Mitigations: a new-device email
+on every provision from an unseen device, a per-user freeze switch operated by
+Decane, and (follow-up) a fresh sign-in requirement for high-value operations.
+Do not choose it where a stolen Google session must not be enough to move funds.
+
+- The tier belongs to **this client, not the wallet**: two apps on one project
+  can hold the same wallet in different tiers (a marketplace with passkeys, a
+  social app without). Same key, same addresses. A per-signature assertion
+  declared by one app protects that app's sessions, not the wallet.
+- Switching an app to `'identity'` ports users on their next sign-in with no
+  loss of funds: an enrolled wallet provisions silently; one never enrolled but
+  holding a wrapped share on this device is unlocked ONE last time, enrolled,
+  and never prompted again (`migrated-to-identity` fires). Nothing is re-split,
+  rotated or moved.
+- In the identity tier `canSignInWithPasskey()` is false, `signInWithPasskey()`
+  and `addPasskey()` throw `CallSequenceError`, `protectDevice()` is a no-op
+  returning false, and `offerRecoveryAtSignup` is ignored.
+- The device tier keeps the deferred pattern for apps that want the passkey
+  asked at their own moment: `deviceProtected()` / `protectDevice()` on
+  `useSocialWallet()` — `protectDevice()` needs a live session, provisions a
+  share from the enclave if the device has none, wraps it (passkey, else
+  password), resolves false on a dismissed prompt, and is idempotent.
+- **Creation waits for enrolment, in every tier** (since 2.27.0): the server
+  share is uploaded as provisional, the enclave seals the recovery share (three
+  attempts, no retry on 429/403), and only then does the session open. On
+  failure the SDK throws `WalletEnrolmentError`, deletes any share it stored,
+  and the backend still reports no wallet — the next sign-in creates afresh.
+  Before, a failed enrolment left a wallet that could never be provisioned to
+  another device. The server's `wallet_created` event records the tier as
+  `unlockMethod: "identity" | "passkey" | "password"`.
 
 ### Handing a session to another app of the same project — since 2.24.0
 
@@ -489,6 +550,11 @@ All extend `DecaneConnectError` (`{ code: string; message: string; retryable: bo
 | `WrongPasswordError` | `WRONG_PASSWORD` | yes | Incorrect password for the recovery file |
 | `RecoveryWalletMismatchError` | `RECOVERY_WALLET_MISMATCH` | no | Recovery file is for a different wallet than the signed-in account |
 | `ExportNotAuthorizedError` | `EXPORT_NOT_AUTHORIZED` | yes | Export needs a fresh security check first |
+| `WalletEnrolmentError` | `WALLET_ENROLMENT_FAILED` | yes | Creation stopped: the enclave did not seal the wallet's share. Nothing was created — sign in again (2.27.0) |
+| `ProvisioningRateLimitedError` | `PROVISIONING_RATE_LIMITED` | yes | `/signer/provision` answered 429 — too many devices/tabs this hour; the wallet is fine, wait and sign in again. Never a new-device dead end (2.27.0) |
+| `EnclaveHttpError` | `ENCLAVE_HTTP` | 5xx only | Any other non-OK enclave answer; `.status` carries the HTTP status (2.27.0) |
+| `StaleDeviceShareError` | `STALE_DEVICE_SHARE` | yes | This device's share is from a superseded set; cleared, re-recover |
+| `InvalidAccessTokenError` | `INVALID_ACCESS_TOKEN` | no | `connectWithAccessToken` given a revoked or foreign token |
 
 ---
 

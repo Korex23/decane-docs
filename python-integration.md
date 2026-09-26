@@ -48,10 +48,13 @@ Claims you get back:
 | `uid` | The Decane user id. This is your foreign key — store this, not the email. |
 | `sub` | A keyed hash of the provider identity. Opaque; never parse it. |
 | `project_id` | The project the token was minted for. Check it, as above. |
-| `exp`, `iat`, `jti` | Standard. Expiry is 2 hours in production. |
+| `exp`, `iat`, `jti` | Standard. Expiry is 8 hours in production. `sat` is the sign-in time; the token can be refreshed until 7 days after it. |
 
-Two things that bite people. There is **no refresh token** — re-authenticating is the only
-renewal, so treat the token as the client's to manage, not a server session. And revocation is
+Two things that bite people. There is **no separate refresh token**, but a still-valid token
+can be traded for a fresh one: `POST /auth/refresh` with it as the Bearer returns
+`{"jwt", "expiresIn", "sessionExpiresIn"}`, capped at 7 days from the sign-in (then 401 — sign
+in again). The client SDKs do this automatically; if your server holds the token, it is yours
+to renew. An expired token cannot be refreshed. And revocation is
 checked by Decane, not by your verifier: a locally verified token stays valid to you until it
 expires, even if `/auth/revoke` was called. If that matters, call
 [`/share/addresses`](#resolve-wallet-addresses) or another Decane endpoint, which does check.
@@ -87,9 +90,10 @@ or you rebuild the oracle the backend is avoiding.
 
 **Codes:** six digits, ten-minute expiry, single use, at most 3 per address per hour.
 
-**The ceiling that will catch you:** auth endpoints allow 20 requests per 15 minutes *per IP*,
-and your server is one IP for every user. Fine for a few hundred logins a day; wrong for
-high-volume interactive login. Push those to the client SDK, or spread your egress.
+**Rate limits, precisely:** there is no per-IP limit on the auth endpoints, so your server
+being one IP for every user is fine. What is limited is guessing: OTP verification allows 10
+attempts per 15 minutes *per target email or phone*, and code sends are capped at 3 per hour
+per address.
 
 Other sign-in methods, same headers, same response shape:
 

@@ -1,12 +1,22 @@
 {
   "$comment": "Freshness manifest for https://kit.decane.app/llms.txt — fetch this (small) document to check whether a cached copy of llms.txt is stale, instead of re-reading the full spec.",
   "package": "decane-connect-kit",
-  "version": "2.24.1",
-  "documentRevision": "2026-09-25",
+  "version": "2.27.0",
+  "documentRevision": "2026-09-26",
   "llmsTxt": "https://kit.decane.app/llms.txt",
   "npmRegistry": "https://registry.npmjs.org/decane-connect-kit/latest",
   "docs": "https://kit.decane.app/docs",
   "changelog": [
+    {
+      "version": "2.27.0",
+      "date": "2026-09-26",
+      "summary": "The identity tier: protection: 'identity' (deferDeviceProtection is now an alias) — no passkey, no password, no recovery file; nothing stored on the device; every visit is a sign-in and the enclave provisions a fresh share against it. Security statement in the spec. Existing users port on their next sign-in with the same wallet (enrolled wallets silently; an unenrolled wallet with a wrapped share on the device sees one last prompt, then 'migrated-to-identity'). resumeSessionAcrossTabs defaults to true in that tier. Wallet creation now WAITS for the enclave to enrol the wallet (provisional server share, three attempts) and throws WalletEnrolmentError leaving nothing behind, in every tier. A 429 on provisioning is ProvisioningRateLimitedError, never NewDeviceError; EnclaveHttpError carries any other enclave status. Session renewal now applies to ordinary wallet sessions (2.26 armed it only for connectWithAccessToken sessions). Passkey entry points refuse in the identity tier; protectDevice() is a no-op there."
+    },
+    {
+      "version": "2.26.1",
+      "date": "2026-09-25",
+      "summary": "Sessions: the access token lasts eight hours (was two) and is renewed at 75% of its life while the user is active, via POST /auth/refresh, capped at seven days; 'session-renewed' event. resumeSessionAcrossTabs (opt-in, and exposed on <DecaneKit> as of this release): the live session resumes in a new tab rather than only after a reload. Return visits are faster: attestation collateral is cached in localStorage for 12 hours and a verified attestation persists for the tab, so the enclave is not re-verified on every unlock."
+    },
     {
       "version": "2.24.1",
       "date": "2026-09-25",
@@ -65,10 +75,15 @@
   ],
   "mobile": {
     "package": "decane-connect-kit-expo",
-    "version": "0.4.0",
+    "version": "0.5.0",
     "llmsTxt": "https://kit.decane.app/llms-expo.txt",
     "npmRegistry": "https://registry.npmjs.org/decane-connect-kit-expo/latest",
     "changelog": [
+      {
+        "version": "0.5.0",
+        "date": "2026-09-26",
+        "summary": "Ports the identity tier from web 2.27.0: protection: 'identity' establishes no unlock tier at creation — no passkey ceremony, no biometric key, no PIN, nothing in the keystore — and provisions from the enclave on every visit; canUnlock/hasPasskey/canSignInWithPasskey false, passkey entry points throw CALL_SEQUENCE, activeUnlockMethod null. Existing users port on their next sign-in (enrolled silently; a legacy unenrolled wallet with a stored share sees its tier's prompt once, then 'migrated-to-identity'). Creation waits for enrolment in every tier (WALLET_ENROLMENT_FAILED, nothing left behind). PROVISIONING_RATE_LIMITED for a 429 on provisioning; ENCLAVE_HTTP carries other statuses. Session renewal: the access token (eight hours) is renewed at 75% of its life while the app holds a live identity ('session-renewed'), which this package lacked entirely; the device unlock token remains the way back once a token has lapsed on the device tier."
+      },
       {
         "version": "0.4.0",
         "date": "2026-09-25",
@@ -88,6 +103,11 @@
     "npmRegistry": "https://registry.npmjs.org/decane-node/latest",
     "docs": "https://kit.decane.app/node-docs",
     "changelog": [
+      {
+        "version": "1.4.0",
+        "date": "2026-09-26",
+        "summary": "Spec correction, no package change: access tokens last 8 hours (not ~30 minutes / 2 hours) and are renewable through POST /auth/refresh with the still-valid token as Bearer, capped at 7 days from sign-in; and there is NO per-IP rate limit on the auth endpoints — the old '20 requests / 15 minutes per IP' claim was wrong. OTP attempts are limited per target address (10 / 15 min), code sends at 3 / hour / address."
+      },
       {
         "version": "1.4.0",
         "date": "2026-09-25",

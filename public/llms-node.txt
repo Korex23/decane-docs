@@ -16,7 +16,7 @@ client options. Dual ESM + CJS build. Single runtime dependency: `jose`.
 ```yaml
 package: decane-node
 version: 1.4.0
-document-revision: 2026-09-25
+document-revision: 2026-09-26
 canonical: https://kit.decane.app/llms-node.txt
 version-manifest: https://kit.decane.app/llms-version.json   # under the "node" key
 web-sibling: https://kit.decane.app/llms.txt                 # decane-connect-kit (browser)
@@ -101,7 +101,7 @@ await decane.connectWithToken(jwtFromYourIssuer);        // custom auth (your ow
 
 // Every sign-in resolves to:
 interface DecaneAuthResult {
-  accessToken: string;   // Decane JWT (~2 h expiry, NO refresh token)
+  accessToken: string;   // Decane JWT: 8 h expiry, renewable via POST /auth/refresh (below)
   userId: string;        // stable Decane user id
   isNewUser: boolean;
   hasShare: boolean;     // false = no wallet yet (creation is client-side)
@@ -429,13 +429,18 @@ verifies users from web, mobile, and server-side sign-ins alike. Send as
   immediate sign-out enforcement, additionally gate sensitive routes on a
   fresh backend call (`getAddresses(token)` works — the backend rejects
   revoked tokens).
-- **No refresh token exists.** Access tokens are ES256 JWTs with ~30-minute
-  expiry; re-authenticating is the only renewal. Do not look for a refresh or
-  session endpoint.
-- **Rate limit: 20 requests / 15 minutes PER IP across all auth endpoints**
-  (plus 3 email codes/hour per address). A server funnels every user through
-  one egress IP — fine for moderate traffic, wrong for proxying high-volume
-  interactive login through a single box.
+- **Tokens last 8 hours and renew, but there is no separate refresh token.**
+  `POST /auth/refresh` with a still-valid token as the Bearer returns
+  `{ jwt, expiresIn, sessionExpiresIn }`; the chain is capped at 7 days from
+  the sign-in, after which it answers 401 and the user signs in again. The
+  client SDKs call it automatically at 75% of the token's life; `decane-node`
+  does not wrap it yet — call the endpoint directly if your server holds the
+  token. An expired token cannot be refreshed.
+- **There is no per-IP rate limit on the auth endpoints.** Funnelling every
+  user through one egress IP is fine. What IS limited: OTP attempts, at 10 per
+  15 minutes **per target email or phone** (guessing one account's code), and
+  code sends, at 3 per hour per address; and `/auth/unlock-token/exchange`, at
+  30 per 15 minutes per token.
 - **`hasShare: false` means the user has no wallet yet.** Wallet creation
   needs device-held key material and happens only in the client SDKs;
   `getAddresses` returns all-null for such users.

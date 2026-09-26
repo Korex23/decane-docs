@@ -13,8 +13,8 @@ npx expo install decane-connect-kit-expo \
 
 ```yaml
 package: decane-connect-kit-expo
-version: 0.4.0
-document-revision: 2026-09-25
+version: 0.5.0
+document-revision: 2026-09-26
 canonical: https://kit.decane.app/llms-expo.txt
 web-sibling: https://kit.decane.app/llms.txt
 ```
@@ -92,8 +92,13 @@ interface DecaneConnectNativeConfig {
   origin?: string;                    // Android: `android:apk-key-hash:<hash>`; iOS defaults to https://<rpId>
   unlockPreference?: Array<'passkey' | 'secure-enclave' | 'pin'>;
 
+  // How this device holds its share — see "Protection tiers". 'device'
+  // (default): the first unlock tier that works wraps it. 'identity': nothing
+  // stored, nothing asked; every visit is a sign-in. Same key either way.
+  protection?: 'identity' | 'device';
+
   // Recovery UI hooks
-  offerRecoveryAtSignup?: boolean;    // default true
+  offerRecoveryAtSignup?: boolean;    // default false since 0.2.2 — opt in
   onRecoveryShareOffer?: (a: { evmAddress: string; solanaAddress: string }) =>
     Promise<{ wants: boolean; password: string; passwordHint?: string }>;
   onRecoveryFileReady?: (file: RecoveryShareFile, filename: string) => Promise<void>;
@@ -228,34 +233,67 @@ PBKDF2 runs in pure JavaScript (no native implementation to call), so the PIN
 tier and recovery-file encrypt/decrypt cost **seconds, not milliseconds**. Never
 paid on the passkey or biometric path, and never per signature.
 
-### Session renewal — since 0.4.0
+### Sessions — renewal since 0.5.0, device unlock token since 0.4.0
 
-The access token lasts **two hours** (the signer's session is clamped to the
-same), and there is no refresh token. On the passkey tier a fresh assertion
-buys a new one. On the secure-enclave and PIN tiers the device now holds a
-**device unlock token** from the backend — 90 days, stored beside the share and
-encrypted under the same key — so the one unlock the device already does
-(biometric, or the PIN) yields both the share and a new JWT:
+The access token lasts **eight hours**. Since 0.5.0 the SDK renews it at 75%
+of its life while the app holds a live identity (`session-renewed` fires; the
+backend caps the chain at seven days), so an active user is not signed out at
+expiry. When the enclave's signing session lapses with the token still valid,
+`unlock()` reopens it — no sign-in.
+
+Once the token itself is gone (a phone left for days), the device tier has a
+second way back that is not an email code: the **device unlock token** — 90
+days, stored beside the share and encrypted under the same key — so the one
+unlock the device already does (biometric, or the PIN) yields both the share
+and a new JWT:
 
 ```ts
 if (decane.needsReconnect() && (await decane.canUnlock())) {
   await decane.unlock();          // biometric / PIN prompt; no email code, no Google
 } else if (decane.needsReconnect()) {
-  // no token on this device (revoked, expired, or a build before 0.4.0): sign in
+  // identity tier, or no token on this device: sign in
 }
 ```
 
 - Issued at wallet creation and whenever a device is provisioned or recovered;
-  a normal sign-in re-issues it. A failure to store one costs a sign-in later,
-  never the wallet.
+  a normal sign-in re-issues it. Not issued in the identity tier (nothing is
+  stored there; `canUnlock()` is false and a gone session means a sign-in).
 - `unlock()` prefers a passkey, then the token; an expired JWT in memory is
   treated as no JWT. A token the backend refuses throws
-  `UNLOCK_TOKEN_REJECTED` and is forgotten, so the next `unlock()` asks for a
-  sign-in instead of failing the same way.
+  `UNLOCK_TOKEN_REJECTED` and is forgotten.
 - `removeDeviceUnlock()` revokes the account's tokens (every device) and forgets
-  this device's copy — the "lost phone" switch. `disconnect()` keeps it, so a
-  user who signs out is one unlock from a session, as on the web.
+  this device's copy — the "lost phone" switch. `disconnect()` keeps it.
 - One token per account: setting up a second device revokes the first's.
+
+### Protection tiers — since 0.5.0
+
+`protection` decides whether this app holds a piece of the wallet on the phone
+at all. `'device'` (default) is everything above — the unlock tiers, the
+unlock token, `addPasskey()`. `'identity'` establishes nothing: no passkey
+ceremony, no biometric key, no PIN, nothing in the keystore; sign-in is the
+whole ceremony every time and the enclave provisions a fresh share against it.
+
+**The identity tier's security statement, verbatim:** a wallet is exactly as
+safe as the user's identity-provider account plus Decane (the JWT signing key
+and the attested enclave). Anyone who can obtain a valid Decane session for the
+user can sign. There is no device-bound factor. Mitigations: a new-device email
+on every provision from an unseen device, a per-user freeze switch operated by
+Decane, and (follow-up) a fresh sign-in requirement for high-value operations.
+
+- The tier belongs to this client, not the wallet: two apps on one project can
+  hold the same wallet in different tiers. Same key, same addresses, same funds.
+- Switching an app to `'identity'` ports users on their next sign-in: enrolled
+  wallets provision silently; one never enrolled but holding a wrapped share on
+  this phone is unlocked with its tier ONE last time, enrolled, and never
+  prompted again (`migrated-to-identity` fires). Nothing is re-split or moved.
+- In the identity tier `canUnlock()`, `hasPasskey()` and `canSignInWithPasskey()`
+  are false; `signInWithPasskey()` and `addPasskey()` throw `CALL_SEQUENCE`;
+  `getCapabilities().activeUnlockMethod` is null; `promptPin`/`rpId` are unused.
+- **Creation waits for enrolment, in every tier** (since 0.5.0): the server
+  share is uploaded as provisional, the enclave seals the recovery share (three
+  attempts), and only then does the session open. On failure the SDK throws
+  `WALLET_ENROLMENT_FAILED`, deletes any share it stored, and the backend still
+  reports no wallet — the next sign-in creates afresh.
 
 ### Adding a passkey later — since 0.4.0
 
@@ -401,6 +439,10 @@ so shared code can branch identically.
 | `BIOMETRIC_UNAVAILABLE` | biometrics dismissed, or keystore entry gone |
 | `NATIVE_MODULE_MISSING` | a peer dependency is absent — install and rebuild |
 | `ATTESTATION_FAILED` | the enclave is not the one pinned |
+| `WALLET_ENROLMENT_FAILED` | creation stopped: the enclave did not seal the wallet's share; nothing was created — sign in again (0.5.0) |
+| `PROVISIONING_RATE_LIMITED` | `/signer/provision` answered 429; the wallet is fine, wait and sign in again — never a new-device dead end (0.5.0) |
+| `ENCLAVE_HTTP` | any other non-OK enclave answer; `.status` carries the HTTP status (0.5.0) |
+| `CALL_SEQUENCE` | a method that does not apply here — e.g. `addPasskey()` in the identity tier |
 | `WRONG_PASSWORD` | recovery file password is wrong |
 | `INVALID_API_KEY` | key invalid or revoked |
 | `NETWORK` | request failed |
