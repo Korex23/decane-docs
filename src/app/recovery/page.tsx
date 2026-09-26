@@ -12,6 +12,11 @@ const MONO = "'Geist Mono', ui-monospace, 'SF Mono', monospace";
 // not the developer integrating the SDK — plain language, no API names.
 // Naming is kept in step with the wallet modal: "recovery file" (one share,
 // safe anywhere) vs "full recovery file" (two shares, bearer secret).
+//
+// The one source for this text: there is no markdown twin. Since 2.27 the
+// easy way is signing in again — for every wallet, not only where a passkey
+// synced — and some apps (the identity tier) never ask for a passkey or
+// password at all; that tier's plain-words security statement is here too.
 
 interface Scenario {
   tag: string;
@@ -21,21 +26,30 @@ interface Scenario {
 
 const SCENARIOS: Scenario[] = [
   {
-    tag: "Most people",
+    tag: "Everyone",
     title: "Signing in on a new device",
     steps: [
-      "Sign in the way you always do — Google or email.",
-      "When prompted, use your fingerprint, face, or device passcode — the same passkey prompt you already use to unlock apps and websites.",
-      "Your wallet is back. Same addresses, same balance, nothing to remember.",
+      "Sign in the way you always do — Google, email, phone, or whatever the app offers.",
+      "Your wallet is back. Same addresses, same balance, nothing to remember. Signing in proves who you are; the enclave then hands your new device its own piece of the wallet.",
+      "Some apps then ask you to protect the wallet on this device with a passkey (fingerprint, face, or device passcode) or a password. Others never ask — see below.",
     ],
   },
   {
-    tag: "Fallback",
+    tag: "Some apps",
+    title: "Apps that ask for nothing more",
+    steps: [
+      "Social apps, where a wallet is a feature rather than the point, may never ask you to set up a passkey, a password, or a backup. Signing in is the whole ceremony, every visit, and nothing about your wallet is kept on your device between visits.",
+      "Plainly: in those apps your wallet is exactly as safe as the account you sign in with. Anyone who can sign in as you can use your wallet. So protect that account — a strong password and two-factor authentication, as you would for your email.",
+      "Two things we do for you: you get an email whenever your wallet is opened from a device you haven't used before, and if it wasn't you, the app's support can freeze your wallet — nothing can be sent from it, by anyone, until it's unfrozen. Signing in still works; spending doesn't.",
+    ],
+  },
+  {
+    tag: "Optional",
     title: "Restoring from your recovery file",
     steps: [
-      "Sign in the way you always do — Google or email.",
-      "If your device can't find a synced passkey, you'll be asked to upload your recovery file and enter its password.",
-      "Your wallet is restored and a fresh passkey is set up here, so next time you're back to the easy way. You'll be given a new recovery file — save it, the old one stops working.",
+      "You may have saved a small file when you created your wallet, or from settings later: your recovery file. It's optional — it exists so you can open your wallet even if Decane's servers are unreachable.",
+      "Sign in the way you always do. If the wallet can't be restored the easy way, you'll be asked to upload the file and enter its password.",
+      "Your wallet is restored. You'll be given a new recovery file — save it; the old one stops working the moment the new one exists.",
     ],
   },
 ];
@@ -54,8 +68,12 @@ const FAQS: Array<{ q: string; a: string }> = [
     a: "It's an optional, more powerful backup you can create from your wallet settings. Unlike the ordinary recovery file, it contains two of the three pieces — so the file plus its password is complete control of your wallet. Keep it offline (an encrypted USB drive, or printed in a safe), never in a cloud drive. Most people never need one; it exists for anyone who wants their wallet fully recoverable entirely on their own.",
   },
   {
+    q: "Someone else signed in as me. What do I do?",
+    a: "Change the password of the account you sign in with right away and sign out of its other sessions — that account is the key. Then contact the app's support and ask for your wallet to be frozen while you sort it out; unfreezing restores it exactly, nothing about the wallet moves. You'll usually learn about it from the new-device email.",
+  },
+  {
     q: "What if I lose everything?",
-    a: "If you lose your device and your recovery file (and any full recovery file), your wallet can't be recovered — not by you, not by anyone. There's no reset-password option. That's a deliberate consequence of only you controlling the wallet, not an oversight. It's why saving a recovery file is worth the one-time minute it takes.",
+    a: "If you lose the account you sign in with — and you have no recovery file and no full recovery file — your wallet can't be recovered, not by you, not by anyone. Signing in is the key, so guard that account as you would the wallet itself; recovering the account (through Google, your email provider, or your phone number) recovers the wallet with it. If it's Decane that's unreachable, nothing is lost: the wallet waits. The recovery file is what removes that dependency.",
   },
 ];
 
@@ -125,10 +143,11 @@ export default function RecoveryGuidePage() {
           <span style={{ color: "var(--doc-accent)", fontStyle: "italic" }}>keep your wallet.</span>
         </h1>
         <p style={{ fontSize: 16, color: "var(--doc-text-muted)", maxWidth: "54ch", margin: "0 auto", lineHeight: 1.65 }}>
-          Your wallet is protected by three separate things, and any two of them are enough to open
-          it. One lives on your device. One lives with us. One is yours to keep. No single one, on
-          its own, can do anything with your wallet — so losing any one of them isn&rsquo;t a
-          disaster.
+          Your wallet is protected by three separate pieces, and any two of them are enough to open
+          it. One is issued to the device you&rsquo;re using. One lives with us. One is sealed inside
+          our signing enclave, opened only for you, after you sign in. No single piece, on its own,
+          can do anything with your wallet — so losing your phone isn&rsquo;t a disaster: sign in
+          again, and it&rsquo;s back.
         </p>
       </section>
 
@@ -136,9 +155,9 @@ export default function RecoveryGuidePage() {
       <section className="rc-reveal" style={{ padding: "12px 24px 64px", maxWidth: 1000, margin: "0 auto" }}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 16 }}>
           {[
-            { n: "01", t: "Your device", d: "Held in your browser, unlocked by your fingerprint, face, or a PIN. Follows you to a new device through your password manager's passkey sync." },
-            { n: "02", t: "Our server", d: "Encrypted at rest on the decane key server. We never hold a full key and never sign anything for you." },
-            { n: "03", t: "Your recovery file", d: "A small file that's yours to keep, safe in a password manager or cloud drive. One piece alone reveals nothing." },
+            { n: "01", t: "Your device", d: "Issued to the device you're using, for that session. Some apps protect it there with your fingerprint, face, or a password; others keep nothing on the device at all and simply issue a fresh one each time you sign in." },
+            { n: "02", t: "Our server", d: "Encrypted at rest on the Decane key server. It never holds a full key and never signs anything on its own." },
+            { n: "03", t: "The sealed piece", d: "Locked inside our signing enclave — a box only the enclave can open, and only for you, after you sign in. It's what lets a new device get its own piece from a sign-in alone. Your optional recovery file is a copy of this one, safe in a password manager or cloud drive." },
           ].map((p) => (
             <div
               key={p.n}
