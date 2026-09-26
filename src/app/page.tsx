@@ -1,72 +1,85 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
-import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
-import { Reveal, Stagger, Item } from "@/components/motion";
 import Link from "next/link";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { SiteNav } from "@/components/SiteNav";
 import { SiteFooter } from "@/components/SiteFooter";
 import { ChainTypeIcon } from "@/components/ChainIcon";
-import { GoogleMark, XLogo, MailIcon, PhoneIcon, ChatIcon, KeyIcon } from "@/components/Icons";
-import { CodeBlock } from "@/app/docs/components/CodeBlock";
+import { GoogleMark, XLogo, MailIcon, PhoneIcon, KeyIcon } from "@/components/Icons";
+import { Reveal, Stagger, Item } from "@/components/motion";
 import { useTheme, DASHBOARD_URL } from "@/lib/theme";
 import { VERSIONS, NPM } from "@/lib/versions";
 
-// ─── Hero product mock ───────────────────────────────────────────────────────
-// A still of what the user sees: the sign-in sheet, then the wallet that
-// comes out of it. Static on purpose.
+// ─── Small icons used only here ──────────────────────────────────────────────
 
-function HeroMock() {
-  const reduced = useReducedMotion();
-  const enter = (delay: number) =>
-    reduced
-      ? {}
-      : {
-          initial: { opacity: 0, y: 24, scale: 0.98 },
-          animate: { opacity: 1, y: 0, scale: 1 },
-          transition: { duration: 0.8, delay, ease: [0.22, 1, 0.36, 1] as const },
-        };
+const line = { fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round", strokeLinejoin: "round" } as const;
+const DeviceIcon = () => (<svg width="15" height="15" viewBox="0 0 24 24" {...line}><rect x="6" y="2.5" width="12" height="19" rx="2.5" /><path d="M11 18h2" /></svg>);
+const ServerIcon = () => (<svg width="15" height="15" viewBox="0 0 24 24" {...line}><rect x="3" y="4" width="18" height="6" rx="1.5" /><rect x="3" y="14" width="18" height="6" rx="1.5" /><path d="M7 7h.01M7 17h.01" /></svg>);
+const LockIcon = () => (<svg width="15" height="15" viewBox="0 0 24 24" {...line}><rect x="4" y="10" width="16" height="11" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" /></svg>);
+const ShieldIcon = () => (<svg width="18" height="18" viewBox="0 0 24 24" {...line}><path d="M12 3 4 6.5v5c0 4.6 3.4 8.4 8 9.5 4.6-1.1 8-4.9 8-9.5v-5z" /><path d="m9 12 2 2 4-4" /></svg>);
+const RefreshIcon = () => (<svg width="18" height="18" viewBox="0 0 24 24" {...line}><path d="M3 12a9 9 0 0 1 15.5-6.3L21 8" /><path d="M21 3v5h-5" /><path d="M21 12a9 9 0 0 1-15.5 6.3L3 16" /><path d="M3 21v-5h5" /></svg>);
+const WalletIcon = () => (<svg width="18" height="18" viewBox="0 0 24 24" {...line}><rect x="3" y="6" width="18" height="13" rx="2.5" /><path d="M3 10h18M16 15h2" /></svg>);
+
+// ─── Install line ────────────────────────────────────────────────────────────
+
+function InstallLine() {
+  const [done, setDone] = useState(false);
+  const cmd = "npm install decane-connect-kit";
+  function copy() {
+    navigator.clipboard?.writeText(cmd).then(() => {
+      setDone(true);
+      setTimeout(() => setDone(false), 1400);
+    });
+  }
   return (
-    <div className="hero-visual" aria-hidden>
-      <motion.div className="mock mock-signin" {...enter(0.35)}>
-        <h4>Sign in</h4>
-        <div className="sub">Continue to get your wallet</div>
-        <div className="mock-btn"><GoogleMark /> Continue with Google</div>
-        <div className="mock-row">
-          <div className="mock-btn"><XLogo size={15} /></div>
-          <div className="mock-btn"><ChatIcon size={17} /></div>
-          <div className="mock-btn"><PhoneIcon size={17} /></div>
-        </div>
-        <div className="mock-divider">or</div>
-        <div className="mock-input">name@example.com</div>
-        <div className="mock-btn primary">Continue with email</div>
-        <div className="mock-foot">No seed phrase. No extension.</div>
-      </motion.div>
-      <motion.div
-        className="mock mock-wallet"
-        {...(reduced
-          ? {}
-          : {
-              initial: { opacity: 0, y: 28, scale: 0.96 },
-              animate: { opacity: 1, y: [28, 0, -5, 0], scale: 1 },
-              transition: {
-                opacity: { duration: 0.6, delay: 1.1 },
-                scale: { duration: 0.6, delay: 1.1, ease: [0.22, 1, 0.36, 1] },
-                y: { duration: 0.6, delay: 1.1, ease: [0.22, 1, 0.36, 1], times: [0, 0.55, 0.8, 1] },
-              },
-            })}
-      >
-        <div className="head">
-          <b>Wallet ready</b>
-          <span className="ok">Signed in</span>
-        </div>
-        <div className="user"><span className="avatar">A</span> ada@example.com</div>
-        <ul>
-          <li><ChainTypeIcon type="evm" size={18} /><span>Ethereum</span><code>0x7a3f…c21e</code></li>
-          <li><ChainTypeIcon type="solana" size={18} /><span>Solana</span><code>9xQe…4kPz</code></li>
-          <li><ChainTypeIcon type="tron" size={18} /><span>Tron</span><code>TQn9…Vb3d</code></li>
-        </ul>
-      </motion.div>
+    <div className="install">
+      <span className="prompt">$</span>
+      <span>{cmd}</span>
+      <button type="button" className={`copy${done ? " done" : ""}`} onClick={copy} aria-label="Copy install command">
+        {done ? "Copied" : "Copy"}
+      </button>
+    </div>
+  );
+}
+
+// ─── Flow panel: sign in → key split → wallet ready ─────────────────────────
+
+function FlowPanel() {
+  return (
+    <div className="panel flow" aria-hidden>
+      <Stagger className="flow-grid" delay={0.14}>
+        <Item className="flow-card">
+          <div className="flow-head"><span className="eyebrow">01 · Sign in</span><span className="dot" /></div>
+          <div className="mock-btn"><GoogleMark size={18} /> Continue with Google</div>
+          <div className="mock-row">
+            <div className="mock-btn"><XLogo size={15} /></div>
+            <div className="mock-btn"><PhoneIcon size={17} /></div>
+          </div>
+          <div className="mock-input">name@example.com</div>
+          <div className="mock-primary">Continue with email</div>
+          <p className="foot">The same ten seconds it takes everywhere else.</p>
+        </Item>
+        <Item className="flow-card">
+          <div className="flow-head"><span className="eyebrow">02 · Key split three ways</span><span className="dot" /></div>
+          <div className="share-rows">
+            <div className="share-row"><span className="ib"><DeviceIcon /></span><span><b>Your device</b><small>Issued per session</small></span></div>
+            <div className="share-row"><span className="ib"><ServerIcon /></span><span><b>Decane server</b><small>Encrypted at rest</small></span></div>
+            <div className="share-row"><span className="ib"><LockIcon /></span><span><b>Sealed enclave</b><small>Opens only for you</small></span></div>
+          </div>
+          <p className="foot">Any two open the wallet. No single piece can do anything alone.</p>
+        </Item>
+        <Item className="flow-card strong">
+          <div className="flow-head"><span className="eyebrow">03 · Wallet ready</span><span className="ok">Signed in</span></div>
+          <div className="user-row"><span className="avatar">A</span>ada@example.com</div>
+          <ul className="wallet-list">
+            <li><ChainTypeIcon type="evm" size={18} />Ethereum<code>0x7a3f…c21e</code></li>
+            <li><ChainTypeIcon type="solana" size={18} />Solana<code>9xQe…4kPz</code></li>
+            <li><ChainTypeIcon type="tron" size={18} />Tron<code>TQn9…Vb3d</code></li>
+          </ul>
+          <p className="foot">Same addresses on every device and in every app on your project.</p>
+        </Item>
+      </Stagger>
     </div>
   );
 }
@@ -106,7 +119,6 @@ function hl(code: string): ReactNode[] {
 const SAMPLES = {
   web: {
     label: "Web",
-    lang: "tsx",
     file: "App.tsx",
     code: `import { DecaneKit, useSocialAuth } from 'decane-connect-kit';
 
@@ -129,7 +141,6 @@ function SignInButton() {
   },
   expo: {
     label: "React Native",
-    lang: "ts",
     file: "wallet.ts",
     code: `import { createDecaneConnect } from "decane-connect-kit-expo";
 
@@ -148,8 +159,7 @@ await decane.sendTransaction({ chain: "evm:8453", to: "0x...", value: 10_000n })
   },
   node: {
     label: "Your backend",
-    lang: "ts",
-    file: "auth.ts",
+    file: "server.ts",
     code: `import { DecaneClient } from 'decane-node';
 
 const decane = new DecaneClient({ appId: process.env.DECANE_APP_ID });
@@ -164,34 +174,32 @@ const user = await decane.getUser(token); // { id, addresses, linkedAccounts }`,
 
 type SampleKey = keyof typeof SAMPLES;
 
-function IntegrationCode() {
+function CodePanel() {
   const [tab, setTab] = useState<SampleKey>("web");
+  const [done, setDone] = useState(false);
   const s = SAMPLES[tab];
+  function copy() {
+    navigator.clipboard?.writeText(s.code).then(() => {
+      setDone(true);
+      setTimeout(() => setDone(false), 1400);
+    });
+  }
   return (
-    <div>
-      <div className="code-tabs" role="tablist">
-        {(Object.keys(SAMPLES) as SampleKey[]).map((k) => (
-          <button
-            key={k}
-            type="button"
-            role="tab"
-            aria-selected={tab === k}
-            className={`code-tab${tab === k ? " active" : ""}`}
-            onClick={() => setTab(k)}
-          >
-            {SAMPLES[k].label}
-          </button>
-        ))}
+    <div className="code-panel">
+      <div className="code-panel-head">
+        <div className="pills" role="tablist">
+          {(Object.keys(SAMPLES) as SampleKey[]).map((k) => (
+            <button key={k} type="button" role="tab" aria-selected={tab === k} className={`pill${tab === k ? " active" : ""}`} onClick={() => setTab(k)}>
+              {SAMPLES[k].label}
+            </button>
+          ))}
+        </div>
+        <span className="file">{s.file}</span>
+        <button type="button" className={`copy-btn${done ? " done" : ""}`} onClick={copy}>{done ? "Copied" : "Copy"}</button>
       </div>
       <AnimatePresence mode="wait" initial={false}>
-        <motion.div
-          key={tab}
-          initial={{ opacity: 0, y: 6 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -6 }}
-          transition={{ duration: 0.22 }}
-        >
-          <CodeBlock lang={s.lang} file={s.file}>{hl(s.code)}</CodeBlock>
+        <motion.div key={tab} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.22 }}>
+          <pre><code>{hl(s.code)}</code></pre>
         </motion.div>
       </AnimatePresence>
     </div>
@@ -202,11 +210,12 @@ function IntegrationCode() {
 
 export default function Page() {
   const [theme, toggleTheme] = useTheme();
+  const reduced = useReducedMotion();
 
-  // The hero mock drifts up a little faster than the page as you scroll away
-  // from it. Scroll-linked work is GSAP's; everything else is Framer Motion.
+  // The flow panel drifts up a little faster than the page as you scroll
+  // away from it. Scroll-linked work is GSAP's; everything else is Framer.
   useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (reduced) return;
     let ctx: { revert: () => void } | null = null;
     let cancelled = false;
     (async () => {
@@ -215,8 +224,8 @@ export default function Page() {
       if (cancelled) return;
       gsap.registerPlugin(ScrollTrigger);
       ctx = gsap.context(() => {
-        gsap.to(".hero-visual", {
-          yPercent: -12,
+        gsap.to(".flow", {
+          yPercent: -6,
           ease: "none",
           scrollTrigger: { trigger: ".hero", start: "top top", end: "bottom top", scrub: 0.6 },
         });
@@ -226,188 +235,153 @@ export default function Page() {
       cancelled = true;
       ctx?.revert();
     };
-  }, []);
+  }, [reduced]);
 
   return (
     <div className="site" data-theme={theme}>
       <SiteNav theme={theme} onToggleTheme={toggleTheme} />
 
       <header className="hero">
-        <div className="container hero-grid">
-          <Stagger inView={false} delay={0.1} start={0.05}>
-            <Item><h1>Turn any <span style={{ whiteSpace: "nowrap" }}>sign-in</span> into a wallet.</h1></Item>
-            <Item><p className="lede">
+        <Stagger className="container hero-inner" inView={false} delay={0.1} start={0.05}>
+          <Item>
+            <div className="hero-badge">
+              <span className="ver">{VERSIONS.web}</span>
+              Sign in and go: wallets with no passkey or password
+              <a href="/llms-version.json" target="_blank" rel="noreferrer" className="ulink">What&rsquo;s new</a>
+            </div>
+          </Item>
+          <Item><h1>Turn any <span style={{ whiteSpace: "nowrap" }}>sign-in</span> into a wallet.</h1></Item>
+          <Item>
+            <p className="lede">
               Your users sign in with Google, email or phone and get a wallet they own, on every
               chain you support. Nothing to install, nothing to write down, and no one can spend
               from it but them. Not even us.
-            </p></Item>
-            <Item><div className="hero-actions">
-              <a href={`${DASHBOARD_URL}/auth/register`} className="btn btn-primary btn-lg">Start free</a>
+            </p>
+          </Item>
+          <Item>
+            <div className="hero-actions">
+              <a href={`${DASHBOARD_URL}/auth/register`} className="btn btn-primary btn-lg glow">Start free</a>
               <Link href="/docs" className="btn btn-secondary btn-lg">Read the docs</Link>
-            </div></Item>
-          </Stagger>
-          <HeroMock />
-        </div>
+            </div>
+          </Item>
+          <Item><InstallLine /></Item>
+        </Stagger>
       </header>
 
-      <div className="container">
-        <Stagger className="outcomes" delay={0.12}>
-          <Item className="outcome">
-            <h3>Feels like any app</h3>
-            <p>Sign-up takes the same ten seconds it takes everywhere else. No wallet extension, no seed phrase, no crypto vocabulary on day one.</p>
-          </Item>
-          <Item className="outcome">
-            <h3>One account, every chain</h3>
-            <p>A single sign-in gives the user Ethereum, Solana and Tron addresses that stay the same on every device and in every app on your project.</p>
-          </Item>
-          <Item className="outcome">
-            <h3>Nobody can spend it but them</h3>
-            <p>The key is split three ways and only ever comes together inside a sealed signer. A breach of our database gives an attacker nothing they can use.</p>
-          </Item>
-        </Stagger>
-      </div>
-
-      <section className="section" style={{ borderTop: 0, paddingTop: 88 }}>
+      <section style={{ padding: "24px 0 0" }}>
         <div className="container">
-          <div className="feature">
-            <Reveal className="feature-text">
-              <h2>Sign in the way people already do</h2>
-              <p>
-                Google, email, phone, X and KingsChat are built in. Bring your own login and Decane
-                accepts it too, so users who already have an account with you get a wallet without
-                signing up again.
-              </p>
-              <p>
-                Someone who signs in with Google today and with the same email tomorrow is one user
-                with one wallet.
-              </p>
-            </Reveal>
-            <Reveal className="feature-visual" delay={0.12}>
-              <Stagger className="providers" delay={0.06}>
-                <Item><span className="chip"><GoogleMark size={20} /> Google</span></Item>
-                <Item><span className="chip"><MailIcon size={20} /> Email</span></Item>
-                <Item><span className="chip"><PhoneIcon size={20} /> Phone</span></Item>
-                <Item><span className="chip"><XLogo size={17} /> X</span></Item>
-                <Item><span className="chip"><ChatIcon size={20} /> KingsChat</span></Item>
-                <Item><span className="chip"><KeyIcon size={20} /> Your own login</span></Item>
-              </Stagger>
-            </Reveal>
-          </div>
-
-          <div className="feature flip">
-            <Reveal className="feature-text">
-              <h2>One wallet across Ethereum, Solana and Tron</h2>
-              <p>
-                Every user gets addresses on all three from one sign-in, with Base, Arbitrum,
-                Polygon and every other EVM network included. Send, sign and switch chains with the
-                same calls whichever network the user is on.
-              </p>
-              <div className="hero-actions">
-                <Link href="/docs#chain-list" className="btn btn-secondary">See the full chain list</Link>
-              </div>
-            </Reveal>
-            <Reveal className="feature-visual" delay={0.12}>
-              <Stagger className="chains" delay={0.1}>
-                <Item className="chain-card">
-                  <div className="top"><ChainTypeIcon type="evm" size={24} /> Ethereum</div>
-                  <p>Mainnet plus 58 more EVM networks, and any custom chain you register.</p>
-                  <code>0x7a3f…c21e</code>
-                </Item>
-                <Item className="chain-card">
-                  <div className="top"><ChainTypeIcon type="solana" size={24} /> Solana</div>
-                  <p>Mainnet and devnet, with native transaction signing.</p>
-                  <code>9xQe…4kPz</code>
-                </Item>
-                <Item className="chain-card">
-                  <div className="top"><ChainTypeIcon type="tron" size={24} /> Tron</div>
-                  <p>Mainnet and Shasta, for the apps where Tron is where the users are.</p>
-                  <code>TQn9…Vb3d</code>
-                </Item>
-              </Stagger>
-            </Reveal>
-          </div>
-
-          <div className="feature">
-            <Reveal className="feature-text">
-              <h2>Lose the phone, keep the wallet</h2>
-              <p>
-                There is no seed phrase to lose because there is nothing to write down. A user who
-                gets a new device signs in as usual and their wallet is back, same addresses, same
-                balance.
-              </p>
-              <p>
-                For the cautious there is an optional recovery file that works even if Decane is
-                unreachable. It is safe to keep in a password manager, because on its own it cannot
-                spend anything.
-              </p>
-              <div className="hero-actions">
-                <Link href="/recovery" className="btn btn-secondary">How recovery works</Link>
-              </div>
-            </Reveal>
-            <Reveal className="feature-visual" delay={0.12}>
-              <ol className="steps">
-                <li><span><strong>Sign in on the new device.</strong> Google, email, phone: whatever the user used before.</span></li>
-                <li><span><strong>The wallet comes back.</strong> Same addresses, same balance, nothing to enter.</span></li>
-                <li><span><strong>Protect it there, if your app asks.</strong> A passkey or a password on that device, and the user is done.</span></li>
-              </ol>
-            </Reveal>
-          </div>
-
-          <div className="feature flip">
-            <Reveal className="feature-text">
-              <h2>Already have a wallet? Connect it.</h2>
-              <p>
-                The same kit connects wallets your users already have, so one integration covers
-                the person arriving with MetaMask and the person arriving with nothing.
-              </p>
-            </Reveal>
-            <Reveal className="feature-visual" delay={0.12}>
-              <ul className="wallets">
-                <li><ChainTypeIcon type="evm" size={20} /> MetaMask, Rabby, Coinbase Wallet <span>and any EVM wallet</span></li>
-                <li><ChainTypeIcon type="solana" size={20} /> Phantom, Solflare, Backpack <span>and any Solana wallet</span></li>
-                <li><ChainTypeIcon type="tron" size={20} /> TronLink <span>Tron</span></li>
-                <li><ChainTypeIcon type="bitcoin" size={20} /> Unisat, Xverse, OKX <span>Bitcoin</span></li>
-              </ul>
-            </Reveal>
-          </div>
+          <FlowPanel />
         </div>
       </section>
 
       <section className="section">
-        <div className="container integration">
-          <Reveal>
-            <h2>Ship it in an afternoon</h2>
-            <p className="lede" style={{ marginTop: 14 }}>
+        <div className="container">
+          <Reveal className="section-title">
+            <div className="eyebrow">What you get</div>
+            <h2>Everything a wallet should do, none of what makes them hard</h2>
+          </Reveal>
+          <Stagger className="bento" delay={0.08}>
+            <Item className="card bento-3">
+              <div>
+                <h3>Sign in the way people already do</h3>
+                <p>
+                  Google, email, phone and X are built in. Bring your own login and Decane accepts
+                  it too. Someone who signs in with Google today and with the same email tomorrow is
+                  one user with one wallet.
+                </p>
+              </div>
+              <div className="chips">
+                <span className="chip"><GoogleMark size={16} /> Google</span>
+                <span className="chip"><MailIcon size={16} /> Email</span>
+                <span className="chip"><PhoneIcon size={16} /> Phone</span>
+                <span className="chip"><XLogo size={14} /> X</span>
+                <span className="chip dashed"><KeyIcon size={16} /> Your own login</span>
+              </div>
+            </Item>
+            <Item className="card bento-3">
+              <div>
+                <h3>One wallet across Ethereum, Solana and Tron</h3>
+                <p>
+                  Every user gets addresses on all three from one sign-in, with Base, Arbitrum,
+                  Polygon and 55 more EVM networks included. Send, sign and switch chains with the
+                  same calls.
+                </p>
+              </div>
+              <div className="chain-mini">
+                <div><ChainTypeIcon type="evm" size={22} /><b>Ethereum</b><small>+ 58 EVM networks</small></div>
+                <div><ChainTypeIcon type="solana" size={22} /><b>Solana</b><small>Mainnet, devnet</small></div>
+                <div><ChainTypeIcon type="tron" size={22} /><b>Tron</b><small>Mainnet, Shasta</small></div>
+              </div>
+            </Item>
+            <Item className="card bento-2">
+              <span className="icon-box"><ShieldIcon /></span>
+              <h3>Nobody can spend it but them</h3>
+              <p>The key only ever comes together inside a sealed signer. A breach of our database gives an attacker nothing they can use.</p>
+            </Item>
+            <Item className="card bento-2">
+              <span className="icon-box"><RefreshIcon /></span>
+              <h3>Lose the phone, keep the wallet</h3>
+              <p>
+                No seed phrase to lose. Sign in on the new device and the wallet is back, same
+                addresses, same balance. <Link href="/recovery" className="ulink">How recovery works</Link>
+              </p>
+            </Item>
+            <Item className="card bento-2">
+              <span className="icon-box"><WalletIcon /></span>
+              <h3>Already have a wallet? Connect it.</h3>
+              <p>MetaMask, Rabby, Phantom, TronLink and any other wallet, through the same kit. One integration covers everyone.</p>
+            </Item>
+          </Stagger>
+        </div>
+      </section>
+
+      <section className="section pad-b">
+        <div className="container">
+          <Reveal className="section-split">
+            <div>
+              <div className="eyebrow">Integration</div>
+              <h2>Ship it in an afternoon</h2>
+            </div>
+            <p>
               Wrap your app once and you have sign-in, wallets, signing and sessions. Your backend
               verifies who is calling with one line. Web, React Native and Node, from one dashboard
               and one API key.
             </p>
-            <ul className="plain-list" style={{ marginTop: 22 }}>
-              <li><a className="link" href={NPM.web} target="_blank" rel="noreferrer">decane-connect-kit</a><span>Web, {VERSIONS.web}</span></li>
-              <li><a className="link" href={NPM.expo} target="_blank" rel="noreferrer">decane-connect-kit-expo</a><span>React Native, {VERSIONS.expo}</span></li>
-              <li><a className="link" href={NPM.node} target="_blank" rel="noreferrer">decane-node</a><span>Server, {VERSIONS.node}</span></li>
-            </ul>
-            <div className="hero-actions">
-              <Link href="/docs" className="btn btn-secondary">Read the docs</Link>
-            </div>
           </Reveal>
-          <Reveal delay={0.12}>
-            <IntegrationCode />
-          </Reveal>
+          <div className="integration">
+            <Reveal><CodePanel /></Reveal>
+            <Stagger className="pkg-list" delay={0.1} start={0.1}>
+              <Item>
+                <div className="row"><a href={NPM.web} target="_blank" rel="noreferrer">decane-connect-kit</a><span>{VERSIONS.web}</span></div>
+                <p>Web. React provider, hooks and the sign-in UI.</p>
+              </Item>
+              <Item>
+                <div className="row"><a href={NPM.expo} target="_blank" rel="noreferrer">decane-connect-kit-expo</a><span>{VERSIONS.expo}</span></div>
+                <p>React Native. Same wallet, native sessions.</p>
+              </Item>
+              <Item>
+                <div className="row"><a href={NPM.node} target="_blank" rel="noreferrer">decane-node</a><span>{VERSIONS.node}</span></div>
+                <p>Server. Verify tokens, sign users in from your backend.</p>
+              </Item>
+              <Item className="cta-li"><Link href="/docs" className="btn btn-secondary">Read the docs</Link></Item>
+            </Stagger>
+          </div>
         </div>
       </section>
 
-      <section className="cta">
-        <Reveal className="container cta-inner">
-          <div>
-            <h2>Start free</h2>
-            <p>Up to 499 monthly active wallets, every sign-in method, every chain. Upgrade when your users do.</p>
-          </div>
-          <div className="hero-actions" style={{ marginTop: 0 }}>
-            <a href={`${DASHBOARD_URL}/auth/register`} className="btn btn-primary btn-lg">Get an API key</a>
-            <Link href="/pricing" className="btn btn-secondary btn-lg">See pricing</Link>
-          </div>
-        </Reveal>
+      <section style={{ padding: "0 0 112px" }}>
+        <div className="container">
+          <Reveal className="panel glow-bottom cta-panel">
+            <div className="inner">
+              <h2>Start free. Upgrade when your users do.</h2>
+              <p>Up to 499 monthly active wallets, every sign-in method, every chain.</p>
+              <div className="hero-actions">
+                <a href={`${DASHBOARD_URL}/auth/register`} className="btn btn-primary btn-lg">Get an API key</a>
+                <Link href="/pricing" className="btn btn-secondary btn-lg">See pricing</Link>
+              </div>
+            </div>
+          </Reveal>
+        </div>
       </section>
 
       <SiteFooter />

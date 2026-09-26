@@ -55,8 +55,8 @@ export function ThemeToggle({ theme, onToggle }: { theme: Theme; onToggle: () =>
   );
 }
 
-// Shared top nav for "/", "/pricing" and "/recovery". The docs pages have
-// their own topbar (search, sidebar toggle) that reuses the same brand block.
+// Shared top nav for "/", "/pricing" and "/recovery": brand left, pill tabs
+// centred, actions right. The docs pages have their own topbar with search.
 export function SiteNav({ theme, onToggleTheme }: { theme: Theme; onToggleTheme: () => void }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
@@ -69,12 +69,12 @@ export function SiteNav({ theme, onToggleTheme }: { theme: Theme; onToggleTheme:
           Decane
         </Link>
 
-        <div className={`site-nav-links${open ? " open" : ""}`}>
+        <div className={`pills nav-pills${open ? " open" : ""}`}>
           {LINKS.map((l) => (
             <Link
               key={l.href}
               href={l.href}
-              className="site-nav-link"
+              className="pill"
               aria-current={pathname === l.href ? "page" : undefined}
               onClick={() => setOpen(false)}
             >
@@ -84,10 +84,9 @@ export function SiteNav({ theme, onToggleTheme }: { theme: Theme; onToggleTheme:
         </div>
 
         <div className="site-nav-end">
-          <a href={`${DASHBOARD_URL}/auth/register`} className="btn btn-primary btn-sm site-nav-cta">
-            Get an API key
-          </a>
           <ThemeToggle theme={theme} onToggle={onToggleTheme} />
+          <a href={DASHBOARD_URL} className="btn btn-ghost btn-sm site-nav-signin">Sign in</a>
+          <a href={`${DASHBOARD_URL}/auth/register`} className="btn btn-primary btn-sm site-nav-cta">Get an API key</a>
           <button
             type="button"
             className="icon-btn site-nav-menu"
