@@ -1,64 +1,86 @@
 # Recovering your wallet
 
-Your wallet is protected by three separate things, and any two of them are enough to open it. One lives on your phone. One lives with Decane. One is yours to keep — a small file you can save wherever's convenient. No single one of these, on its own, can do anything with your wallet.
+Your wallet is protected by three separate pieces, and any two of them are enough to open it. One is issued to the device you are using. One lives with Decane. One is sealed inside Decane's signing enclave — a locked box that only the enclave can open, and only for you, after you sign in. No single piece, on its own, can do anything with your wallet.
 
-That's the whole idea: losing your phone isn't a disaster, because your Decane piece plus a device passkey can restore it. Decane disappearing isn't a disaster either, because your piece plus your phone's piece still works. And the file you keep as backup is genuinely safe to store somewhere ordinary — a lone piece reveals nothing, so there's nothing for it to leak.
+That is the whole idea. Losing your phone isn't a disaster: sign in again and the enclave issues your new device its own piece. Decane disappearing isn't a disaster either, if you keep the optional backup described below. And nothing you are asked to keep is ever a secret on its own.
 
-For almost everyone, none of this is visible day to day. Here's what to expect when it matters.
+For almost everyone, none of this is visible day to day. Here is what to expect when it matters.
 
-## The easy way: signing in on a new device
+## The easy way: signing in again
 
-If you get a new phone, reinstall your browser, or just open the app somewhere you haven't before:
+If you get a new phone, reinstall your browser, clear your data, or open the app somewhere you haven't before:
 
-1. Sign in the same way you always do (Google or email).
-2. When prompted, use your fingerprint, face, or device passcode — the same "passkey" prompt you already use to unlock apps and log into websites.
-3. Your wallet is back. Same addresses, same balance, nothing to remember.
+1. Sign in the same way you always do (Google, email, phone, or whatever the app offers).
+2. Your wallet is back. Same addresses, same balance, nothing to remember.
 
-This works because your phone or computer's password manager (iCloud Keychain, Google Password Manager, 1Password, etc.) automatically carries your passkey to your new device — the same way your saved website passwords show up on a new phone. You don't need to do anything special to make this happen; if you already use one of these password managers, it's already set up.
+That is it. Signing in proves who you are; the enclave then hands your new device its own piece of the wallet. There is no code to keep, no file to find, no question to answer.
 
-**This is the path almost everyone will use.** You may not even notice a "recovery" happened — it just looks like signing in.
+**This is the path almost everyone will use.** You will not notice a "recovery" happened — it just looks like signing in.
+
+## Apps that ask for nothing more
+
+Some apps — typically social apps, where a wallet is a feature rather than the point — never ask you to set up a passkey, a password, or a backup. Signing in is the whole ceremony, every time. Nothing about your wallet is stored on your device between visits.
+
+This is a deliberate choice by the app, and it is worth understanding what it means, plainly:
+
+> In these apps, your wallet is exactly as safe as the account you sign in with. Anyone who can sign in as you can use your wallet. There is no second thing they would also need.
+
+So the account you sign in with is the thing to protect. Use a strong password and two-factor authentication on it, the same as you would for your email. Two things Decane does on your behalf:
+
+- **You get an email whenever your wallet is opened from a device you haven't used before.** If it wasn't you, change that account's password immediately, sign out of its other sessions, and contact the app's support so your wallet can be frozen while you sort it out.
+- **Your wallet can be frozen.** While frozen, nothing can be signed or sent from it, by anyone — you included — until it is unfrozen. Signing in still works; spending does not.
+
+## Apps that add a passkey or password on this device
+
+Other apps — typically ones where you hold real value — ask you, once per device, to protect the wallet there with a passkey (your fingerprint, face, or device passcode) or a password. That protection wraps the piece kept on that device, so a stolen or shared device is not enough on its own.
+
+On a new device, the easy way above still applies: sign in, and the app may then ask you to set up the passkey or password there too. Where your password manager syncs passkeys between your devices (iCloud Keychain, Google Password Manager, 1Password, and so on), you may not even be asked.
+
+An app may also ask for your fingerprint or face **for every transaction** rather than once per session. That is the app's choice; it protects that app's sessions.
 
 ## The backup: your recovery share file
 
-Sometimes the easy way doesn't work — you switched to a phone that doesn't share a password manager with your old one, or you're not using a password manager at all. For that situation, you may have saved a small file when you first created your wallet: your **recovery share**.
+You may have saved a small file when you first created your wallet, or generated one later from settings: your **recovery share**. It is optional. It exists for one situation — wanting to be able to open your wallet even if Decane's servers are unreachable — and for most people the easy way makes it unnecessary.
 
-If you saved it, here's how it's used:
+If you saved it and ever need it:
 
-1. Sign in the same way you always do (Google or email).
-2. If your device can't find a synced passkey, you'll be asked to upload your recovery share file and enter its password.
-3. Your wallet is restored, and a new passkey is set up on this device automatically — so next time, you're back to the easy way.
+1. Sign in the same way you always do.
+2. If the wallet cannot be restored the easy way, you will be asked to upload your recovery share file and enter its password.
+3. Your wallet is restored.
 
 ### Why this file is safe to keep somewhere convenient
 
-This is a real, meaningful difference from a seed phrase, and it's worth understanding: **the file you save contains only one of the three pieces protecting your wallet.** One piece, on its own, can't sign anything, can't move funds, can't do anything at all — it's not a smaller secret, it's no secret. This is what makes it genuinely fine to keep in a password manager's secure storage or a cloud drive. It isn't a shortcut or a risk you're accepting for convenience; the file is designed from the start to be safe there.
+This is a real, meaningful difference from a seed phrase, and it is worth understanding: **the file contains only one of the three pieces protecting your wallet.** One piece, on its own, can't sign anything, can't move funds, can't do anything at all — it's not a smaller secret, it's no secret. This is what makes it genuinely fine to keep in a password manager's secure storage or a cloud drive.
 
 ### Using it gives you a new file — save that one too
 
-Every time your recovery share is used to restore your wallet, it's automatically retired and a fresh one is issued in its place. You'll be prompted to save the new file immediately — do that before moving on. The old file stops working the moment the new one is created, so holding onto it afterward serves no purpose.
+Every time your recovery share is used to restore your wallet, it is retired and a fresh one is issued in its place. You'll be prompted to save the new file immediately — do that before moving on. The old file stops working the moment the new one exists.
 
 ## The portable backup (advanced, optional)
 
-There's a second, separate kind of file you can create from your account settings: a **portable backup**. Most people will never need this — it exists for one specific situation: wanting your wallet to remain fully recoverable even if Decane, as a company, is no longer around.
+There is a second, separate kind of file you can create from your account settings: a **portable backup**. Most people will never need this — it exists for one specific situation: wanting your wallet to remain fully recoverable even if Decane, as a company, is no longer around.
 
 This file is different in an important way, and the storage advice for it is the *opposite* of the recovery share above:
 
 - It contains **two** of the three pieces, not one — enough on its own, together with its password, to fully control your wallet.
 - Store it offline: an encrypted USB drive, or printed and kept in a safe. **Do not** put it in a cloud drive or password manager.
-- Creating one retires your current recovery share too (the same rotation described above) — you'll be prompted to save a fresh recovery share alongside it.
-- Only create one if you specifically want the "works even without Decane" guarantee. It's an advanced option, not a routine backup step.
+- Creating one retires your current recovery share too — you'll be prompted to save a fresh recovery share alongside it.
+- Only create one if you specifically want the "works even without Decane" guarantee.
 
 ## If you lose everything
 
-If you lose access to your device **and** your recovery share (or portable backup), your wallet cannot be recovered — not by you, not by Decane, not by anyone. There's no "reset password" option. That's a deliberate consequence of how your wallet is kept secure, not an oversight: it's exactly what "nobody but you controls this wallet" means in practice.
+**If you lose the account you sign in with** — and you have no recovery share and no portable backup — your wallet cannot be recovered. Not by you, not by Decane, not by anyone. Signing in *is* the key, so guard that account as you would the wallet itself. Recovering the account (through Google, your email provider, or your phone number) recovers the wallet with it.
 
-This is why saving a recovery share is worth the one-time minute it takes, even though most people will never need it.
+**If Decane is unreachable** and you have neither file, your wallet waits until it is reachable again; nothing is lost, but nothing can be signed in the meantime. The recovery share is what removes that dependency; the portable backup removes it permanently.
 
 ## Quick reference
 
 | Situation | What happens |
 |---|---|
-| New device, password manager syncs your passkey | Sign in, use fingerprint/face — wallet is back automatically |
-| New device, no synced passkey, recovery share saved | Sign in, upload your recovery share file and enter its password — wallet is restored, new passkey set up, save the new recovery share you're given |
-| No recovery share saved, but still have a device with a working passkey | You're fine — go to settings and generate one as a backup any time |
-| Want your wallet recoverable even without Decane | Create a portable backup from settings — store it offline, not in the cloud |
-| Lost your device **and** your recovery share/portable backup | Wallet cannot be recovered by anyone, including Decane |
+| New device, any app | Sign in — wallet is back automatically |
+| App that asks for nothing (identity tier) | Sign in, every visit. Protect the account you sign in with; watch for the new-device email |
+| App that asked for a passkey or password on this device | Sign in; on a new device you may be asked to set that up there too |
+| Someone else signed in as you | Change that account's password, sign out its other sessions, ask the app's support to freeze the wallet |
+| Want to open the wallet even if Decane is unreachable | Keep a recovery share (safe in a password manager or cloud drive) |
+| Want your wallet recoverable even without Decane | Create a portable backup from settings — store it offline |
+| Lost the sign-in account **and** have no recovery share or portable backup | Wallet cannot be recovered by anyone, including Decane |
