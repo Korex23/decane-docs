@@ -2,13 +2,13 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 const SITE_URL = "https://kit.decane.app";
-const TITLE = "decane-connect-kit";
+const TITLE = "Decane";
 const DESCRIPTION =
-  "Connect EVM, Solana, Tron & Bitcoin wallets, or skip wallets with non-custodial Google/email sign-in. CAIP-25 sessions, zero window.ethereum, MIT licensed.";
+  "Non-custodial wallets behind Google, email, phone, X or KingsChat sign-in. One sign-in gives a user Ethereum, Solana and Tron wallets; the key only ever comes together inside an attested enclave. Also connects wallets users already have.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: { default: TITLE, template: "%s — decane-connect-kit" },
+  title: { default: "Decane: turn any sign-in into a wallet", template: "%s — Decane" },
   description: DESCRIPTION,
   alternates: { canonical: "/" },
   robots: { index: true, follow: true },
@@ -53,7 +53,7 @@ const SOFTWARE_JSON_LD = {
   operatingSystem: "Web",
   description: DESCRIPTION,
   offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
-  softwareVersion: "1.0.0",
+  softwareVersion: "2.27.0",
   license: "https://opensource.org/licenses/MIT",
   downloadUrl: "https://www.npmjs.com/package/decane-connect-kit",
 };
@@ -63,7 +63,7 @@ const PRICING_JSON_LD = {
   "@context": "https://schema.org",
   "@type": "Product",
   name: "decane social sign-in",
-  description: "Hosted non-custodial Google/email sign-in that creates a real EVM and Solana wallet.",
+  description: "Hosted non-custodial sign-in that creates a real EVM, Solana and Tron wallet.",
   offers: [
     { "@type": "Offer", name: "Free", price: "0", priceCurrency: "USD", url: `${SITE_URL}/pricing` },
     { "@type": "Offer", name: "Scale (500–2,499 MAU)", price: "254", priceCurrency: "USD", url: `${SITE_URL}/pricing` },
