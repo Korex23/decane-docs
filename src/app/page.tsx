@@ -4,84 +4,102 @@ import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import { SiteNav } from "@/components/SiteNav";
 import { SiteFooter } from "@/components/SiteFooter";
+import { ChainTypeIcon } from "@/components/ChainIcon";
 import { CodeBlock } from "@/app/docs/components/CodeBlock";
 import { useTheme, DASHBOARD_URL } from "@/lib/theme";
 import { VERSIONS, NPM } from "@/lib/versions";
 
+// ─── Hero product mock ───────────────────────────────────────────────────────
+// A still of what the user sees: the sign-in sheet, then the wallet that
+// comes out of it. Static on purpose; the page has one animated element and
+// it is the custody diagram further down.
+
+function GoogleMark({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" aria-hidden>
+      <path fill="#EA4335" d="M24 9.5c3.5 0 6 1.5 7.4 2.8l5.4-5.3C33.5 3.9 29.2 2 24 2 15.4 2 8 7 4.7 14.2l6.3 4.9C12.6 13.4 17.8 9.5 24 9.5z" />
+      <path fill="#4285F4" d="M46 24.5c0-1.6-.1-2.8-.4-4H24v7.5h12.6c-.3 2.2-1.7 5.5-4.9 7.7l6.1 4.7C41.5 37 46 31.4 46 24.5z" />
+      <path fill="#FBBC05" d="M11 29.1a13.9 13.9 0 0 1 0-10l-6.3-4.9A22 22 0 0 0 2 24c0 3.5.8 6.9 2.4 9.8L11 29.1z" />
+      <path fill="#34A853" d="M24 46c5.9 0 10.9-2 14.5-5.4l-6.1-4.7c-1.7 1.2-4 2-8.4 2-6.2 0-11.4-4-13.1-9.6l-6.3 4.9C7.9 40.9 15.3 46 24 46z" />
+    </svg>
+  );
+}
+
+function HeroMock() {
+  return (
+    <div className="hero-visual" aria-hidden>
+      <div className="mock mock-signin">
+        <h4>Sign in</h4>
+        <div className="sub">Continue to get your wallet</div>
+        <div className="mock-btn"><GoogleMark /> Continue with Google</div>
+        <div className="mock-row">
+          <div className="mock-btn"><span className="g">X</span></div>
+          <div className="mock-btn"><span className="g">K</span></div>
+          <div className="mock-btn"><span className="g">#</span></div>
+        </div>
+        <div className="mock-divider">or</div>
+        <div className="mock-input">name@example.com</div>
+        <div className="mock-btn primary">Continue with email</div>
+        <div className="mock-foot">No seed phrase. No extension.</div>
+      </div>
+      <div className="mock mock-wallet">
+        <div className="head">
+          <b>Wallet ready</b>
+          <span className="ok">Signed in</span>
+        </div>
+        <div className="user"><span className="avatar">A</span> ada@example.com</div>
+        <ul>
+          <li><ChainTypeIcon type="evm" size={18} /><span>Ethereum</span><code>0x7a3f…c21e</code></li>
+          <li><ChainTypeIcon type="solana" size={18} /><span>Solana</span><code>9xQe…4kPz</code></li>
+          <li><ChainTypeIcon type="tron" size={18} /><span>Tron</span><code>TQn9…Vb3d</code></li>
+        </ul>
+      </div>
+    </div>
+  );
+}
+
 // ─── Custody diagram ─────────────────────────────────────────────────────────
-// The one illustrative element on the page: three shares, any two reconstruct,
-// and the only place they meet is the enclave. Drawn once on load; static
-// under prefers-reduced-motion.
+// Drawn once on load; static under prefers-reduced-motion.
 
 function CustodyDiagram() {
   return (
     <svg className="diagram" viewBox="0 0 600 400" role="img" aria-labelledby="diagram-title diagram-desc">
       <title id="diagram-title">How a Decane wallet key is held</title>
       <desc id="diagram-desc">
-        Three shares: device, server and recovery. Any two reconstruct the key, and only inside the
-        attested enclave, for the moment it signs. The key is never assembled on the device, on the
-        server, or in a browser.
+        The key is split into three pieces: one for the device, one for Decane, one sealed for
+        recovery. Any two can rebuild it, and only inside a sealed, verified environment, for one
+        signature. The whole key is never on the device, on the server, or in a browser.
       </desc>
-
-      {/* shares */}
       <g>
         <rect className="node" x="20" y="40" width="150" height="72" rx="6" />
-        <text className="lbl" x="36" y="70">Device share</text>
-        <text className="sub" x="36" y="90">Issued per session</text>
+        <text className="lbl" x="36" y="70">On the device</text>
+        <text className="sub" x="36" y="90">One piece, per session</text>
 
         <rect className="node" x="20" y="164" width="150" height="72" rx="6" />
-        <text className="lbl" x="36" y="194">Server share</text>
-        <text className="sub" x="36" y="214">Encrypted at rest</text>
+        <text className="lbl" x="36" y="194">With Decane</text>
+        <text className="sub" x="36" y="214">One piece, encrypted</text>
 
         <rect className="node" x="20" y="288" width="150" height="72" rx="6" />
-        <text className="lbl" x="36" y="318">Recovery share</text>
-        <text className="sub" x="36" y="338">Sealed by the enclave</text>
+        <text className="lbl" x="36" y="318">For recovery</text>
+        <text className="sub" x="36" y="338">One piece, sealed</text>
       </g>
-
-      {/* wires into the enclave */}
       <path className="wire w1" d="M170 76 C 250 76, 250 200, 330 200" />
       <path className="wire w2" d="M170 200 L 330 200" />
       <path className="wire w3" d="M170 324 C 250 324, 250 200, 330 200" />
-
-      {/* enclave */}
       <rect className="enclave" x="330" y="140" width="170" height="120" rx="6" />
-      <text className="lbl" x="350" y="170">Attested enclave</text>
-      <text className="sub" x="350" y="190">Intel TDX, measured</text>
+      <text className="lbl" x="350" y="170">Sealed signer</text>
+      <text className="sub" x="350" y="190">Verified before every use</text>
       <g className="key">
         <rect x="350" y="206" width="130" height="30" rx="4" fill="var(--doc-accent)" opacity="0.16" />
         <text x="362" y="226" fontSize="12" fontWeight="500" style={{ fill: "var(--doc-text)" }}>
           Key exists here only
         </text>
       </g>
-
-      {/* caption */}
-      <text className="caption" x="330" y="296">Any two shares reconstruct the key,</text>
+      <text className="caption" x="330" y="296">Any two pieces rebuild the key,</text>
       <text className="caption" x="330" y="314">for one signature, then it is gone.</text>
-      <text className="never" x="330" y="346">Never on the device. Never on the server.</text>
+      <text className="never" x="330" y="346">Never on the phone. Never on our servers.</text>
       <text className="never" x="330" y="362">Never in a browser.</text>
     </svg>
-  );
-}
-
-// ─── Install line ────────────────────────────────────────────────────────────
-
-function InstallLine() {
-  const [done, setDone] = useState(false);
-  const cmd = "npm install decane-connect-kit";
-  function copy() {
-    navigator.clipboard?.writeText(cmd).then(() => {
-      setDone(true);
-      setTimeout(() => setDone(false), 1400);
-    });
-  }
-  return (
-    <div className="install">
-      <span className="prompt">$</span>
-      <span>{cmd}</span>
-      <button type="button" className={`copy${done ? " done" : ""}`} onClick={copy} aria-label="Copy install command">
-        {done ? "Copied" : "Copy"}
-      </button>
-    </div>
   );
 }
 
@@ -161,18 +179,15 @@ const { evm, solana, tron } = decane.getAddresses()!;
 await decane.sendTransaction({ chain: "evm:8453", to: "0x...", value: 10_000n });`,
   },
   node: {
-    label: "Server",
+    label: "Your backend",
     lang: "ts",
     file: "auth.ts",
     code: `import { DecaneClient } from 'decane-node';
 
-const decane = new DecaneClient({
-  appId: process.env.DECANE_APP_ID,
-  verificationKey: process.env.DECANE_VERIFICATION_KEY, // or JWKS if unset
-});
+const decane = new DecaneClient({ appId: process.env.DECANE_APP_ID });
 
-// Called with the access token the client sends as a bearer token.
-const claims = await decane.verifyAccessToken(token); // throws DecaneAuthError
+// The client sends its Decane token as a bearer token.
+const claims = await decane.verifyAccessToken(token);
 claims.userId;
 
 const user = await decane.getUser(token); // { id, addresses, linkedAccounts }`,
@@ -217,163 +232,157 @@ export default function Page() {
       <header className="hero">
         <div className="container hero-grid">
           <div>
-            <h1>Wallets behind the sign-in your users already have.</h1>
+            <h1>Turn any <span style={{ whiteSpace: "nowrap" }}>sign-in</span> into a wallet.</h1>
             <p className="lede">
-              A user signs in with Google, email, phone, X, KingsChat or your own JWT and gets EVM,
-              Solana and Tron wallets from one key. The key is split three ways and only ever
-              reconstructed inside an attested enclave, for the moment it takes to sign.
+              Your users sign in with Google, email or phone and get a wallet they own, on every
+              chain you support. Nothing to install, nothing to write down, and no one can spend
+              from it but them. Not even us.
             </p>
             <div className="hero-actions">
-              <a href={`${DASHBOARD_URL}/auth/register`} className="btn btn-primary btn-lg">Get an API key</a>
+              <a href={`${DASHBOARD_URL}/auth/register`} className="btn btn-primary btn-lg">Start free</a>
               <Link href="/docs" className="btn btn-secondary btn-lg">Read the docs</Link>
             </div>
-            <InstallLine />
           </div>
-          <CustodyDiagram />
+          <HeroMock />
         </div>
       </header>
 
       <div className="container">
-        <div className="packages">
-          <div className="package">
-            <div className="package-name">
-              <a href={NPM.web} target="_blank" rel="noreferrer">decane-connect-kit</a>
-              <span className="ver">{VERSIONS.web}</span>
-            </div>
-            <p>React surface and headless client for the web. Also connects installed wallets.</p>
+        <div className="outcomes">
+          <div className="outcome">
+            <h3>Feels like any app</h3>
+            <p>Sign-up takes the same ten seconds it takes everywhere else. No wallet extension, no seed phrase, no crypto vocabulary on day one.</p>
           </div>
-          <div className="package">
-            <div className="package-name">
-              <a href={NPM.expo} target="_blank" rel="noreferrer">decane-connect-kit-expo</a>
-              <span className="ver">{VERSIONS.expo}</span>
-            </div>
-            <p>Headless client for React Native and Expo, with passkey, keystore or PIN protection.</p>
+          <div className="outcome">
+            <h3>One account, every chain</h3>
+            <p>A single sign-in gives the user Ethereum, Solana and Tron addresses that stay the same on every device and in every app on your project.</p>
           </div>
-          <div className="package">
-            <div className="package-name">
-              <a href={NPM.node} target="_blank" rel="noreferrer">decane-node</a>
-              <span className="ver">{VERSIONS.node}</span>
-            </div>
-            <p>Verifies access tokens on your backend and runs server-side sign-in.</p>
+          <div className="outcome">
+            <h3>Nobody can spend it but them</h3>
+            <p>The key is split three ways and only ever comes together inside a sealed signer. A breach of our database gives an attacker nothing they can use.</p>
           </div>
         </div>
       </div>
 
-      <section className="section">
+      <section className="section" style={{ borderTop: 0, paddingTop: 88 }}>
         <div className="container">
-          <div className="section-head">
-            <h2>How a wallet is held</h2>
-            <p className="lede">
-              Every wallet is one key, split into three shares with a 2-of-3 threshold. No single
-              share is a secret on its own, and no party ever holds two outside the enclave.
-            </p>
-          </div>
-          <table className="spec">
-            <thead>
-              <tr>
-                <th>Share</th>
-                <th>Where it lives</th>
-                <th>What it does</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <th>Device</th>
-                <td>Issued to the user&rsquo;s device for the current session. Depending on the
-                  protection tier it is kept under a passkey or password, or not kept at all.</td>
-                <td>Pairs with the server share inside the enclave to sign.</td>
-              </tr>
-              <tr>
-                <th>Server</th>
-                <td>Held by Decane, encrypted at rest with a key the enclave does not have.</td>
-                <td>Released to the enclave only for a signed-in session. A frozen wallet is refused here.</td>
-              </tr>
-              <tr>
-                <th>Recovery</th>
-                <td>Sealed by the enclave when the wallet is created, so the enclave alone can open
-                  it. Optionally exported to the user as a recovery file.</td>
-                <td>Lets a signed-in session on a new device receive a fresh device share, with no
-                  seed phrase and no re-split.</td>
-              </tr>
-            </tbody>
-          </table>
-          <p className="spec-note">
-            Reconstruction happens only inside an Intel TDX enclave whose measurement both SDKs
-            verify before they hand it anything. The enclave checks the reconstructed key against
-            the wallet&rsquo;s recorded addresses every time a session opens.
-          </p>
-        </div>
-      </section>
-
-      <section className="section">
-        <div className="container">
-          <div className="section-head">
-            <h2>Two ways to hold the device share</h2>
-            <p className="lede">
-              The tier is a property of your app, not of the wallet. Two apps on one project can
-              hold the same wallet in different tiers, and a user keeps the same addresses in both.
-            </p>
-          </div>
-          <div className="split">
-            <div>
-              <span className="tier-tag">protection: &apos;device&apos;</span>
-              <h3>Device tier</h3>
+          <div className="feature">
+            <div className="feature-text">
+              <h2>Sign in the way people already do</h2>
               <p>
-                The device share is kept on the device, wrapped under a passkey or a password on the
-                web and a passkey, keystore or PIN on mobile. Signing needs the device and its
-                unlock, so a stolen sign-in account is not enough on its own.
+                Google, email, phone, X and KingsChat are built in. Bring your own login and Decane
+                accepts it too, so users who already have an account with you get a wallet without
+                signing up again.
               </p>
-              <p>This is the default, and the right choice when the wallet holds value.</p>
+              <p>
+                Someone who signs in with Google today and with the same email tomorrow is one user
+                with one wallet.
+              </p>
             </div>
-            <div>
-              <span className="tier-tag">protection: &apos;identity&apos;</span>
-              <h3>Identity tier</h3>
-              <p>
-                Nothing is stored on the device and nothing extra is asked of the user. Every visit
-                is a sign-in, and the enclave provisions a fresh device share against it. Right for
-                apps where the wallet is a feature rather than the point.
-              </p>
-              <div className="statement">
-                A wallet is exactly as safe as the user&rsquo;s identity-provider account plus
-                Decane (the JWT signing key and the attested enclave). Anyone who can obtain a valid
-                Decane session for the user can sign. There is no device-bound factor. Mitigations:
-                a new-device email on every provision from an unseen device, a per-user freeze
-                switch operated by Decane, and (follow-up) a fresh sign-in requirement for
-                high-value operations.
+            <div className="feature-visual">
+              <div className="providers">
+                <span className="chip"><GoogleMark size={20} /> Google</span>
+                <span className="chip"><span className="g">@</span> Email</span>
+                <span className="chip"><span className="g">#</span> Phone</span>
+                <span className="chip"><span className="g">X</span> X</span>
+                <span className="chip"><span className="g">K</span> KingsChat</span>
+                <span className="chip"><span className="g">…</span> Your own login</span>
               </div>
             </div>
           </div>
-        </div>
-      </section>
 
-      <section className="section">
-        <div className="container">
-          <div className="section-head">
-            <h2>Sign-in methods and chains</h2>
-            <p className="lede">
-              Identity linking resolves a Google and an email sign-in with the same verified
-              address to one user. Every chain id is CAIP-2.
-            </p>
-          </div>
-          <div className="split">
-            <div>
-              <h3>Sign in with</h3>
-              <ul className="plain-list">
-                <li><span>Google</span><span>Redirect on the web, in-app sheet on mobile</span></li>
-                <li><span>Email</span><span>One-time code</span></li>
-                <li><span>Phone</span><span>One-time code by SMS</span></li>
-                <li><span>X</span><span>Handle as the profile name</span></li>
-                <li><span>KingsChat</span><span>Popup or token exchange</span></li>
-                <li><span>Your own JWT</span><span>Any issuer with a JWKS</span></li>
-              </ul>
+          <div className="feature flip">
+            <div className="feature-text">
+              <h2>One wallet across Ethereum, Solana and Tron</h2>
+              <p>
+                Every user gets addresses on all three from one sign-in, with Base, Arbitrum,
+                Polygon and every other EVM network included. Send, sign and switch chains with the
+                same calls whichever network the user is on.
+              </p>
+              <div className="hero-actions">
+                <Link href="/docs#chain-list" className="btn btn-secondary">See the full chain list</Link>
+              </div>
             </div>
-            <div>
-              <h3>Wallets on</h3>
-              <ul className="plain-list">
-                <li><span>EVM</span><span>59 built-in chains, custom chains registered at init</span></li>
-                <li><span>Solana</span><span>Mainnet and devnet</span></li>
-                <li><span>Tron</span><span>Mainnet and Shasta</span></li>
-                <li><span>Installed wallets</span><span>EIP-6963, Wallet Standard, TronLink, Unisat. Never window.ethereum</span></li>
+            <div className="feature-visual">
+              <div className="chains">
+                <div className="chain-card">
+                  <div className="top"><ChainTypeIcon type="evm" size={24} /> Ethereum</div>
+                  <p>Mainnet plus 58 more EVM networks, and any custom chain you register.</p>
+                  <code>0x7a3f…c21e</code>
+                </div>
+                <div className="chain-card">
+                  <div className="top"><ChainTypeIcon type="solana" size={24} /> Solana</div>
+                  <p>Mainnet and devnet, with native transaction signing.</p>
+                  <code>9xQe…4kPz</code>
+                </div>
+                <div className="chain-card">
+                  <div className="top"><ChainTypeIcon type="tron" size={24} /> Tron</div>
+                  <p>Mainnet and Shasta, for the apps where Tron is where the users are.</p>
+                  <code>TQn9…Vb3d</code>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="feature">
+            <div className="feature-text">
+              <h2>Keys that cannot be stolen from a database</h2>
+              <p>
+                The moment a wallet is created its key is split into three pieces. One piece is on
+                its own useless. The pieces only come together inside a sealed signer that both
+                our apps and yours verify before trusting, and only for the instant it takes to
+                sign.
+              </p>
+              <p>
+                If a user&rsquo;s phone is stolen, the thief has one piece. If our servers were
+                breached, the attacker has one piece. Neither can spend a cent.
+              </p>
+            </div>
+            <div className="feature-visual">
+              <CustodyDiagram />
+            </div>
+          </div>
+
+          <div className="feature flip">
+            <div className="feature-text">
+              <h2>Lose the phone, keep the wallet</h2>
+              <p>
+                There is no seed phrase to lose because there is nothing to write down. A user who
+                gets a new device signs in as usual and their wallet is back, same addresses, same
+                balance.
+              </p>
+              <p>
+                For the cautious there is an optional recovery file that works even if Decane is
+                unreachable. It is safe to keep in a password manager, because on its own it cannot
+                spend anything.
+              </p>
+              <div className="hero-actions">
+                <Link href="/recovery" className="btn btn-secondary">How recovery works</Link>
+              </div>
+            </div>
+            <div className="feature-visual">
+              <ol className="steps">
+                <li><span><strong>Sign in on the new device.</strong> Google, email, phone: whatever the user used before.</span></li>
+                <li><span><strong>The wallet comes back.</strong> Same addresses, same balance, nothing to enter.</span></li>
+                <li><span><strong>Protect it there, if your app asks.</strong> A passkey or a password on that device, and the user is done.</span></li>
+              </ol>
+            </div>
+          </div>
+
+          <div className="feature">
+            <div className="feature-text">
+              <h2>Already have a wallet? Connect it.</h2>
+              <p>
+                The same kit connects wallets your users already have, so one integration covers
+                the person arriving with MetaMask and the person arriving with nothing.
+              </p>
+            </div>
+            <div className="feature-visual">
+              <ul className="wallets">
+                <li><ChainTypeIcon type="evm" size={20} /> MetaMask, Rabby, Coinbase Wallet <span>and any EVM wallet</span></li>
+                <li><ChainTypeIcon type="solana" size={20} /> Phantom, Solflare, Backpack <span>and any Solana wallet</span></li>
+                <li><ChainTypeIcon type="tron" size={20} /> TronLink <span>Tron</span></li>
+                <li><ChainTypeIcon type="bitcoin" size={20} /> Unisat, Xverse, OKX <span>Bitcoin</span></li>
               </ul>
             </div>
           </div>
@@ -383,19 +392,19 @@ export default function Page() {
       <section className="section">
         <div className="container integration">
           <div>
-            <h2>The same hooks either way</h2>
+            <h2>Ship it in an afternoon</h2>
             <p className="lede" style={{ marginTop: 14 }}>
-              Wrap the app once. Whether a user signs in with Google or connects a wallet they
-              already have, signing, sessions and chain switching look the same to your code.
-              Sessions last eight hours and both client SDKs renew them before they lapse.
+              Wrap your app once and you have sign-in, wallets, signing and sessions. Your backend
+              verifies who is calling with one line. Web, React Native and Node, from one dashboard
+              and one API key.
             </p>
-            <p className="lede" style={{ marginTop: 12 }}>
-              On the server, one call verifies the access token and resolves the user&rsquo;s
-              addresses.
-            </p>
+            <ul className="plain-list" style={{ marginTop: 22 }}>
+              <li><a className="link" href={NPM.web} target="_blank" rel="noreferrer">decane-connect-kit</a><span>Web, {VERSIONS.web}</span></li>
+              <li><a className="link" href={NPM.expo} target="_blank" rel="noreferrer">decane-connect-kit-expo</a><span>React Native, {VERSIONS.expo}</span></li>
+              <li><a className="link" href={NPM.node} target="_blank" rel="noreferrer">decane-node</a><span>Server, {VERSIONS.node}</span></li>
+            </ul>
             <div className="hero-actions">
-              <Link href="/docs" className="btn btn-secondary">Web and React Native docs</Link>
-              <Link href="/node-docs" className="btn btn-secondary">Node docs</Link>
+              <Link href="/docs" className="btn btn-secondary">Read the docs</Link>
             </div>
           </div>
           <IntegrationCode />
@@ -405,8 +414,8 @@ export default function Page() {
       <section className="cta">
         <div className="container cta-inner">
           <div>
-            <h2>Start on the free tier</h2>
-            <p>Up to 499 monthly active wallets, one project, every sign-in method. Upgrade when usage grows.</p>
+            <h2>Start free</h2>
+            <p>Up to 499 monthly active wallets, every sign-in method, every chain. Upgrade when your users do.</p>
           </div>
           <div className="hero-actions" style={{ marginTop: 0 }}>
             <a href={`${DASHBOARD_URL}/auth/register`} className="btn btn-primary btn-lg">Get an API key</a>
