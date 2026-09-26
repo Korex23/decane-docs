@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { DocsSwitch } from "./DocsSwitch";
 
 const NAV = [
   {
@@ -115,6 +116,7 @@ export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
     <>
       {mobileOpen && <div className="docs-sidebar-backdrop" onClick={onClose} />}
       <aside className={`docs-sidebar${mobileOpen ? " mobile-open" : ""}`}>
+        <DocsSwitch current="web" />
         {NAV.map((group) => (
           <nav key={group.title} className="docs-nav-group">
             <div className="docs-nav-group-title">{group.title}</div>

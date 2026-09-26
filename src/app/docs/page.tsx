@@ -7,6 +7,7 @@ import { CodeBlock } from "./components/CodeBlock";
 import { ApiTable } from "./components/ApiTable";
 import { ChainTable } from "./components/ChainTable";
 import { FrameworkTabs } from "./components/FrameworkTabs";
+import { DocsCards } from "./components/DocsCards";
 import { useTheme } from "@/lib/theme";
 import { VERSIONS } from "@/lib/versions";
 
@@ -100,6 +101,17 @@ export default function DocsPage() {
                 Open llms.txt
               </a>
             </div>
+
+            <DocsCards
+              items={[
+                { href: "#quick-start", title: "Quick start", desc: "Install, wrap the app, connect a wallet or sign a user in." },
+                { href: "#social", title: "Social sign-in", desc: "Google, email, phone, X, KingsChat and custom JWT with embedded wallets." },
+                { href: "#react-native", title: "React Native", desc: "The Expo SDK: config, unlock tiers, signing in and getting back in." },
+                { href: "#hooks", title: "Hooks", desc: "useDecane, useSignMessage, useSendTransaction and the rest." },
+                { href: "#errors", title: "Error handling", desc: "Every error code the SDK throws and what to do about it." },
+                { href: "/node-docs", title: "Node SDK", desc: "Verify tokens and sign users in from your backend." },
+              ]}
+            />
           </section>
 
           {/* ── Install ── */}

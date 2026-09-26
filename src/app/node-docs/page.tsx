@@ -4,6 +4,7 @@ import { NodeTopbar } from "./components/NodeTopbar";
 import { NodeSidebar } from "./components/NodeSidebar";
 import { Toc } from "../docs/components/Toc";
 import { CodeBlock } from "../docs/components/CodeBlock";
+import { DocsCards } from "../docs/components/DocsCards";
 import { useTheme } from "@/lib/theme";
 import { VERSIONS } from "@/lib/versions";
 
@@ -98,6 +99,17 @@ export default function NodeDocsPage() {
                 Open llms-node.txt
               </a>
             </div>
+
+            <DocsCards
+              items={[
+                { href: "#quick-start", title: "Quick start", desc: "Verify a Decane access token in a few lines." },
+                { href: "#auth", title: "Server-side sign-in", desc: "Email codes and Google, KingsChat or custom token exchange with your API key." },
+                { href: "#verification-modes", title: "Verification modes", desc: "Static verification key or JWKS, and the middleware for Express and Next.js." },
+                { href: "#decane-client", title: "DecaneClient", desc: "Every method on the client, with types." },
+                { href: "#privy-migration", title: "Migrating from Privy", desc: "Drop-in equivalents for the Privy server SDK." },
+                { href: "/docs", title: "Web and React Native", desc: "The client SDKs this package pairs with." },
+              ]}
+            />
           </section>
 
           {/* ── Install ── */}
