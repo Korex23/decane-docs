@@ -471,8 +471,38 @@ input[type=range]::-moz-range-thumb { width: 24px; height: 24px; border-radius: 
   .site-nav .pills.nav-pills .pill { height: 40px; justify-content: center; }
   .site-nav-menu { display: inline-flex; }
   .site-nav-cta, .site-nav-signin { display: none; }
-  .hero { padding: 64px 0 40px; }
-  .page-head { padding: 64px 0 32px; }
+  .hero { padding: 56px 0 36px; }
+  .hero h1 { font-size: clamp(38px, 11vw, 46px); }
+  .hero .lede { font-size: 16.5px; margin-top: 20px; }
+  .hero-badge { height: auto; min-height: 32px; flex-wrap: wrap; justify-content: center; text-align: center; padding: 6px 12px 8px; gap: 6px 10px; line-height: 1.4; }
+  .hero-badge .ulink { white-space: nowrap; }
+  .hero-actions { margin-top: 28px; }
+  .hero-actions .btn-lg { height: 46px; padding: 0 20px; font-size: 15px; }
+  .install { max-width: 100%; height: auto; min-height: 38px; flex-wrap: wrap; padding: 6px 6px 6px 14px; }
+  .page-head { padding: 56px 0 28px; }
+  .page-head h1 { font-size: clamp(34px, 10vw, 44px); }
+  .lede { font-size: 16.5px; }
+  .site h2 { font-size: clamp(26px, 8vw, 34px); }
+  .site h2.md { font-size: clamp(24px, 7vw, 30px); }
+  .section-title { margin-bottom: 32px; }
+  .section-split { gap: 16px; margin-bottom: 20px; }
+  .flow-grid { gap: 12px; }
+  .cta-panel h2 { font-size: clamp(28px, 8vw, 36px); }
+  .code-panel-head { flex-wrap: wrap; gap: 8px; }
+  .code-panel-head .file { margin-left: 0; width: 100%; order: 3; }
+  .code-panel pre { padding: 18px 16px; font-size: 12.5px; }
+  .compare-head { margin-bottom: 16px; }
+  .compare-panel { border-radius: 18px; padding: 6px; }
+  .calc-top .n { font-size: 28px; }
+  .plan-card .price b { font-size: 44px; }
+  .faq-grid { gap: 24px; }
+  .scenario h2 { font-size: 24px; }
+  .steps li { padding: 14px; gap: 12px; grid-template-columns: 28px 1fr; }
+  .steps .n { width: 28px; height: 28px; }
+  .tool-actions .btn-lg { height: 46px; }
+  .legal-summary { padding: 20px; border-radius: 20px; }
+  .legal-section h2 { font-size: 20px; }
+  .cookie-notice { left: 12px; right: 12px; bottom: 12px; width: auto; }
   .section { padding: 72px 0 0; }
   .section.pad-b { padding-bottom: 72px; }
   .flow, .protect, .tool { padding: 20px; }
