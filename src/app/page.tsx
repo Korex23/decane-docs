@@ -245,14 +245,7 @@ export default function Page() {
 
       <header className="hero">
         <Stagger className="container hero-inner" inView={false} delay={0.1} start={0.05}>
-          <Item>
-            <div className="hero-badge">
-              <span className="ver">{VERSIONS.web}</span>
-              Sign in and go: wallets with no passkey or password
-              <a href="/llms-version.json" target="_blank" rel="noreferrer" className="ulink">What&rsquo;s new</a>
-            </div>
-          </Item>
-          <Item><h1>Turn any <span style={{ whiteSpace: "nowrap" }}>sign-in</span> into a wallet.</h1></Item>
+          <Item><h1 style={{ marginTop: 0 }}>Turn any <span style={{ whiteSpace: "nowrap" }}>sign-in</span> into a wallet.</h1></Item>
           <Item>
             <p className="lede">
               Your users sign in with Google, email or phone and get a wallet they own, on every
