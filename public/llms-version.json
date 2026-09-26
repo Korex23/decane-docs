@@ -1,12 +1,17 @@
 {
   "$comment": "Freshness manifest for https://kit.decane.app/llms.txt — fetch this (small) document to check whether a cached copy of llms.txt is stale, instead of re-reading the full spec.",
   "package": "decane-connect-kit",
-  "version": "2.27.0",
+  "version": "2.28.0",
   "documentRevision": "2026-09-26",
   "llmsTxt": "https://kit.decane.app/llms.txt",
   "npmRegistry": "https://registry.npmjs.org/decane-connect-kit/latest",
   "docs": "https://kit.decane.app/docs",
   "changelog": [
+    {
+      "version": "2.28.0",
+      "date": "2026-09-26",
+      "summary": "Server-created wallets (decane-node 1.5.0 createUser): nothing to configure. A wallet the app's server made is opened by the person's first sign-in through the returning-user path (provision on the JWT). If POST /share answers 409 WALLET_EXISTS mid-creation (the server created the wallet a moment after the sign-in said there was none), the generated key is discarded unused and the wallet that exists is opened; a new WalletExistsError is exported but never reaches callers. Update before enabling server-side creation for a project: an older client would fail its own creation with an error in that race."
+    },
     {
       "version": "2.27.0",
       "date": "2026-09-26",
@@ -75,10 +80,15 @@
   ],
   "mobile": {
     "package": "decane-connect-kit-expo",
-    "version": "0.5.0",
+    "version": "0.6.0",
     "llmsTxt": "https://kit.decane.app/llms-expo.txt",
     "npmRegistry": "https://registry.npmjs.org/decane-connect-kit-expo/latest",
     "changelog": [
+      {
+        "version": "0.6.0",
+        "date": "2026-09-26",
+        "summary": "Ports web 2.28.0: a 409 WALLET_EXISTS from POST /share mid-creation falls through to provisioning the wallet the app's server created. Update before enabling server-side creation for a project."
+      },
       {
         "version": "0.5.0",
         "date": "2026-09-26",
