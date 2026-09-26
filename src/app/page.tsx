@@ -12,8 +12,7 @@ import { VERSIONS, NPM } from "@/lib/versions";
 
 // ─── Hero product mock ───────────────────────────────────────────────────────
 // A still of what the user sees: the sign-in sheet, then the wallet that
-// comes out of it. Static on purpose; the page has one animated element and
-// it is the custody diagram further down.
+// comes out of it. Static on purpose.
 
 function HeroMock() {
   return (
@@ -45,51 +44,6 @@ function HeroMock() {
         </ul>
       </div>
     </div>
-  );
-}
-
-// ─── Custody diagram ─────────────────────────────────────────────────────────
-// Drawn once on load; static under prefers-reduced-motion.
-
-function CustodyDiagram() {
-  return (
-    <svg className="diagram" viewBox="0 0 600 400" role="img" aria-labelledby="diagram-title diagram-desc">
-      <title id="diagram-title">How a Decane wallet key is held</title>
-      <desc id="diagram-desc">
-        The key is split into three pieces: one for the device, one for Decane, one sealed for
-        recovery. Any two can rebuild it, and only inside a sealed, verified environment, for one
-        signature. The whole key is never on the device, on the server, or in a browser.
-      </desc>
-      <g>
-        <rect className="node" x="20" y="40" width="150" height="72" rx="6" />
-        <text className="lbl" x="36" y="70">On the device</text>
-        <text className="sub" x="36" y="90">One piece, per session</text>
-
-        <rect className="node" x="20" y="164" width="150" height="72" rx="6" />
-        <text className="lbl" x="36" y="194">With Decane</text>
-        <text className="sub" x="36" y="214">One piece, encrypted</text>
-
-        <rect className="node" x="20" y="288" width="150" height="72" rx="6" />
-        <text className="lbl" x="36" y="318">For recovery</text>
-        <text className="sub" x="36" y="338">One piece, sealed</text>
-      </g>
-      <path className="wire w1" d="M170 76 C 250 76, 250 200, 330 200" />
-      <path className="wire w2" d="M170 200 L 330 200" />
-      <path className="wire w3" d="M170 324 C 250 324, 250 200, 330 200" />
-      <rect className="enclave" x="330" y="140" width="170" height="120" rx="6" />
-      <text className="lbl" x="350" y="170">Sealed signer</text>
-      <text className="sub" x="350" y="190">Verified before every use</text>
-      <g className="key">
-        <rect x="350" y="206" width="130" height="30" rx="4" fill="var(--doc-accent)" opacity="0.16" />
-        <text x="362" y="226" fontSize="12" fontWeight="500" style={{ fill: "var(--doc-text)" }}>
-          Key exists here only
-        </text>
-      </g>
-      <text className="caption" x="330" y="296">Any two pieces rebuild the key,</text>
-      <text className="caption" x="330" y="314">for one signature, then it is gone.</text>
-      <text className="never" x="330" y="346">Never on the phone. Never on our servers.</text>
-      <text className="never" x="330" y="362">Never in a browser.</text>
-    </svg>
   );
 }
 
@@ -316,25 +270,6 @@ export default function Page() {
 
           <div className="feature">
             <div className="feature-text">
-              <h2>Keys that cannot be stolen from a database</h2>
-              <p>
-                The moment a wallet is created its key is split into three pieces. One piece is on
-                its own useless. The pieces only come together inside a sealed signer that both
-                our apps and yours verify before trusting, and only for the instant it takes to
-                sign.
-              </p>
-              <p>
-                If a user&rsquo;s phone is stolen, the thief has one piece. If our servers were
-                breached, the attacker has one piece. Neither can spend a cent.
-              </p>
-            </div>
-            <div className="feature-visual">
-              <CustodyDiagram />
-            </div>
-          </div>
-
-          <div className="feature flip">
-            <div className="feature-text">
               <h2>Lose the phone, keep the wallet</h2>
               <p>
                 There is no seed phrase to lose because there is nothing to write down. A user who
@@ -359,7 +294,7 @@ export default function Page() {
             </div>
           </div>
 
-          <div className="feature">
+          <div className="feature flip">
             <div className="feature-text">
               <h2>Already have a wallet? Connect it.</h2>
               <p>

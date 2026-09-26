@@ -176,25 +176,6 @@ body {
 .install .copy:hover { color: var(--doc-text); background: var(--doc-surface-2); }
 .install .copy.done { color: var(--doc-success); }
 
-/* Custody diagram */
-.diagram { width: 100%; height: auto; display: block; }
-.diagram text { font-family: var(--doc-font-sans); }
-.diagram .lbl { fill: var(--doc-text); font-size: 13px; font-weight: 500; }
-.diagram .sub { fill: var(--doc-text-muted); font-size: 11.5px; }
-.diagram .node { fill: var(--doc-surface); stroke: var(--doc-border-strong); stroke-width: 1; }
-.diagram .enclave { fill: color-mix(in oklab, var(--doc-accent) 8%, var(--doc-surface)); stroke: var(--doc-accent); stroke-width: 1.25; }
-.diagram .wire { fill: none; stroke: var(--doc-border-strong); stroke-width: 1.25; stroke-dasharray: 260; stroke-dashoffset: 260; animation: wire 1.1s cubic-bezier(.4,0,.2,1) forwards; }
-.diagram .wire.w2 { animation-delay: .18s; }
-.diagram .wire.w3 { animation-delay: .36s; }
-.diagram .key { fill: var(--doc-accent); opacity: 0; animation: key .5s ease .9s forwards; }
-.diagram .caption { fill: var(--doc-text-secondary); font-size: 12.5px; }
-.diagram .never { fill: var(--doc-text-muted); font-size: 11.5px; }
-@keyframes wire { to { stroke-dashoffset: 0; } }
-@keyframes key { to { opacity: 1; } }
-@media (prefers-reduced-motion: reduce) {
-  .diagram .wire, .diagram .key { animation: none; stroke-dashoffset: 0; opacity: 1; }
-}
-
 /* Hero product mock */
 .hero-visual { position: relative; min-height: 500px; }
 .mock {
