@@ -3,7 +3,7 @@
 export const VERSIONS = {
   web: "2.27.0",
   expo: "0.5.0",
-  node: "1.4.0",
+  node: "1.5.0",
 } as const;
 
 export const NPM = {

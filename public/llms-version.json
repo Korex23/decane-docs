@@ -98,11 +98,16 @@
   },
   "node": {
     "package": "decane-node",
-    "version": "1.4.0",
+    "version": "1.5.0",
     "llmsTxt": "https://kit.decane.app/llms-node.txt",
     "npmRegistry": "https://registry.npmjs.org/decane-node/latest",
     "docs": "https://kit.decane.app/node-docs",
     "changelog": [
+      {
+        "version": "1.5.0",
+        "date": "2026-09-26",
+        "summary": "Server-side user and wallet creation: createUser(identifier, { createWallet?, metadata? }) and createUserWallet(userId) with the project secret (POST /v1/app/users, POST /v1/app/users/:id/wallet). The enclave creates the key; the person's first sign-in opens it. Per-project opt-in (SERVER_WALLETS_DISABLED until switched on). New codes INVALID_IDENTIFIER, WALLET_EXISTS, WALLET_FROZEN, ENCLAVE_UNAVAILABLE, RETRY_LATER; a user.wallet_created webhook."
+      },
       {
         "version": "1.4.0",
         "date": "2026-09-26",

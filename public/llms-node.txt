@@ -15,7 +15,7 @@ client options. Dual ESM + CJS build. Single runtime dependency: `jose`.
 
 ```yaml
 package: decane-node
-version: 1.4.0
+version: 1.5.0
 document-revision: 2026-09-26
 canonical: https://kit.decane.app/llms-node.txt
 version-manifest: https://kit.decane.app/llms-version.json   # under the "node" key
@@ -27,8 +27,9 @@ This package runs **only on the server**. The browser SDK
 (`decane-connect-kit`) and the React Native SDK (`decane-connect-kit-expo`) are
 separate packages with their own specs at the sibling URLs above. Do not mix
 their APIs: `decane-node` has no React components, no hooks, no wallet UI, and
-never touches key material — it authenticates users, verifies tokens, and reads
-public addresses. Wallet creation and signing stay in the client SDKs.
+never touches key material — it authenticates users, verifies tokens, reads
+public addresses, and (1.5.0+) can ask Decane to create a user's wallet ahead
+of their first sign-in. Signing stays in the client SDKs.
 
 ---
 
@@ -104,7 +105,7 @@ interface DecaneAuthResult {
   accessToken: string;   // Decane JWT: 8 h expiry, renewable via POST /auth/refresh (below)
   userId: string;        // stable Decane user id
   isNewUser: boolean;
-  hasShare: boolean;     // false = no wallet yet (creation is client-side)
+  hasShare: boolean;     // false = no wallet yet: the client SDK creates one on this sign-in, unless createUser did
   profile?: { name?: string; email?: string; picture?: string }; // google/kingschat only
 }
 
@@ -295,6 +296,48 @@ Absent keys are absent — a record that was never written is `{}`. Decide your
 defaults in code (`prefs.shine_perps ?? true`) rather than writing them on
 first read, so "never touched it" stays distinguishable from "chose it".
 
+### Server-side user and wallet creation (1.5.0+)
+
+Your backend can create a user, and their wallet, before the person has ever
+signed in — to fund an address ahead of onboarding, or to move accounts from
+another system. Decane keys the user exactly as the matching sign-in will, so
+the person's first sign-in with that identifier opens the wallet made here and
+the client SDK creates nothing. The enclave generates the key; your server
+only ever sees the addresses.
+
+```ts
+type DecaneUserIdentifier =
+  | { type: "email"; value: string }                        // any case; links a later email-code OR Google sign-in
+  | { type: "phone"; value: string }                        // E.164: +<country><number>
+  | { type: "custom"; value: string; providerId: string }   // the subject your JWTs assert, + the provider's id
+  | { type: "kingschat"; value: string }                    // the provider's stable user id, never an @handle
+  | { type: "x"; value: string };
+
+decane.createUser(identifier, { createWallet?: boolean /* default true */, metadata?: DecaneRecordPatch })
+  // POST /v1/app/users → Promise<DecaneCreatedUser>
+decane.createUserWallet(userId)                            // POST /v1/app/users/:id/wallet — for an existing walletless user
+
+interface DecaneCreatedUser {
+  user: { id: string; authMethod: string; identifier: string | null /* masked */; addresses: DecaneAddresses };
+  created: boolean;                       // this call made the user row
+  wallet: "created" | "exists" | "none";  // "none" only with createWallet: false and no wallet yet
+}
+```
+
+Idempotent on the identifier: a second `createUser` returns the same user with
+`wallet: "exists"`. An email that an earlier Google sign-in already recorded
+resolves to that existing user (no second wallet). The person's first sign-in
+still reports `isNewUser: true` — "new" means the first sign-in, not the row's
+age — and the wallet-ready email goes out then, not at creation.
+
+Off by default: the Decane team switches it on per project
+(`SERVER_WALLETS_DISABLED` until then). Sixty calls a minute per project;
+three creation attempts per user per hour on the enclave (`RETRY_LATER`).
+Failures reject with `DecaneApiError`: `INVALID_IDENTIFIER` (400),
+`SERVER_WALLETS_DISABLED` (403), `WALLET_EXISTS` / `WALLET_FROZEN` (409),
+`RETRY_LATER` (429), `ENCLAVE_UNAVAILABLE` (503; retry). A `user.wallet_created`
+webhook (`origin: "server"`) is delivered to the project's endpoint, once.
+
 ### Standalone `verifyAccessToken(args)` — the Privy drop-in
 
 ```ts
@@ -334,6 +377,8 @@ export class DecaneApiError extends Error {       // SIGN-IN / API failures
                    // INVALID_API_KEY | APP_ID_MISMATCH | KINGSCHAT_NOT_CONFIGURED |
                    // KINGSCHAT_UNAVAILABLE | REVOKE_FAILED | RATE_LIMITED |
                    // INVALID_RECORD | NOT_FOUND | UNAUTHORIZED (1.4.0, the record methods) |
+                   // SERVER_WALLETS_DISABLED | INVALID_IDENTIFIER | WALLET_EXISTS | WALLET_FROZEN |
+                   // ENCLAVE_UNAVAILABLE | RETRY_LATER (1.5.0, createUser / createUserWallet) |
                    // UNKNOWN | NETWORK_ERROR
   status: number;  // HTTP status; 0 when the request never completed
   cause?: unknown;
