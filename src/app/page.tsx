@@ -5,6 +5,7 @@ import Link from "next/link";
 import { SiteNav } from "@/components/SiteNav";
 import { SiteFooter } from "@/components/SiteFooter";
 import { ChainTypeIcon } from "@/components/ChainIcon";
+import { GoogleMark, XLogo, MailIcon, PhoneIcon, ChatIcon, KeyIcon } from "@/components/Icons";
 import { CodeBlock } from "@/app/docs/components/CodeBlock";
 import { useTheme, DASHBOARD_URL } from "@/lib/theme";
 import { VERSIONS, NPM } from "@/lib/versions";
@@ -14,17 +15,6 @@ import { VERSIONS, NPM } from "@/lib/versions";
 // comes out of it. Static on purpose; the page has one animated element and
 // it is the custody diagram further down.
 
-function GoogleMark({ size = 18 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 48 48" aria-hidden>
-      <path fill="#EA4335" d="M24 9.5c3.5 0 6 1.5 7.4 2.8l5.4-5.3C33.5 3.9 29.2 2 24 2 15.4 2 8 7 4.7 14.2l6.3 4.9C12.6 13.4 17.8 9.5 24 9.5z" />
-      <path fill="#4285F4" d="M46 24.5c0-1.6-.1-2.8-.4-4H24v7.5h12.6c-.3 2.2-1.7 5.5-4.9 7.7l6.1 4.7C41.5 37 46 31.4 46 24.5z" />
-      <path fill="#FBBC05" d="M11 29.1a13.9 13.9 0 0 1 0-10l-6.3-4.9A22 22 0 0 0 2 24c0 3.5.8 6.9 2.4 9.8L11 29.1z" />
-      <path fill="#34A853" d="M24 46c5.9 0 10.9-2 14.5-5.4l-6.1-4.7c-1.7 1.2-4 2-8.4 2-6.2 0-11.4-4-13.1-9.6l-6.3 4.9C7.9 40.9 15.3 46 24 46z" />
-    </svg>
-  );
-}
-
 function HeroMock() {
   return (
     <div className="hero-visual" aria-hidden>
@@ -33,9 +23,9 @@ function HeroMock() {
         <div className="sub">Continue to get your wallet</div>
         <div className="mock-btn"><GoogleMark /> Continue with Google</div>
         <div className="mock-row">
-          <div className="mock-btn"><span className="g">X</span></div>
-          <div className="mock-btn"><span className="g">K</span></div>
-          <div className="mock-btn"><span className="g">#</span></div>
+          <div className="mock-btn"><XLogo size={15} /></div>
+          <div className="mock-btn"><ChatIcon size={17} /></div>
+          <div className="mock-btn"><PhoneIcon size={17} /></div>
         </div>
         <div className="mock-divider">or</div>
         <div className="mock-input">name@example.com</div>
@@ -282,11 +272,11 @@ export default function Page() {
             <div className="feature-visual">
               <div className="providers">
                 <span className="chip"><GoogleMark size={20} /> Google</span>
-                <span className="chip"><span className="g">@</span> Email</span>
-                <span className="chip"><span className="g">#</span> Phone</span>
-                <span className="chip"><span className="g">X</span> X</span>
-                <span className="chip"><span className="g">K</span> KingsChat</span>
-                <span className="chip"><span className="g">…</span> Your own login</span>
+                <span className="chip"><MailIcon size={20} /> Email</span>
+                <span className="chip"><PhoneIcon size={20} /> Phone</span>
+                <span className="chip"><XLogo size={17} /> X</span>
+                <span className="chip"><ChatIcon size={20} /> KingsChat</span>
+                <span className="chip"><KeyIcon size={20} /> Your own login</span>
               </div>
             </div>
           </div>
