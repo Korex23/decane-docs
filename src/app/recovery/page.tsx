@@ -3,6 +3,7 @@
 import { SiteNav } from "@/components/SiteNav";
 import { SiteFooter } from "@/components/SiteFooter";
 import { useTheme } from "@/lib/theme";
+import { Reveal, Stagger, Item } from "@/components/motion";
 
 // End-user facing recovery guide. Written for the person who owns a wallet,
 // not the developer integrating the SDK — plain language, no API names.
@@ -81,7 +82,7 @@ export default function RecoveryGuidePage() {
 
       <header className="hero" style={{ paddingBottom: 56 }}>
         <div className="container">
-          <div className="prose">
+          <Reveal className="prose">
             <h1>Recovering your wallet</h1>
             <p style={{ marginTop: 22 }}>
               Your wallet is protected by three separate pieces, and any two of them are enough to
@@ -92,29 +93,29 @@ export default function RecoveryGuidePage() {
               No single piece, on its own, can do anything with your wallet. So losing your phone
               is not a disaster: sign in again, and it is back.
             </p>
-          </div>
+          </Reveal>
         </div>
       </header>
 
       <section style={{ paddingBottom: 80 }}>
         <div className="container">
-          <div className="shares">
-            <div className="share">
+          <Stagger className="shares" delay={0.12}>
+            <Item className="share">
               <h3>Your device</h3>
               <p>
                 Issued to the device you are using, for that session. Some apps protect it there
                 with your fingerprint, face or a password; others keep nothing on the device at all
                 and simply issue a fresh one each time you sign in.
               </p>
-            </div>
-            <div className="share">
+            </Item>
+            <Item className="share">
               <h3>Our server</h3>
               <p>
                 Encrypted at rest on the Decane key server. It never holds a full key and never
                 signs anything on its own.
               </p>
-            </div>
-            <div className="share">
+            </Item>
+            <Item className="share">
               <h3>The sealed piece</h3>
               <p>
                 Locked inside our signing enclave, a box only the enclave can open, and only for
@@ -122,15 +123,15 @@ export default function RecoveryGuidePage() {
                 sign-in alone. Your optional recovery file is a copy of this one, safe in a password
                 manager or cloud drive.
               </p>
-            </div>
-          </div>
+            </Item>
+          </Stagger>
         </div>
       </section>
 
       <section className="section">
         <div className="container">
           {SCENARIOS.map((s) => (
-            <div key={s.title} className="scenario">
+            <Reveal key={s.title} className="scenario">
               <div>
                 <span className="who">{s.who}</span>
                 <h2>{s.title}</h2>
@@ -140,14 +141,14 @@ export default function RecoveryGuidePage() {
                   <li key={i}>{step}</li>
                 ))}
               </ol>
-            </div>
+            </Reveal>
           ))}
         </div>
       </section>
 
       <section className="section">
         <div className="container">
-          <div className="tool">
+          <Reveal className="tool">
             <div>
               <h2 style={{ fontSize: 22, marginBottom: 12 }}>The offline recovery tool</h2>
               <p>
@@ -169,12 +170,12 @@ export default function RecoveryGuidePage() {
                 Download for offline use
               </a>
             </div>
-          </div>
+          </Reveal>
         </div>
       </section>
 
       <section className="section">
-        <div className="container">
+        <Reveal className="container">
           <div className="section-head">
             <h2>Questions</h2>
           </div>
@@ -186,7 +187,7 @@ export default function RecoveryGuidePage() {
               </div>
             ))}
           </dl>
-        </div>
+        </Reveal>
       </section>
 
       <SiteFooter />

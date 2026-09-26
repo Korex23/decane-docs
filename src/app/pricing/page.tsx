@@ -3,6 +3,7 @@
 import { SiteNav } from "@/components/SiteNav";
 import { SiteFooter } from "@/components/SiteFooter";
 import { useTheme, DASHBOARD_URL } from "@/lib/theme";
+import { Reveal, Stagger, Item } from "@/components/motion";
 
 // Tier structure follows Privy's pricing model (privy.io/pricing) at a flat
 // 15% discount on every dollar figure: Free (0-499 MAU) / Scale, priced in
@@ -134,21 +135,21 @@ export default function PricingPage() {
       <SiteNav theme={theme} onToggleTheme={toggleTheme} />
 
       <header className="hero" style={{ paddingBottom: 48 }}>
-        <div className="container section-head-stack">
+        <Reveal className="container section-head-stack">
           <h1>Pricing</h1>
           <p className="lede">
             Every plan runs the same wallet model: three shares, an attested enclave, no
             exceptions. Plans differ in usage limits and support, not in how safe a user&rsquo;s
             wallet is.
           </p>
-        </div>
+        </Reveal>
       </header>
 
       <section style={{ paddingBottom: 80 }}>
         <div className="container">
-          <div className="plans">
+          <Stagger className="plans" delay={0.1}>
             {TIERS.map((t) => (
-              <div key={`${t.name}-${t.band}`} className={`plan${t.featured ? " featured" : ""}`}>
+              <Item key={`${t.name}-${t.band}`} className={`plan${t.featured ? " featured" : ""}`}>
                 <div className="plan-name">{t.name}</div>
                 <div className="plan-band">{t.band}</div>
                 <div className="plan-price">
@@ -167,15 +168,15 @@ export default function PricingPage() {
                 <a href={t.cta.href} className={`btn ${t.cta.primary ? "btn-primary" : "btn-secondary"}`}>
                   {t.cta.label}
                 </a>
-              </div>
+              </Item>
             ))}
-          </div>
+          </Stagger>
           <p className="footnote">Draft pricing. Confirm before promoting publicly.</p>
         </div>
       </section>
 
       <section className="section">
-        <div className="container">
+        <Reveal className="container">
           <div className="section-head">
             <h2>Compare plans</h2>
           </div>
@@ -199,11 +200,11 @@ export default function PricingPage() {
               ))}
             </tbody>
           </table>
-        </div>
+        </Reveal>
       </section>
 
       <section className="section">
-        <div className="container">
+        <Reveal className="container">
           <div className="section-head">
             <h2>Questions</h2>
           </div>
@@ -215,7 +216,7 @@ export default function PricingPage() {
               </div>
             ))}
           </dl>
-        </div>
+        </Reveal>
       </section>
 
       <SiteFooter />
