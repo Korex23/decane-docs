@@ -470,7 +470,6 @@ input[type=range]::-moz-range-thumb { width: 24px; height: 24px; border-radius: 
   .hero { padding: 56px 0 36px; }
   .hero h1 { font-size: clamp(38px, 11vw, 46px); }
   .hero .lede { font-size: 16.5px; margin-top: 20px; }
-    .hero-badge .ulink { white-space: nowrap; }
   .hero-actions { margin-top: 28px; }
   .hero-actions .btn-lg { height: 46px; padding: 0 20px; font-size: 15px; }
   .install { max-width: 100%; height: auto; min-height: 38px; flex-wrap: wrap; padding: 6px 6px 6px 14px; }
