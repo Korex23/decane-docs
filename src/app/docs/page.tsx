@@ -8,6 +8,7 @@ import { ApiTable } from "./components/ApiTable";
 import { ChainTable } from "./components/ChainTable";
 import { FrameworkTabs } from "./components/FrameworkTabs";
 import { useTheme } from "@/lib/theme";
+import { VERSIONS } from "@/lib/versions";
 
 // Lightweight highlighter emitting the same tok-* classes the hand-written
 // code blocks use, so string-authored snippets match the rest visually.
@@ -82,54 +83,20 @@ export default function DocsPage() {
             </p>
 
             <dl className="docs-facts">
-              <div><dt>Networks</dt><dd>EVM (59 chains) · Solana · Tron · Bitcoin</dd></div>
-              <div><dt>No wallet yet</dt><dd>Google, email, KingsChat or X sign-in with a non-custodial embedded wallet</dd></div>
-              <div><dt>Requires</dt><dd>React 18+ · any framework</dd></div>
-              <div><dt>Size</dt><dd>~22 KB gzipped · MIT · v2.22</dd></div>
+              <div><dt>Networks</dt><dd>EVM (59 chains), Solana, Tron, Bitcoin</dd></div>
+              <div><dt>No wallet yet</dt><dd>Google, email, phone, X, KingsChat or a custom JWT, with a non-custodial embedded wallet</dd></div>
+              <div><dt>Requires</dt><dd>React 18+, any framework</dd></div>
+              <div><dt>Package</dt><dd><code>decane-connect-kit</code> {VERSIONS.web}, MIT</dd></div>
             </dl>
 
-            <div
-              className="docs-callout"
-              data-kind="note"
-              style={{ alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 14 }}
-            >
-              <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                <div className="ico">✦</div>
-                <p>
-                  Wiring up an LLM or coding agent? Point it at{" "}
-                  <code>https://decane.app/llms.txt</code> — a self-contained spec with full code
-                  samples and real signatures for every integration path, readable in place at a
-                  stable URL. It carries a version, and{" "}
-                  <a href="/llms-version.json" target="_blank" rel="noreferrer">
-                    <code>llms-version.json</code>
-                  </a>{" "}
-                  is a tiny manifest an agent can check to tell whether the copy it already has is
-                  out of date.
-                </p>
-              </div>
-              <a
-                href="/llms.txt"
-                target="_blank"
-                rel="noreferrer"
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 8,
-                  padding: "9px 18px",
-                  borderRadius: 8,
-                  background: "var(--doc-accent)",
-                  color: "var(--doc-accent-contrast, #0d0d0b)",
-                  fontWeight: 700,
-                  fontSize: 13.5,
-                  whiteSpace: "nowrap",
-                  flexShrink: 0,
-                }}
-              >
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                  <polyline points="15 3 21 3 21 9" />
-                  <line x1="10" y1="14" x2="21" y2="3" />
-                </svg>
+            <div className="docs-agent">
+              <p>
+                Wiring up a coding agent? <code>https://kit.decane.app/llms.txt</code> is a self-contained
+                spec with real signatures for every integration path, and{" "}
+                <a href="/llms-version.json" target="_blank" rel="noreferrer"><code>llms-version.json</code></a>{" "}
+                says whether a copy an agent already has is current.
+              </p>
+              <a href="/llms.txt" target="_blank" rel="noreferrer" className="btn btn-secondary btn-sm">
                 Open llms.txt
               </a>
             </div>

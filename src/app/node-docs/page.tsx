@@ -5,6 +5,7 @@ import { NodeSidebar } from "./components/NodeSidebar";
 import { Toc } from "../docs/components/Toc";
 import { CodeBlock } from "../docs/components/CodeBlock";
 import { useTheme } from "@/lib/theme";
+import { VERSIONS } from "@/lib/versions";
 
 // Lightweight highlighter emitting the same tok-* classes the hand-written
 // code blocks use, so string-authored snippets match the rest visually.
@@ -80,72 +81,22 @@ export default function NodeDocsPage() {
               auto-rotates.
             </p>
 
-            <div className="docs-hero-meta">
-              <span className="docs-badge">
-                <span className="dot" />
-                Stable · v1.2.0
-              </span>
-              <span className="docs-badge gold">Node 18+</span>
-              <span className="docs-badge">MIT</span>
-              <span className="docs-badge">ESM + CJS</span>
-              <span className="docs-badge">
-                One dependency: <code style={{ background: "none", border: 0, padding: 0, color: "inherit" }}>jose</code>
-              </span>
-            </div>
+            <dl className="docs-facts">
+              <div><dt>Requires</dt><dd>Node 18+</dd></div>
+              <div><dt>Package</dt><dd><code>decane-node</code> {VERSIONS.node}, MIT, ESM and CJS</dd></div>
+              <div><dt>Dependencies</dt><dd>One: <code>jose</code></dd></div>
+            </dl>
 
-            <div
-              className="docs-callout"
-              data-kind="note"
-              style={{ alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 14 }}
-            >
-              <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                <div className="ico">✦</div>
-                <p>
-                  Wiring up an LLM or coding agent? Point it at{" "}
-                  <code>https://decane.app/llms-node.txt</code> — a self-contained spec for this
-                  package with full code samples and real signatures, readable in place at a stable
-                  URL. Freshness is tracked in{" "}
-                  <a href="/llms-version.json" target="_blank" rel="noreferrer">
-                    <code>llms-version.json</code>
-                  </a>{" "}
-                  under the <code>node</code> key.
-                </p>
-              </div>
-              <a
-                href="/llms-node.txt"
-                target="_blank"
-                rel="noreferrer"
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 8,
-                  padding: "9px 18px",
-                  borderRadius: 8,
-                  background: "var(--doc-accent)",
-                  color: "var(--doc-accent-contrast, #0d0d0b)",
-                  fontWeight: 700,
-                  fontSize: 13.5,
-                  whiteSpace: "nowrap",
-                  flexShrink: 0,
-                }}
-              >
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                  <polyline points="15 3 21 3 21 9" />
-                  <line x1="10" y1="14" x2="21" y2="3" />
-                </svg>
+            <div className="docs-agent">
+              <p>
+                Wiring up a coding agent? <code>https://kit.decane.app/llms-node.txt</code> is a
+                self-contained spec for this package with real signatures, and{" "}
+                <a href="/llms-version.json" target="_blank" rel="noreferrer"><code>llms-version.json</code></a>{" "}
+                tracks freshness under the <code>node</code> key.
+              </p>
+              <a href="/llms-node.txt" target="_blank" rel="noreferrer" className="btn btn-secondary btn-sm">
                 Open llms-node.txt
               </a>
-            </div>
-
-            <div className="docs-callout" data-kind="info">
-              <div className="ico">i</div>
-              <p>
-                Looking for the client SDKs? The browser SDK (<code>decane-connect-kit</code>) is
-                documented at <a href="/docs">/docs</a>, and the React Native / Expo SDK
-                (<code>decane-connect-kit-expo</code>) in the React Native section of the same page.
-                This page covers only what runs on your server.
-              </p>
             </div>
           </section>
 

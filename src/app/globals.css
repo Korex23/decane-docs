@@ -416,6 +416,7 @@ body {
   cursor: pointer; font-family: var(--doc-font-sans); font-size: 13px;
   transition: background .12s, color .12s, border-color .12s; text-decoration: none;
 }
+.docs-topbar .docs-icon-btn { color: var(--doc-text-secondary); }
 .docs-icon-btn:hover { background: var(--doc-surface); border-color: var(--doc-border); color: var(--doc-text); }
 .docs-menu-btn {
   display: none; height: 32px; width: 32px; flex-shrink: 0;
