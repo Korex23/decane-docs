@@ -822,17 +822,17 @@ const claims = await verifyAccessToken({ token, appId, verificationKey });`)}
           {/* Pager */}
           <div className="docs-pager">
             <a href="#overview" className="prev">
-              <div className="dir">← Top</div>
-              <div className="lbl">Back to overview</div>
+              <span className="dir">Top</span>
+              <span className="lbl"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M11 6l-6 6 6 6" /></svg>Back to overview</span>
             </a>
             <a href="/docs" className="next">
-              <div className="dir">Web SDK →</div>
-              <div className="lbl">decane-connect-kit docs</div>
+              <span className="dir">Web SDK</span>
+              <span className="lbl">decane-connect-kit docs<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span>
             </a>
           </div>
         </main>
 
-        <Toc />
+        <Toc current="node" />
       </div>
     </div>
   );

@@ -1,6 +1,5 @@
 "use client";
 import { DocsTopbar, type SearchItem } from "./DocsTopbar";
-import { VERSIONS, NPM } from "@/lib/versions";
 
 const SEARCH_INDEX: SearchItem[] = [
   { id: "overview", title: "Overview", crumb: "Getting started" },
@@ -50,8 +49,6 @@ export function Topbar(props: TopbarProps) {
     <DocsTopbar
       {...props}
       current="web"
-      version={VERSIONS.web}
-      npmUrl={NPM.web}
       searchIndex={SEARCH_INDEX}
     />
   );

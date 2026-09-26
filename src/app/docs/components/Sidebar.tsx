@@ -1,10 +1,9 @@
 "use client";
-import { useEffect, useState } from "react";
-import { DocsSwitch } from "./DocsSwitch";
+import { DocsSidebar, NAV_ICONS, type NavGroup } from "./DocsSidebar";
 
-const NAV = [
+const NAV: NavGroup[] = [
   {
-    title: "Getting started",
+    key: "start", title: "Getting started", icon: NAV_ICONS.start, open: true,
     items: [
       { href: "#overview", label: "Overview" },
       { href: "#install", label: "Install" },
@@ -12,14 +11,14 @@ const NAV = [
     ],
   },
   {
-    title: "Framework setup",
+    key: "framework", title: "Framework setup", icon: NAV_ICONS.framework, open: false,
     items: [
       { href: "#nextjs", label: "Next.js" },
       { href: "#vite", label: "Vite / CRA" },
     ],
   },
   {
-    title: "Configuration",
+    key: "config", title: "Configuration", icon: NAV_ICONS.config, open: false,
     items: [
       { href: "#configuration", label: "All options" },
       { href: "#networks", label: "Networks" },
@@ -27,7 +26,7 @@ const NAV = [
     ],
   },
   {
-    title: "Social sign-in",
+    key: "social", title: "Social sign-in", icon: NAV_ICONS.social, open: true,
     items: [
       { href: "#social", label: "Overview" },
       { href: "#connect-mode", label: "ConnectMode" },
@@ -42,7 +41,7 @@ const NAV = [
     ],
   },
   {
-    title: "React Native",
+    key: "rn", title: "React Native", icon: NAV_ICONS.rn, open: false,
     items: [
       { href: "#react-native", label: "Overview" },
       { href: "#rn-install", label: "Install" },
@@ -55,7 +54,7 @@ const NAV = [
     ],
   },
   {
-    title: "Hooks",
+    key: "hooks", title: "Hooks", icon: NAV_ICONS.hooks, open: true,
     items: [
       { href: "#useDecane", label: "useDecane()", mono: true },
       { href: "#useWalletSelector", label: "useWalletSelector()", mono: true },
@@ -66,7 +65,7 @@ const NAV = [
     ],
   },
   {
-    title: "Reference",
+    key: "ref", title: "Reference", icon: NAV_ICONS.ref, open: false,
     items: [
       { href: "#detection", label: "Wallet detection" },
       { href: "#chain-constants", label: "Chain constants" },
@@ -79,63 +78,13 @@ const NAV = [
     ],
   },
   {
-    title: "Server-side",
+    key: "server", title: "Server-side", icon: NAV_ICONS.server, open: true,
     items: [
       { href: "/node-docs", label: "decane-node docs", mono: true },
     ],
   },
 ];
 
-interface SidebarProps {
-  mobileOpen?: boolean;
-  onClose?: () => void;
-}
-
-export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
-  const [activeId, setActiveId] = useState("overview");
-
-  useEffect(() => {
-    const headings = Array.from(
-      document.querySelectorAll<HTMLElement>(".docs-main h2[id], .docs-main h3[id]")
-    );
-
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) setActiveId(entry.target.id);
-        }
-      },
-      { rootMargin: "-70px 0px -70% 0px", threshold: 0 }
-    );
-
-    headings.forEach((h) => io.observe(h));
-    return () => io.disconnect();
-  }, []);
-
-  return (
-    <>
-      {mobileOpen && <div className="docs-sidebar-backdrop" onClick={onClose} />}
-      <aside className={`docs-sidebar${mobileOpen ? " mobile-open" : ""}`}>
-        <DocsSwitch current="web" />
-        {NAV.map((group) => (
-          <nav key={group.title} className="docs-nav-group">
-            <div className="docs-nav-group-title">{group.title}</div>
-            <ul className="docs-nav-list">
-              {group.items.map((item) => (
-                <li key={item.href}>
-                  <a
-                    href={item.href}
-                    className={activeId === item.href.slice(1) ? "active" : ""}
-                    onClick={onClose}
-                  >
-                    {item.mono ? <code>{item.label}</code> : item.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </nav>
-        ))}
-      </aside>
-    </>
-  );
+export function Sidebar({ mobileOpen, onClose }: { mobileOpen?: boolean; onClose?: () => void }) {
+  return <DocsSidebar nav={NAV} mobileOpen={mobileOpen} onClose={onClose} />;
 }

@@ -1,10 +1,9 @@
 "use client";
-import { useEffect, useState } from "react";
-import { DocsSwitch } from "../../docs/components/DocsSwitch";
+import { DocsSidebar, NAV_ICONS, type NavGroup } from "../../docs/components/DocsSidebar";
 
-const NAV = [
+const NAV: NavGroup[] = [
   {
-    title: "Getting started",
+    key: "start", title: "Getting started", icon: NAV_ICONS.start, open: true,
     items: [
       { href: "#overview", label: "Overview" },
       { href: "#install", label: "Install" },
@@ -12,7 +11,7 @@ const NAV = [
     ],
   },
   {
-    title: "Sign-in",
+    key: "social", title: "Sign-in", icon: NAV_ICONS.social, open: true,
     items: [
       { href: "#auth", label: "Overview" },
       { href: "#auth-api-key", label: "The API key" },
@@ -26,7 +25,7 @@ const NAV = [
     ],
   },
   {
-    title: "Verification",
+    key: "verify", title: "Verification", icon: NAV_ICONS.verify, open: false,
     items: [
       { href: "#verification-modes", label: "Verification modes" },
       { href: "#static-key", label: "Static key" },
@@ -36,7 +35,7 @@ const NAV = [
     ],
   },
   {
-    title: "API",
+    key: "server", title: "API", icon: NAV_ICONS.server, open: true,
     items: [
       { href: "#decane-client", label: "DecaneClient", mono: true },
       { href: "#verify-access-token", label: "verifyAccessToken()", mono: true },
@@ -47,7 +46,7 @@ const NAV = [
     ],
   },
   {
-    title: "Reference",
+    key: "ref", title: "Reference", icon: NAV_ICONS.ref, open: false,
     items: [
       { href: "#claims", label: "Token claims" },
       { href: "#errors", label: "Error handling" },
@@ -59,7 +58,7 @@ const NAV = [
     ],
   },
   {
-    title: "Other docs",
+    key: "framework", title: "Other docs", icon: NAV_ICONS.framework, open: true,
     items: [
       { href: "/docs", label: "Web SDK (decane-connect-kit)" },
       { href: "/llms-node.txt", label: "llms-node.txt", mono: true },
@@ -67,56 +66,6 @@ const NAV = [
   },
 ];
 
-interface NodeSidebarProps {
-  mobileOpen?: boolean;
-  onClose?: () => void;
-}
-
-export function NodeSidebar({ mobileOpen, onClose }: NodeSidebarProps) {
-  const [activeId, setActiveId] = useState("overview");
-
-  useEffect(() => {
-    const headings = Array.from(
-      document.querySelectorAll<HTMLElement>(".docs-main h2[id], .docs-main h3[id]")
-    );
-
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) setActiveId(entry.target.id);
-        }
-      },
-      { rootMargin: "-70px 0px -70% 0px", threshold: 0 }
-    );
-
-    headings.forEach((h) => io.observe(h));
-    return () => io.disconnect();
-  }, []);
-
-  return (
-    <>
-      {mobileOpen && <div className="docs-sidebar-backdrop" onClick={onClose} />}
-      <aside className={`docs-sidebar${mobileOpen ? " mobile-open" : ""}`}>
-        <DocsSwitch current="node" />
-        {NAV.map((group) => (
-          <nav key={group.title} className="docs-nav-group">
-            <div className="docs-nav-group-title">{group.title}</div>
-            <ul className="docs-nav-list">
-              {group.items.map((item) => (
-                <li key={item.href}>
-                  <a
-                    href={item.href}
-                    className={activeId === item.href.slice(1) ? "active" : ""}
-                    onClick={onClose}
-                  >
-                    {item.mono ? <code>{item.label}</code> : item.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </nav>
-        ))}
-      </aside>
-    </>
-  );
+export function NodeSidebar({ mobileOpen, onClose }: { mobileOpen?: boolean; onClose?: () => void }) {
+  return <DocsSidebar nav={NAV} mobileOpen={mobileOpen} onClose={onClose} />;
 }

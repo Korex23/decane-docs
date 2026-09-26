@@ -16,6 +16,8 @@ export function SiteFooter() {
           <li><Link href="/pricing">Pricing</Link></li>
           <li><Link href="/recovery">Recovery</Link></li>
           <li><a href="/llms.txt" target="_blank" rel="noreferrer">llms.txt</a></li>
+          <li><a href="/llms-expo.txt" target="_blank" rel="noreferrer">llms-expo.txt</a></li>
+          <li><a href="/llms-node.txt" target="_blank" rel="noreferrer">llms-node.txt</a></li>
           <li><a href="mailto:info@decane.app">info@decane.app</a></li>
         </ul>
         <span className="fine">MIT-licensed connector SDK · <span className="mono">kit.decane.app</span></span>

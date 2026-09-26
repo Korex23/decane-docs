@@ -92,14 +92,16 @@ export default function DocsPage() {
 
             <div className="docs-agent">
               <p>
-                Wiring up a coding agent? <code>https://kit.decane.app/llms.txt</code> is a self-contained
-                spec with real signatures for every integration path, and{" "}
+                Wiring up a coding agent? <code>kit.decane.app/llms.txt</code> is a self-contained
+                spec for the web SDK and <code>llms-expo.txt</code> the same for React Native, both
+                with real signatures for every integration path.{" "}
                 <a href="/llms-version.json" target="_blank" rel="noreferrer"><code>llms-version.json</code></a>{" "}
                 says whether a copy an agent already has is current.
               </p>
-              <a href="/llms.txt" target="_blank" rel="noreferrer" className="btn btn-secondary btn-sm">
-                Open llms.txt
-              </a>
+              <div className="docs-agent-actions">
+                <a href="/llms.txt" target="_blank" rel="noreferrer" className="btn btn-secondary btn-sm">llms.txt</a>
+                <a href="/llms-expo.txt" target="_blank" rel="noreferrer" className="btn btn-secondary btn-sm">llms-expo.txt</a>
+              </div>
             </div>
 
             <DocsCards
@@ -2196,17 +2198,17 @@ decane.on("wallet-creating", () => showProgress());`)}
           {/* Pager */}
           <div className="docs-pager">
             <a href="#overview" className="prev">
-              <div className="dir">← Top</div>
-              <div className="lbl">Back to overview</div>
+              <span className="dir">Top</span>
+              <span className="lbl"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M11 6l-6 6 6 6" /></svg>Back to overview</span>
             </a>
             <a href="#chain-list" className="next">
-              <div className="dir">Reference →</div>
-              <div className="lbl">Built-in chains</div>
+              <span className="dir">Reference</span>
+              <span className="lbl">Built-in chains<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg></span>
             </a>
           </div>
         </main>
 
-        <Toc />
+        <Toc current="web" />
       </div>
     </div>
   );
