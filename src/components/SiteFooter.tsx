@@ -29,7 +29,9 @@ export function SiteFooter() {
             <h4>Product</h4>
             <ul>
               <li><Link href="/docs">Docs</Link></li>
-              <li><Link href="/node-docs">Server SDKs</Link></li>
+              <li><Link href="/node-docs">Node SDK</Link></li>
+              <li><Link href="/python-docs">Python SDK</Link></li>
+              <li><Link href="/rust-docs">Rust SDK</Link></li>
               <li><Link href="/pricing">Pricing</Link></li>
               <li><Link href="/recovery">Recovering a wallet</Link></li>
               <li><a href={DASHBOARD_URL}>Dashboard</a></li>

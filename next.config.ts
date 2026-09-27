@@ -52,6 +52,8 @@ const config: NextConfig = {
       // section (id="social") rather than a separate page — redirect so
       // existing links/bookmarks/search results don't 404.
       { source: "/social", destination: "/#social", permanent: true },
+      // Python and Rust used to share one page inside the Node docs.
+      { source: "/node-docs/python-and-rust", destination: "/python-docs", permanent: true },
     ];
   },
 };

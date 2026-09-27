@@ -1,6 +1,8 @@
 import type { MetadataRoute } from "next";
 import { PAGES as WEB } from "./docs/content";
 import { PAGES as NODE } from "./node-docs/content";
+import { PAGES as PY } from "./python-docs/content";
+import { PAGES as RS } from "./rust-docs/content";
 
 const SITE_URL = "https://kit.decane.app";
 
@@ -12,6 +14,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...WEB.filter((p) => p.slug !== "overview").map((p) => ({ url: `${SITE_URL}/docs/${p.slug}`, lastModified: now, changeFrequency: "weekly" as const, priority: 0.8 })),
     { url: `${SITE_URL}/node-docs`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
     ...NODE.filter((p) => p.slug !== "overview").map((p) => ({ url: `${SITE_URL}/node-docs/${p.slug}`, lastModified: now, changeFrequency: "weekly" as const, priority: 0.7 })),
+    { url: `${SITE_URL}/python-docs`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
+    ...PY.filter((p) => p.slug !== "overview").map((p) => ({ url: `${SITE_URL}/python-docs/${p.slug}`, lastModified: now, changeFrequency: "weekly" as const, priority: 0.7 })),
+    { url: `${SITE_URL}/rust-docs`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
+    ...RS.filter((p) => p.slug !== "overview").map((p) => ({ url: `${SITE_URL}/rust-docs/${p.slug}`, lastModified: now, changeFrequency: "weekly" as const, priority: 0.7 })),
     { url: `${SITE_URL}/changelog`, lastModified: now, changeFrequency: "weekly", priority: 0.6 },
     { url: `${SITE_URL}/pricing`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
     { url: `${SITE_URL}/recovery`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },

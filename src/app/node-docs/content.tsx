@@ -75,6 +75,15 @@ export const PAGES: DocPage[] = [
               </a>
             </div>
 
+            <div className="docs-callout" data-kind="info">
+              <div className="ico">i</div>
+              <p>
+                Not on Node? The same server SDK exists for{" "}
+                <a href="/python-docs">Python</a> and <a href="/rust-docs">Rust</a>, with the
+                same endpoints and error codes.
+              </p>
+            </div>
+
             <DocsCards
               items={[
                 { href: "#quick-start", title: "Quick start", desc: "Verify a Decane access token in a few lines." },
@@ -795,83 +804,11 @@ const claims = await verifyAccessToken({ token, appId, verificationKey });`)}
       </>
     ),
   },
-  {
-    slug: 'python-and-rust', group: 'Other languages', title: 'Python and Rust', navLabel: 'Python & Rust', icon: 'code',
-    body: (
-      <>
-            <p>
-              The same server SDK exists for Python and Rust: the same endpoints, error codes and
-              tests as <code>decane-node</code> {VERSIONS.node}, with the method names in each
-              language&apos;s own style. Everything on the pages to the left applies; only the
-              spelling changes. The complete specs are{" "}
-              <a href="/llms-python.txt" target="_blank" rel="noreferrer">llms-python.txt</a> and{" "}
-              <a href="/llms-rust.txt" target="_blank" rel="noreferrer">llms-rust.txt</a>.
-            </p>
-            <h3 id="python">Python ({VERSIONS.python})</h3>
-            <CodeBlock lang="bash">
-              <span className="tok-id">pip</span>{" "}
-              <span className="tok-k">install</span>{" "}
-              <span className="tok-s">decane</span>
-            </CodeBlock>
-            <CodeBlock lang="python" file="auth.py">
-              <span className="tok-k">from</span> decane <span className="tok-k">import</span> DecaneClient, AsyncDecaneClient, DecaneAuthError{"\n"}
-              {"\n"}
-              decane = DecaneClient(app_id=APP_ID, verification_key=VERIFICATION_KEY)  <span className="tok-c"># omit the key to use the JWKS</span>{"\n"}
-              claims = decane.verify_access_token(token)   <span className="tok-c"># raises DecaneAuthError if invalid</span>{"\n"}
-              claims.user_id{"\n"}
-              {"\n"}
-              <span className="tok-c"># FastAPI and friends: the same methods, awaitable</span>{"\n"}
-              decane = AsyncDecaneClient(app_id=APP_ID){"\n"}
-              claims = <span className="tok-k">await</span> decane.verify_access_token(token)
-            </CodeBlock>
-            <p>
-              Python 3.10+, typed, over <code>httpx</code> and <code>PyJWT</code>. Sync{" "}
-              <code>DecaneClient</code> for Django and Flask, <code>AsyncDecaneClient</code> for
-              FastAPI. Sign-in, per-user records and server-side wallet creation are all there:{" "}
-              <code>connect_with_email</code>, <code>verify_email_code</code>,{" "}
-              <code>get_user_metadata</code>, <code>create_user(UserIdentifier(&quot;email&quot;, ...))</code>.
-            </p>
-            <h3 id="rust">Rust ({VERSIONS.rust})</h3>
-            <CodeBlock lang="toml" file="Cargo.toml">
-              [dependencies]{"\n"}
-              decane = <span className="tok-s">&quot;1&quot;</span>{"\n"}
-              tokio = {"{"} version = <span className="tok-s">&quot;1&quot;</span>, features = [<span className="tok-s">&quot;rt-multi-thread&quot;</span>, <span className="tok-s">&quot;macros&quot;</span>] {"}"}
-            </CodeBlock>
-            <CodeBlock lang="rust" file="auth.rs">
-              <span className="tok-k">use</span> decane::{"{"}DecaneClient, DecaneError{"}"};{"\n"}
-              {"\n"}
-              <span className="tok-k">let</span> decane = DecaneClient::builder(){"\n"}
-              {"    "}.app_id(app_id){"\n"}
-              {"    "}.verification_key(verification_key)   <span className="tok-c">// omit to use the JWKS</span>{"\n"}
-              {"    "}.build()?;{"\n"}
-              {"\n"}
-              <span className="tok-k">let</span> claims = decane.verify_access_token(token).<span className="tok-k">await</span>?;  <span className="tok-c">// Err(DecaneError::Auth) if invalid</span>{"\n"}
-              claims.user_id;
-            </CodeBlock>
-            <p>
-              Rust 1.85+, async on tokio, <code>reqwest</code> with rustls. One client per project,
-              cloneable. Errors are one enum: <code>Auth</code>, <code>Api</code> (with the wire code
-              and status) and <code>Config</code>.
-            </p>
-            <h3 id="deviations">Where they differ from decane-node</h3>
-            <ul>
-              <li>A JWKS that cannot be fetched is a <code>NETWORK_ERROR</code>, never a &quot;bad token&quot;; the safe verify propagates it instead of answering none.</li>
-              <li>Names are snake_case; the wire format is unchanged.</li>
-              <li>Python has sync and async clients; Rust is async-only.</li>
-              <li>The HTTP client you inject is used for the JWKS fetch too, and requests time out after 15 s by default.</li>
-              <li>A malformed verification key fails at construction, and configuration mistakes are their own error type.</li>
-            </ul>
-      </>
-    ),
-  },
 ];
 
 // Every id that appears in the content, mapped to the page that holds it, so a
 // #hash link written when the docs were one page still lands on the right page.
 export const ANCHORS: Record<string, string> = {
-  'python-and-rust': 'python-and-rust',
-  'python-and-rust-python': 'python-and-rust',
-  'python-and-rust-rust': 'python-and-rust',
   'overview': 'overview',
   'install': 'install',
   'quick-start': 'quick-start',
@@ -905,9 +842,6 @@ export const ANCHORS: Record<string, string> = {
 };
 
 export const SEARCH: SearchEntry[] = [
-  { id: 'python-and-rust', title: 'Python and Rust', crumb: 'Other languages', mono: false },
-  { id: 'python-and-rust-python', title: 'Python SDK', crumb: 'Other languages', mono: false },
-  { id: 'python-and-rust-rust', title: 'Rust SDK', crumb: 'Other languages', mono: false },
   { id: 'overview', title: 'Overview', crumb: 'Getting started', mono: false },
   { id: 'install', title: 'Install', crumb: 'Getting started', mono: false },
   { id: 'quick-start', title: 'Quick start', crumb: 'Getting started', mono: false },

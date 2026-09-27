@@ -10,7 +10,7 @@ import { useTheme } from "@/lib/theme";
 import { DocIcon } from "./DocIcon";
 import type { DocPage, SearchEntry } from "./types";
 
-export type DocSet = "web" | "node" | "changelog";
+export type DocSet = "web" | "node" | "python" | "rust" | "changelog";
 
 interface DocsShellProps {
   set: DocSet;
@@ -25,7 +25,9 @@ interface DocsShellProps {
 
 const TABS: Array<{ set: DocSet; href: string; label: string; icon: string }> = [
   { set: "web", href: "/docs", label: "Documentation", icon: "book" },
-  { set: "node", href: "/node-docs", label: "Server SDKs", icon: "server" },
+  { set: "node", href: "/node-docs", label: "Node SDK", icon: "server" },
+  { set: "python", href: "/python-docs", label: "Python SDK", icon: "terminal" },
+  { set: "rust", href: "/rust-docs", label: "Rust SDK", icon: "gear" },
   { set: "changelog", href: "/changelog", label: "Changelog", icon: "history" },
 ];
 

@@ -339,7 +339,7 @@ export default function Page() {
             </div>
             <p>
               Wrap your app once and you have sign-in, wallets, signing and sessions. Your backend
-              verifies who is calling with one line. Web, React Native and Node, from one dashboard
+              verifies who is calling with one line. Web, React Native, Node, Python and Rust, from one dashboard
               and one API key.
             </p>
           </Reveal>
@@ -357,6 +357,14 @@ export default function Page() {
               <Item>
                 <div className="row"><a href={NPM.node} target="_blank" rel="noreferrer">decane-node</a><span>{VERSIONS.node}</span></div>
                 <p>Server. Verify tokens, sign users in from your backend.</p>
+              </Item>
+              <Item>
+                <div className="row"><Link href="/python-docs">decane for Python</Link><span>{VERSIONS.python}</span></div>
+                <p>Server, on PyPI. Sync and asyncio clients.</p>
+              </Item>
+              <Item>
+                <div className="row"><Link href="/rust-docs">decane for Rust</Link><span>{VERSIONS.rust}</span></div>
+                <p>Server, on crates.io. Async, on tokio.</p>
               </Item>
               <Item className="cta-li"><Link href="/docs" className="btn btn-secondary">Read the docs</Link></Item>
             </Stagger>
