@@ -1,0 +1,236 @@
+# DecaneKit (Swift)
+
+> The Swift SDK for Decane embedded wallets on iOS and macOS: social sign-in, EVM + Solana + Tron wallets from one key, signing inside an attested Intel TDX enclave. The wallet logic is the shared Rust core (the same one the Android SDK uses), linked as an XCFramework and byte-compatible with the web and Expo SDKs: a wallet opened here is the same wallet, at the same addresses, as on the web. The private key is never assembled on the phone: a 2-of-3 Shamir split puts one share on the device, one on the server and one sealed in the enclave, which reconstructs the key internally, momentarily, per signature. This file is a self-contained integration spec, grounded in the package source.
+
+```swift
+.package(url: "https://github.com/Korex23/decane-swift", from: "0.1.0")
+```
+
+iOS 16+ / macOS 13+. Swift 6 (strict concurrency). Products `DecaneKit` and
+`DecaneKitUI` (SwiftUI, iOS 17+ / macOS 14+). MIT.
+
+---
+
+## Version and freshness
+
+```yaml
+package: DecaneKit         # Swift Package Manager, https://github.com/Korex23/decane-swift
+version: 0.1.0
+core: decane-core 0.1.0    # the Rust wallet core in DecaneFFI.xcframework (release asset)
+document-revision: 2026-09-27
+canonical: https://kit.decane.app/llms-swift.txt
+version-manifest: https://kit.decane.app/llms-version.json   # under the "swift" key
+expo-sibling: https://kit.decane.app/llms-expo.txt           # decane-connect-kit-expo (React Native)
+web-sibling: https://kit.decane.app/llms.txt                 # decane-connect-kit (browser)
+server-sibling: https://kit.decane.app/llms-node.txt         # decane-node (and the Python / Rust ports)
+```
+
+**0.1.0 implements the identity tier only.** Sign-in, wallet creation,
+provisioning and signing work. The device tier (biometric / PIN unlock),
+passkeys, redirect sign-in (Google, X, KingsChat popup) and recovery files
+answer with a clear `DecaneError` saying they are not implemented yet. Their
+platform hooks already ship, so enabling them will not change the API.
+
+---
+
+## Minimal working setup
+
+```swift
+import DecaneKit
+
+let wallet = try DecaneWallet(config: DecaneConfig(
+  appId: "proj_…",
+  apiKey: "dck_live_…",                                  // the project's browser key
+  chains: ["evm:8453", "solana:mainnet", "tron:mainnet"],
+  protection: .identity                                  // the tier 0.1.0 implements
+))
+
+try await wallet.connectWithEmail("user@example.com")    // emails a 6-digit code
+let result = try await wallet.verifyEmailCode(email: "user@example.com", code: "123456")
+result.addresses.evm; result.addresses.solana; result.addresses.tron
+result.isNewUser                                         // the person's first sign-in to this app
+
+let signature = try await wallet.signMessage(chain: "evm:8453", text: "Hello")
+```
+
+On a later launch, `try await wallet.connect()` resumes a session that is
+still live (kept in the Keychain until its recorded expiry; `persistSession:
+false` turns that off) and throws `.reconnectRequired` when the user must
+sign in again. A returning user who signs in gets the same wallet: the
+enclave provisions a device share against the JWT alone.
+
+### SwiftUI
+
+```swift
+import DecaneKitUI
+
+@State var model = try! DecaneObservable(config: config)   // @Observable, @MainActor
+// model.addresses, model.isUnlocked, model.lastError, model.isBusy
+await model.verifyEmailCode(email: email, code: code)
+```
+
+---
+
+## Configuration — `DecaneConfig`
+
+| Field | Default | Meaning |
+|---|---|---|
+| `appId` | required | the project id |
+| `apiKey` | required | the project's `dck_live_…` browser key |
+| `chains` | required | CAIP-2: `evm:<chainId>`, `solana:mainnet` / `solana:devnet`, `tron:mainnet` / `shasta` / `nile` |
+| `protection` | `.device` | `.identity` is the only tier 0.1.0 accepts; `.device` (Expo's default) is refused with a clear error |
+| `apiBaseURL` | `https://backend.decane.app` | backend |
+| `teeURL` | the production enclave | signer |
+| `unlockPreference` | `[]` | device tier (not yet) |
+| `rpId`, `rpName` | nil | passkeys (not yet) |
+| `redirectURI` | nil | redirect sign-in (not yet) |
+| `kingsChatScopes` | `[]` | KingsChat |
+| `sessionDurationMinutes` | 120 | capped by the enclave session and the token |
+| `persistSession` | true | resume a live session across launches |
+| `requireAssertionPerSignature` | false | device tier (not yet) |
+| `insecureSkipAttestation` | false | development only |
+
+---
+
+## The identity tier — the security statement, verbatim
+
+A wallet is exactly as safe as the user's identity-provider account plus Decane (the JWT signing key and the attested enclave). Anyone who can obtain a valid Decane session for the user can sign. There is no device-bound factor. Mitigations: a new-device email on every provision from an unseen device, a per-user freeze switch operated by Decane, and (follow-up) a fresh sign-in requirement for high-value operations.
+
+Nothing is stored on the device and nothing is asked for: every visit is a
+sign-in, after which the enclave provisions a fresh device share.
+
+---
+
+## Sign-in
+
+| Method | Notes |
+|---|---|
+| `connectWithEmail(_:)` + `verifyEmailCode(email:code:) -> ConnectResult` | code sends: 3 per hour per address; attempts: 10 per 15 min |
+| `connectWithPhone(_:)` + `verifyPhoneCode(phone:code:)` | E.164 |
+| `connectWithGoogleToken(_:)` | a Google ID token your app obtained (Google Sign-In SDK) |
+| `connectWithKingsChatToken(_:)` | a KingsChat access token |
+| `connectWithToken(_:providerId:)` | your own JWT, for a custom auth provider configured in the dashboard |
+| `connectWithGoogle()`, `connectWithX()`, `connectWithKingsChat()` | redirect flows — not yet |
+| `connect()` | resume |
+| `disconnect()` | revoke and forget |
+
+`ConnectResult { addresses, isNewUser, profile }`. A wallet your server made
+with `createUser` (decane-node, or the Python / Rust ports) opens on the
+person's first sign-in: this SDK provisions it and never creates a second.
+
+---
+
+## Wallet API
+
+```swift
+wallet.isUnlocked; wallet.needsReconnect; wallet.sessionExpiresAt; wallet.accessToken; wallet.addresses
+
+try await wallet.signMessage(chain: "evm:8453", text: "Hello")        // EVM / Tron: 0x r‖s‖v (EIP-191)
+try await wallet.signMessage(chain: "solana:mainnet", bytes: data)    // Solana: base64url ed25519 signature
+try await wallet.signEVMTransaction(chain: "evm:8453", unsigned: rlp) // unsigned envelope bytes → signed envelope bytes
+try await wallet.signTypedData(chain: "evm:8453", typedDataJSON: json) // EIP-712
+try await wallet.signAuthorization(chainId: 8453, address: "0x…", nonce: 0)  // EIP-7702 → { yParity, r, s }
+try await wallet.signSolanaTransaction(serialized: tx)                // → signed transaction bytes
+try await wallet.signTronTransaction(rawDataHex: hex)                 // → 0x signature
+try await wallet.recordTransaction(RecordTransactionInput(chain: "evm:8453", txHash: hash))
+try await wallet.transactionHistory(limit: 50)
+try await wallet.capabilities()
+```
+
+Sign-only: broadcast with your own web3 stack (web3.swift, Solana.Swift,
+TronWeb over HTTP). EVM transactions cover legacy, EIP-2930, EIP-1559 and
+EIP-7702 envelopes.
+
+### Events
+
+```swift
+for await event in wallet.events {   // AsyncStream<DecaneEvent>
+  event.name                         // "connected", "disconnected", "session-started", "session-expired",
+}                                    // "session-renewed", "wallet-creating", "wallet-unlocking",
+                                     // "enrolment-failed", "migrated-to-identity"
+```
+
+---
+
+## Errors
+
+`DecaneError` is a `LocalizedError` with one case per error class and two
+properties shared with the JS SDKs: `code` (identical to `error.code` in
+decane-connect-kit / -expo: `NETWORK`, `RECONNECT_REQUIRED`,
+`WALLET_ENROLMENT_FAILED`, `PROVISIONING_RATE_LIMITED`, `NEW_DEVICE`,
+`ATTESTATION_FAILED`, `WALLET_EXISTS`, `NATIVE_MODULE_MISSING`, …) and
+`retryable`.
+
+- `.walletEnrolmentFailed` — the enclave did not accept a new wallet after
+  three attempts. Nothing was created; signing in again creates afresh.
+- `.provisioningRateLimited` — ten devices in an hour for this user. Wait.
+- `.newDevice` — an old wallet from before enrolment; recovery needed.
+- `.attestationFailed` — the enclave's measurement is not one this build
+  accepts. Update the package.
+- `.callSequence` / `.platformHookMissing` — a feature this version does not
+  implement yet, or a call before sign-in.
+
+---
+
+## Platform hooks
+
+`DecaneWallet(config:)` uses `DecanePlatform.standard()`. Pass your own
+`DecanePlatform` to replace any piece; every hook is a protocol.
+
+| Hook | Default | Notes |
+|---|---|---|
+| HTTP | `URLSessionTransport` | ephemeral session; non-2xx is a response, a transport failure is `.network` |
+| Secure store | `KeychainStorage` | service `decane-connect-kit`, account = key, `WhenUnlockedThisDeviceOnly` — the Expo SDK's service and keys, so an app moving from Expo keeps its users' records |
+| Device key | `BiometricKey` | service `decane-connect-kit.enclave`, account `decane.enclave.<userId>`, `.biometryCurrentSet` |
+| Passkeys | `PlatformPasskeyProvider` | PRF on iOS 18 / macOS 15; below that, passkeys report unsupported |
+| Web sign-in | `WebAuthenticationSession` | `ASWebAuthenticationSession`, ephemeral |
+| PIN, recovery, attestation | none | `DecanePinPrompt`, `DecaneRecoveryDelegate`, `DecaneAttestationVerifier` |
+
+---
+
+## Attestation
+
+Before any share moves, the SDK asks the enclave for a TDX quote on a fresh
+nonce, checks its measurement against the list pinned in this build
+(`Decane.acceptedMeasurements`), and has the Decane backend verify the quote
+(or your `DecaneAttestationVerifier`). Cached ten minutes per enclave URL. A
+measurement change on Decane's side ships as a new package version.
+
+---
+
+## App setup for the device tier (when it lands)
+
+- Passkeys: `rpId` a domain you control, `webcredentials:<rpId>` in
+  Associated Domains, and `/.well-known/apple-app-site-association` listing
+  the app. The origin the backend sees is `https://<rpId>`.
+- Biometrics: `NSFaceIDUsageDescription` in Info.plist.
+- Redirect sign-in: `redirectURI` (e.g. `myapp://auth`) registered as the
+  API key's first callback URL in the dashboard, and the scheme declared in
+  `CFBundleURLTypes`.
+
+---
+
+## Differences from the Expo SDK
+
+- Swift names: `signEVMTransaction`, `transactionHistory(limit:)`,
+  `capabilities()`; properties for synchronous getters.
+- Hooks are protocols on `DecanePlatform`, not config closures; events are an
+  `AsyncStream`, not `on(...)`.
+- `signMessage(text:)` / `signMessage(bytes:)`; transactions are bytes in,
+  signed bytes out. No `sendTransaction`, no balances, no `rpcUrls`.
+- No `authMethods`: call the sign-in you want.
+- Cancelling a Swift `Task` stops waiting but not the core's work, which its
+  own timeouts bound (90 s for wallet setup, per-request HTTP limits).
+
+---
+
+## Package
+
+```yaml
+repository: https://github.com/Korex23/decane-swift        # published copy of sdk-native/swift
+source-of-truth: https://github.com/Korex23/decane-connect-kit/tree/main/sdk-native
+products: [DecaneKit, DecaneKitUI]
+binary: DecaneFFI.xcframework.zip on the v0.1.0 release (ios-arm64, ios-arm64_x86_64-simulator, macos-arm64)
+platforms: [iOS 16, macOS 13]
+license: MIT
+```

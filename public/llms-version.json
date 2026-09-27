@@ -198,5 +198,19 @@
         "summary": "First release: the Rust port of decane-node 1.5.0. Async on tokio, reqwest with rustls; verification with a static key or the JWKS (jsonwebtoken); server-side sign-in (email, phone, Google token, KingsChat token, custom auth); per-user records; server-side user and wallet creation. Deviations: a JWKS fetch failure is NetworkError not an auth error, snake_case names, 15 s default timeout, a bad verification key fails at build(), ApiErrorCode::Other for unknown codes."
       }
     ]
+  },
+  "swift": {
+    "package": "DecaneKit",
+    "registry": "https://github.com/Korex23/decane-swift",
+    "version": "0.1.0",
+    "llmsTxt": "https://kit.decane.app/llms-swift.txt",
+    "docs": "https://kit.decane.app/docs/ios",
+    "changelog": [
+      {
+        "version": "0.1.0",
+        "date": "2026-09-27",
+        "summary": "First release of the Swift SDK for iOS 16+ / macOS 13+, on the shared Rust wallet core (UniFFI, XCFramework on the GitHub release). The identity tier: email, phone, Google-token, KingsChat-token and custom-token sign-in; wallet creation and enrolment; provisioning, including wallets a server created with createUser; signing for EVM (messages, transactions, EIP-712, EIP-7702), Solana and Tron; session resume and refresh; events. Not yet: the device tier, passkeys, redirect sign-in, recovery files (each answers a clear error)."
+      }
+    ]
   }
 }

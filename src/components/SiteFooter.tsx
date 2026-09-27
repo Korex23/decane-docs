@@ -23,6 +23,7 @@ export function SiteFooter() {
               <li><a href={NPM.node} target="_blank" rel="noreferrer"><code>decane-node</code><span>{VERSIONS.node}</span></a></li>
               <li><a href={REGISTRY.python} target="_blank" rel="noreferrer"><code>decane</code> (PyPI)<span>{VERSIONS.python}</span></a></li>
               <li><a href={REGISTRY.rust} target="_blank" rel="noreferrer"><code>decane</code> (crates.io)<span>{VERSIONS.rust}</span></a></li>
+              <li><a href={REGISTRY.swift} target="_blank" rel="noreferrer"><code>DecaneKit</code> (Swift)<span>{VERSIONS.swift}</span></a></li>
             </ul>
           </div>
           <div>
@@ -45,6 +46,7 @@ export function SiteFooter() {
               <li><a href="/llms-node.txt" target="_blank" rel="noreferrer">llms-node.txt</a></li>
               <li><a href="/llms-python.txt" target="_blank" rel="noreferrer">llms-python.txt</a></li>
               <li><a href="/llms-rust.txt" target="_blank" rel="noreferrer">llms-rust.txt</a></li>
+              <li><a href="/llms-swift.txt" target="_blank" rel="noreferrer">llms-swift.txt</a></li>
               <li><a href="/llms-version.json" target="_blank" rel="noreferrer">llms-version.json</a></li>
             </ul>
           </div>

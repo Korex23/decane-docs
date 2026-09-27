@@ -29,5 +29,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${SITE_URL}/llms-node.txt`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
     { url: `${SITE_URL}/llms-python.txt`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
     { url: `${SITE_URL}/llms-rust.txt`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
+    { url: `${SITE_URL}/llms-swift.txt`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
   ];
 }

@@ -6,6 +6,7 @@ export const VERSIONS = {
   node: "1.5.0",
   python: "1.0.0",
   rust: "1.0.0",
+  swift: "0.1.0",
 } as const;
 
 export const NPM = {
@@ -19,4 +20,5 @@ export const REGISTRY = {
   ...NPM,
   python: "https://pypi.org/project/decane/",
   rust: "https://crates.io/crates/decane",
+  swift: "https://github.com/Korex23/decane-swift",
 } as const;
