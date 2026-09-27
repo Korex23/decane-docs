@@ -450,6 +450,11 @@ input[type=range]::-moz-range-thumb { width: 24px; height: 24px; border-radius: 
 .demo-method-input button { height: 34px; padding: 0 12px; border-radius: 10px; border: 0; background: transparent; color: var(--accent); font-size: 13.5px; font-weight: 600; cursor: pointer; }
 .demo-method-input button:disabled { color: var(--muted); cursor: default; }
 .demo-method-input:focus-within { border-color: var(--accent); }
+.demo-or { width: 100%; display: flex; align-items: center; gap: 10px; margin-top: 2px; font-size: 12.5px; color: var(--muted); }
+.demo-or::before, .demo-or::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+.demo-wallet-icon { width: 20px; height: 20px; border-radius: 6px; flex-shrink: 0; object-fit: cover; }
+.demo-wallet-icon.lg { width: 36px; height: 36px; border-radius: 10px; }
+.demo-method-tag { margin-left: auto; font-size: 12px; font-weight: 500; color: var(--muted); }
 .demo-login-form { width: 100%; display: grid; gap: 10px; }
 .demo-field { width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-soft); color: var(--text); font-size: 15px; outline: none; resize: vertical; font-family: inherit; }
 .demo-field:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }

@@ -22,12 +22,22 @@ export const CHAINS = [
 ] as const;
 export type ChainId = (typeof CHAINS)[number]["id"];
 
+// "all" puts installed wallets (EIP-6963, Wallet Standard, TronLink) beside
+// social sign-in; "social" is social sign-in alone.
+export type DemoMode = "all" | "social";
+export const MODES: Array<{ id: DemoMode; label: string }> = [
+  { id: "all", label: "Social + wallets" },
+  { id: "social", label: "Social only" },
+];
+
 export interface DemoSettings {
+  mode: DemoMode;
   methods: Record<Method, boolean>;
   chains: Record<ChainId, boolean>;
 }
 
 export const DEFAULT_SETTINGS: DemoSettings = {
+  mode: "all",
   methods: { google: true, email: true, phone: true, x: true, kingschat: false },
   chains: { "evm:8453": true, "evm:1": false, "solana:mainnet": true, "tron:mainnet": true },
 };

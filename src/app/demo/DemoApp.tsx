@@ -2,13 +2,13 @@
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
-import { DecaneKit, useSocialAuth, useSocialWallet } from "decane-connect-kit";
+import { DecaneKit, useDecane, useSignMessage, useSocialAuth, useSocialWallet, useWalletSelector } from "decane-connect-kit";
 import { ChainTypeIcon } from "@/components/ChainIcon";
 import { DecaneLogo } from "@/components/DecaneLogo";
-import { CopyIcon, CheckIcon, GoogleMark, XLogo, MailIcon, PhoneIcon, ChatIcon } from "@/components/Icons";
+import { CopyIcon, CheckIcon, GoogleMark, XLogo, MailIcon, PhoneIcon, ChatIcon, WalletIcon } from "@/components/Icons";
 import type { Theme } from "@/lib/theme";
 import {
-  CHAINS, DEFAULT_SETTINGS, DEMO_API_KEY, DEMO_APP_ID, METHODS,
+  CHAINS, DEFAULT_SETTINGS, DEMO_API_KEY, DEMO_APP_ID, METHODS, MODES,
   type ChainId, type DemoSettings, type Method,
 } from "./config";
 
@@ -28,6 +28,7 @@ function loadSettings(): DemoSettings {
     if (!raw) return DEFAULT_SETTINGS;
     const s = JSON.parse(raw) as Partial<DemoSettings>;
     return {
+      mode: s.mode === "social" || s.mode === "all" ? s.mode : DEFAULT_SETTINGS.mode,
       methods: { ...DEFAULT_SETTINGS.methods, ...s.methods },
       chains: { ...DEFAULT_SETTINGS.chains, ...s.chains },
     };
@@ -44,7 +45,7 @@ function snippet(settings: DemoSettings, theme: Theme) {
 <DecaneKit
   config={{
     appId: "YOUR_APP_ID",
-    mode: "social",
+    mode: "${settings.mode}",
     theme: "${theme}",
     social: {
       apiKey: "dck_live_…",
@@ -103,6 +104,22 @@ function ConfigPanel({
       </section>
 
       <section>
+        <h2>Mode</h2>
+        <div className="demo-seg" role="radiogroup" aria-label="Mode">
+          {MODES.map((m) => (
+            <button key={m.id} type="button" role="radio" aria-checked={settings.mode === m.id} className={settings.mode === m.id ? "on" : ""} onClick={() => settings.mode !== m.id && setSettings({ ...settings, mode: m.id })}>
+              {m.label}
+            </button>
+          ))}
+        </div>
+        <p className="demo-hint">
+          {settings.mode === "all"
+            ? "Wallets installed in this browser are offered beside social sign-in."
+            : "Social sign-in only. Installed wallets are not offered."}
+        </p>
+      </section>
+
+      <section>
         <h2>Sign-in methods</h2>
         <ul className="demo-options">
           {METHODS.map((m) => {
@@ -157,9 +174,47 @@ function ConfigPanel({
 
 // ─── Inline login card ───────────────────────────────────────────────────────
 
+function InstalledWallets() {
+  const { wallets, connect } = useDecane();
+  const selector = useWalletSelector();
+  const [pending, setPending] = useState<string | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+  const shown = wallets.slice(0, 4);
+  return (
+    <>
+      <div className="demo-or"><span>or connect a wallet</span></div>
+      <div className="demo-methods">
+        {shown.map((wl) => (
+          <button
+            key={wl.id}
+            type="button"
+            className="demo-method"
+            disabled={!!pending}
+            onClick={async () => {
+              setPending(wl.id); setErr(null);
+              try { await connect(wl); } catch (e) { setErr(e instanceof Error ? e.message : String(e)); } finally { setPending(null); }
+            }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={wl.icon} alt="" width={20} height={20} className="demo-wallet-icon" />
+            <span>{pending === wl.id ? `Waiting for ${wl.name}…` : wl.name}</span>
+            <small className="demo-method-tag">Installed</small>
+          </button>
+        ))}
+        <button type="button" className="demo-method" disabled={!!pending} onClick={selector.open}>
+          <WalletIcon size={18} />
+          <span>{shown.length ? "More options" : "Continue with a wallet"}</span>
+        </button>
+      </div>
+      {err && <p className="demo-error">{err}</p>}
+    </>
+  );
+}
+
 function LoginCard({ settings }: { settings: DemoSettings }) {
   const auth = useSocialAuth();
   const wallet = useSocialWallet();
+  const selector = useWalletSelector();
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
@@ -236,7 +291,8 @@ function LoginCard({ settings }: { settings: DemoSettings }) {
       </div>
       {creating && <p className="demo-login-sub">Creating your wallet in the enclave…</p>}
       {(err || auth.error) && <p className="demo-error">{err ?? auth.error}</p>}
-      <button type="button" className="demo-link" onClick={() => wallet.openModal()}>Or open the SDK&rsquo;s built-in modal</button>
+      {settings.mode === "all" && <InstalledWallets />}
+      <button type="button" className="demo-link" onClick={() => (settings.mode === "all" ? selector.open() : wallet.openModal())}>Or open the SDK&rsquo;s built-in modal</button>
       <p className="demo-protected">Protected by <DecaneLogo size={14} /> decane</p>
     </div>
   );
@@ -397,6 +453,84 @@ function WalletPanel({ settings }: { settings: DemoSettings }) {
   );
 }
 
+// Accounts granted by an installed wallet, flattened from the CAIP-25 scopes.
+function grantedAccounts(scopes: Partial<Record<string, { accounts: string[] }>> | undefined) {
+  const out: Array<{ chain: string; address: string }> = [];
+  for (const [chain, scope] of Object.entries(scopes ?? {})) {
+    for (const acct of scope?.accounts ?? []) {
+      const address = acct.split(":").slice(2).join(":");
+      if (address && !out.some((o) => o.chain === chain && o.address === address)) out.push({ chain, address });
+    }
+  }
+  return out;
+}
+
+function chainName(caip2: string) {
+  const [ns, ref] = caip2.split(":");
+  if (ns === "eip155") return ({ "1": "Ethereum", "8453": "Base", "10": "Optimism", "137": "Polygon", "42161": "Arbitrum", "56": "BNB Chain", "11155111": "Sepolia" } as Record<string, string>)[ref] ?? `EVM chain ${ref}`;
+  if (ns === "solana") return "Solana";
+  if (ns === "tron") return "Tron";
+  if (ns === "bip122" || ns === "bitcoin") return "Bitcoin";
+  return caip2;
+}
+
+function chainLogo(caip2: string): "evm" | "solana" | "tron" {
+  const ns = caip2.split(":")[0];
+  return ns === "solana" ? "solana" : ns === "tron" ? "tron" : "evm";
+}
+
+function ExternalWalletPanel() {
+  const d = useDecane();
+  const { signMessage, loading } = useSignMessage();
+  const [message, setMessage] = useState("Hello from the Decane demo");
+  const [sig, setSig] = useState<string | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+  const accounts = grantedAccounts(d.activeSession?.grantedScopes);
+  const wl = d.connectedWallet;
+
+  return (
+    <div className="demo-panel">
+      <div className="demo-wallet">
+        <div className="demo-wallet-head">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          {wl?.icon ? <img src={wl.icon} alt="" width={36} height={36} className="demo-wallet-icon lg" /> : <span className="avatar">W</span>}
+          <div><b>{wl?.name ?? "Wallet"}</b><small>Connected with an installed wallet</small></div>
+          <button type="button" className="btn btn-secondary btn-sm" onClick={() => d.disconnect()}>Disconnect</button>
+        </div>
+        <ul className="demo-addresses">
+          {accounts.length ? accounts.map((a) => (
+            <li key={`${a.chain}:${a.address}`}>
+              <ChainTypeIcon type={chainLogo(a.chain)} size={20} />
+              <span className="name">{chainName(a.chain)}</span>
+              <code title={a.address}>{short(a.address)}</code>
+              <CopyButton value={a.address} label={`${chainName(a.chain)} address`} />
+            </li>
+          )) : <li><span className="name">No accounts shared yet</span></li>}
+        </ul>
+      </div>
+
+      <div className="demo-tools">
+        <Tool title="Sign a message" desc={`Your wallet asks you to approve it${d.activeChain ? ` on ${chainName(d.activeChain)}` : ""}. Nothing touches Decane's servers.`}>
+          <textarea className="demo-field" rows={2} value={message} onChange={(e) => setMessage(e.target.value)} aria-label="Message" />
+          <button
+            type="button"
+            className="btn btn-primary btn-sm"
+            disabled={loading || !message.trim()}
+            onClick={async () => {
+              setErr(null);
+              try { setSig(await signMessage(message)); } catch (e) { setErr(e instanceof Error ? e.message : String(e)); }
+            }}
+          >
+            {loading ? "Waiting for your wallet…" : "Sign message"}
+          </button>
+          {sig && <Result label="Signature" value={sig} />}
+        </Tool>
+      </div>
+      {err && <p className="demo-error">{err}</p>}
+    </div>
+  );
+}
+
 function CopyTokenButton({ token }: { token: string }) {
   const [done, copy] = useCopy();
   return <button type="button" className="btn btn-secondary btn-sm" onClick={() => copy(token)}>{done ? "Copied" : "Copy JWT"}</button>;
@@ -437,11 +571,14 @@ function SideCards({ settings, theme, signedIn }: { settings: DemoSettings; them
 
 function Canvas({ settings, theme }: { settings: DemoSettings; theme: Theme }) {
   const w = useSocialWallet();
-  const signedIn = w.isConnected && !!w.addresses;
+  const d = useDecane();
+  const socialIn = w.isConnected && !!w.addresses;
+  const externalIn = settings.mode === "all" && d.isConnected;
+  const signedIn = socialIn || externalIn;
   return (
     <main className="demo-canvas">
       <div className={`demo-stage${signedIn ? " wide" : ""}`}>
-        {signedIn ? <WalletPanel settings={settings} /> : <LoginCard settings={settings} />}
+        {socialIn ? <WalletPanel settings={settings} /> : externalIn ? <ExternalWalletPanel /> : <LoginCard settings={settings} />}
       </div>
       <SideCards settings={settings} theme={theme} signedIn={signedIn} />
     </main>
@@ -463,12 +600,12 @@ export function DemoApp({ theme, onToggleTheme }: { theme: Theme; onToggleTheme:
     <div className="demo-layout">
       <ConfigPanel settings={settings} setSettings={setSettings} theme={theme} onToggleTheme={onToggleTheme} />
       <DecaneKit
-        // A new set of methods or chains is a new SDK config; remounting applies
+        // A new mode, set of methods or chains is a new SDK config; remounting applies
         // it. The session survives in storage, so a signed-in visitor stays in.
-        key={`${authMethods.join(",")}|${chains.join(",")}`}
+        key={`${settings.mode}|${authMethods.join(",")}|${chains.join(",")}`}
         config={{
           appId: DEMO_APP_ID,
-          mode: "social",
+          mode: settings.mode,
           theme,
           social: { apiKey: DEMO_API_KEY, authMethods, chains, protection: "identity" },
         }}

@@ -61,6 +61,16 @@ export function KeyIcon({ size = 18 }: P) {
   );
 }
 
+export function WalletIcon({ size = 18 }: P) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" {...line} aria-hidden>
+      <path d="M4 7.5A2.5 2.5 0 0 1 6.5 5H18a1 1 0 0 1 1 1v2" />
+      <path d="M4 7.5v9A2.5 2.5 0 0 0 6.5 19H19a1 1 0 0 0 1-1v-9a1 1 0 0 0-1-1H6.5A2.5 2.5 0 0 1 4 7.5z" />
+      <circle cx="16" cy="13.5" r="1" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
 export function CopyIcon({ size = 15 }: P) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" {...line} aria-hidden>
