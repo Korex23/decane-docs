@@ -1,0 +1,7 @@
+# Published as-is: the llms specs and version manifest are read by agents
+# byte-for-byte, and offline-recovery.html is built in the monorepo.
+public/
+.next/
+node_modules/
+package-lock.json
+next-env.d.ts
