@@ -13,7 +13,7 @@ minSdk 28. Kotlin 2.x, coroutines. MIT.
 ## Version and freshness
 
 ```yaml
-package: app.decane:decane-kit   # GitHub Packages, https://maven.pkg.github.com/Korex23/decane-connect-kit
+package: app.decane:decane-kit   # GitHub Packages, https://maven.pkg.github.com/Korex23/decane-android
 version: 0.1.0
 core: decane-core 0.1.0          # the Rust wallet core, libdecane_ffi.so (arm64-v8a, armeabi-v7a, x86_64)
 document-revision: 2026-09-27
@@ -53,7 +53,7 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
         maven {
-            url = uri("https://maven.pkg.github.com/Korex23/decane-connect-kit")
+            url = uri("https://maven.pkg.github.com/Korex23/decane-android")
             credentials {
                 username = providers.gradleProperty("gpr.user").get()
                 password = providers.gradleProperty("gpr.key").get()
@@ -281,7 +281,7 @@ library version.
 
 ```yaml
 coordinates: app.decane:decane-kit:0.1.0
-repository: https://maven.pkg.github.com/Korex23/decane-connect-kit   # read:packages token required
+repository: https://maven.pkg.github.com/Korex23/decane-android   # read:packages token required
 source: https://github.com/Korex23/decane-connect-kit/tree/main/sdk-native/kotlin
 min-sdk: 28
 abis: [arm64-v8a, armeabi-v7a, x86_64]

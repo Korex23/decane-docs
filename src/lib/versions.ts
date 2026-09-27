@@ -22,5 +22,5 @@ export const REGISTRY = {
   python: "https://pypi.org/project/decane/",
   rust: "https://crates.io/crates/decane",
   swift: "https://github.com/Korex23/decane-swift",
-  kotlin: "https://github.com/Korex23/decane-connect-kit/packages",
+  kotlin: "https://github.com/Korex23/decane-android/packages",
 } as const;

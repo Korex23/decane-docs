@@ -100,7 +100,7 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
         maven {
-            url = uri("https://maven.pkg.github.com/Korex23/decane-connect-kit")
+            url = uri("https://maven.pkg.github.com/Korex23/decane-android")
             credentials {
                 username = providers.gradleProperty("gpr.user").get()
                 password = providers.gradleProperty("gpr.key").get()

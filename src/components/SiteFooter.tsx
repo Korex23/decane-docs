@@ -30,6 +30,7 @@ export function SiteFooter() {
           <div>
             <h4>Product</h4>
             <ul>
+              <li><Link href="/demo">Live demo</Link></li>
               <li><Link href="/docs">Docs</Link></li>
               <li><Link href="/node-docs">Node SDK</Link></li>
               <li><Link href="/python-docs">Python SDK</Link></li>

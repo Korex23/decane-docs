@@ -48,7 +48,7 @@ function InstallLine() {
 
 function FlowPanel() {
   return (
-    <div className="panel flow" aria-hidden>
+    <div className="panel flow">
       <Stagger className="flow-grid" delay={0.14}>
         <Item className="flow-card">
           <div className="flow-head"><span className="eyebrow">01 · Sign in</span><span className="dot" /></div>
@@ -81,6 +81,10 @@ function FlowPanel() {
           <p className="foot">Same addresses on every device and in every app on your project.</p>
         </Item>
       </Stagger>
+      <div className="flow-cta">
+        <p>See it for yourself: a real wallet in a few seconds.</p>
+        <Link href="/demo" className="btn btn-primary">Try the live demo</Link>
+      </div>
     </div>
   );
 }
