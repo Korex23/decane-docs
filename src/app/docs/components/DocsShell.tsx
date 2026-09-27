@@ -25,7 +25,7 @@ interface DocsShellProps {
 
 const TABS: Array<{ set: DocSet; href: string; label: string; icon: string }> = [
   { set: "web", href: "/docs", label: "Documentation", icon: "book" },
-  { set: "node", href: "/node-docs", label: "Node SDK", icon: "server" },
+  { set: "node", href: "/node-docs", label: "Server SDKs", icon: "server" },
   { set: "changelog", href: "/changelog", label: "Changelog", icon: "history" },
 ];
 

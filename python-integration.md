@@ -1,8 +1,23 @@
 # Python: using Decane from your backend
 
-Decane has no Python SDK. It does not need one — every server-side capability is plain HTTP
-with a bearer token, and the two things worth getting right (token verification and webhook
-signatures) are twenty lines each. This page is the Python equivalent of `decane-node`.
+There is a Python SDK: `pip install decane`, the port of `decane-node` with the
+same endpoints, error codes and tests (spec: https://kit.decane.app/llms-python.txt).
+
+```python
+from decane import DecaneClient
+
+decane = DecaneClient(app_id=APP_ID, verification_key=VERIFICATION_KEY)   # or omit the key to use the JWKS
+claims = decane.verify_access_token(token)          # DecaneAuthError if invalid
+claims.user_id
+```
+
+`AsyncDecaneClient` has the same methods for FastAPI and friends. Sign-in,
+per-user records and server-side wallet creation are all there; see the spec.
+
+The rest of this page is for the cases the SDK does not cover (webhook
+signatures) and for anyone who prefers plain HTTP. Every server-side capability
+is plain HTTP with a bearer token, and the two things worth getting right
+(token verification and webhook signatures) are twenty lines each.
 
 Decide first which of these you are doing, because they need different credentials:
 

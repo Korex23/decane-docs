@@ -1,0 +1,332 @@
+# decane (Rust)
+
+> Server-side SDK for Decane Connect Kit, for Rust backends: the port of `decane-node`. Verify a caller's Decane access token, resolve their wallet addresses, sign users in from the server (email and phone OTP, Google and KingsChat token exchange, custom-auth JWT exchange), read and write per-user records, and create users and wallets ahead of their first sign-in. Async-only, on tokio. Verification needs only a public key, either your project's static verification key (offline) or Decane's published JWKS, which the crate fetches, caches and refetches on rotation. This file is a self-contained integration spec, grounded in the crate source.
+
+```toml
+[dependencies]
+decane = "1"
+tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
+```
+
+Rust 1.85+, edition 2024. TLS is rustls (no OpenSSL). MIT.
+
+---
+
+## Version and freshness
+
+```yaml
+package: decane            # crates.io
+version: 1.0.0
+mirrors: decane-node 1.5.0 # same endpoints, same error codes, same test suite
+document-revision: 2026-09-27
+canonical: https://kit.decane.app/llms-rust.txt
+version-manifest: https://kit.decane.app/llms-version.json   # under the "rust" key
+node-sibling: https://kit.decane.app/llms-node.txt           # decane-node (TypeScript)
+python-sibling: https://kit.decane.app/llms-python.txt       # decane (PyPI)
+web-sibling: https://kit.decane.app/llms.txt                 # decane-connect-kit (browser)
+expo-sibling: https://kit.decane.app/llms-expo.txt           # decane-connect-kit-expo (React Native)
+```
+
+This crate runs **only on the server**. It never touches key material: it
+authenticates users, verifies tokens, reads public addresses, and can ask
+Decane to create a user's wallet ahead of their first sign-in. Signing stays in
+the client SDKs. The native mobile wallet core (`decane-core`) is a different
+crate.
+
+---
+
+## What it is for
+
+1. **Verify** an access token presented to your API → `verify_access_token`
+2. **Identify** the caller → `claims.user_id` (stable Decane user id, a UUID)
+3. **Scope** to your app → `app_id` vs the token's `project_id`
+4. **Resolve addresses** → `get_addresses` / `get_user`
+5. **Sign users in server-side** → `connect_with_email` + `verify_email_code`,
+   `connect_with_phone` + `verify_phone_code`, `connect_with_google_token`,
+   `connect_with_kingschat_token`, `connect_with_token`, `revoke_access_token`
+6. **Per-user records** → `get_preferences` … `set_user_metadata`
+7. **Create users and wallets** → `create_user`, `create_user_wallet`
+
+---
+
+## Minimal working setup — verification
+
+```rust
+use decane::{DecaneClient, DecaneError};
+
+// Static key (recommended for backends): copy the ES256 verification key from
+// your Decane dashboard. app_id is checked against the token's project_id.
+// verification_key also falls back to DECANE_VERIFICATION_KEY.
+let decane = DecaneClient::builder()
+    .app_id(std::env::var("DECANE_APP_ID")?)
+    .verification_key(std::env::var("DECANE_VERIFICATION_KEY")?)   // ES256 SPKI PEM
+    .build()?;                                                      // Err(Config) on a bad PEM
+
+// In your auth middleware:
+let token = authorization.strip_prefix("Bearer ").unwrap_or("");
+let claims = decane.verify_access_token(token).await?;   // Err(DecaneError::Auth {..}) if invalid
+claims.user_id;                                          // key your records off this
+```
+
+JWKS mode: omit `verification_key`. Build one client per project and reuse it,
+or clone it (clones share the JWKS cache). The JWKS is fetched lazily, cached
+for ten minutes, and refetched once (30 s cooldown) when a token's signature
+matches no held key.
+
+```rust
+let decane = DecaneClient::builder().app_id("your-project-id").build()?;
+```
+
+---
+
+## Minimal working setup — server-side sign-in
+
+```rust
+let decane = DecaneClient::builder()
+    .app_id(app_id)
+    .api_key(std::env::var("DECANE_API_KEY")?)    // dck_live_… — a secret, server env only
+    .build()?;
+
+decane.connect_with_email("user@example.com").await?;                 // emails a 6-digit code
+let session = decane.verify_email_code("user@example.com", "123456").await?;
+session.access_token;    // Decane JWT (8 h); verify it, or hand it to the client
+session.user_id;
+session.is_new_user;     // the person's first sign-in to this app
+session.has_share;       // false = no wallet yet; the client creates one, unless create_user did
+
+decane.connect_with_phone("+2348012345678").await?;                   // E.164 only
+let session = decane.verify_phone_code("+2348012345678", "123456").await?;
+
+decane.connect_with_google_token(&google_id_token).await?;
+decane.connect_with_kingschat_token(&kc_access_token).await?;
+decane.connect_with_token(&jwt_from_your_issuer, Some("prov-1")).await?;   // custom auth
+
+decane.revoke_access_token(&session.access_token).await?;             // sign-out
+```
+
+Google and KingsChat results carry `profile: Option<AuthProfile>` (`name`,
+`email`, `picture`) passed through from the provider; Decane never stores it.
+Not available server-side: the Google redirect flow, the KingsChat popup,
+passkey sign-in.
+
+---
+
+## Verification modes
+
+| Mode | Select with | Network | When |
+|---|---|---|---|
+| Static key | `.verification_key(pem)` (or `DECANE_VERIFICATION_KEY`) | none | backends, edge, anything that must not depend on Decane being reachable |
+| JWKS | omit it | one fetch per 10 min per client, plus one on rotation | convenience |
+
+Both check the ES256 signature, `exp` (clock tolerance 0), then, when
+`app_id` is set, that `project_id` matches, then that `uid` is present.
+Decane tokens set no `iss`/`aud`; the JWKS has one P-256 key and no `kid`.
+Neither mode consults the server-side revocation list (see Gotchas).
+
+---
+
+## API
+
+### `DecaneClient::builder()` → `DecaneClientBuilder` → `.build() -> Result<DecaneClient>`
+
+Builder methods: `app_id`, `verification_key`, `api_key`, `project_secret`,
+`api_base`, `jwks_url`, `http_client(reqwest::Client)`, `timeout(Duration)`
+(ignored when a client is injected). `build()` resolves option → env
+(`DECANE_API_BASE`, `DECANE_API_KEY`, `DECANE_PROJECT_SECRET`,
+`DECANE_VERIFICATION_KEY`) → default; empty or whitespace = unset at each
+step; trailing slashes stripped (`decane.api_base()`); literal `\n` in the PEM
+accepted; a bad PEM is `DecaneError::Config`. `DecaneClient` is `Clone`
+(shared cache) and its `Debug` redacts secrets.
+
+### `verify_access_token(&str) -> Result<Claims>`
+
+`Err(DecaneError::Auth { reason, message, source })` with `reason`
+`InvalidToken` (bad signature, malformed, or expired with the message
+`Access token has expired.`), `ProjectMismatch`, or `MissingUid`. `Claims`:
+`user_id`, `subject`, `project_id`, `token_id`, `issued_at`, `expires_at`,
+`raw: serde_json::Map<String, Value>`.
+
+### `safe_verify_access_token(&str) -> Result<Option<Claims>>`
+
+`Ok(None)` only on `Auth`. A JWKS that cannot be fetched is
+`Err(Api { code: NetworkError, status: 0, .. })` and propagates.
+
+### `get_addresses(token) -> Result<Addresses>` · `get_user(token) -> Result<User>`
+
+`Addresses { evm, solana, tron: Option<String> }` (a missing `tron` is
+`None`; all `None` while a wallet is still being made). `get_user` verifies,
+resolves addresses (a failure there yields `None`s), and builds
+`linked_accounts: Vec<LinkedAccount { account_type: Wallet, chain_type:
+Ethereum | Solana | Tron, address }>` in that order.
+
+### Sign-in (all need `api_key`; all fail with `DecaneError::Api`)
+
+| Method | Endpoint | Body |
+|---|---|---|
+| `connect_with_email(email) -> Result<()>` | `POST /auth/email/start` | `{"email"}` — always succeeds (anti-enumeration) |
+| `verify_email_code(email, code) -> Result<AuthResult>` | `POST /auth/email/verify` | `{"email","code"}` |
+| `connect_with_phone(phone) -> Result<()>` | `POST /auth/phone/start` | `{"phone"}` E.164 |
+| `verify_phone_code(phone, code) -> Result<AuthResult>` | `POST /auth/phone/verify` | `{"phone","code"}` |
+| `connect_with_google_token(id_token) -> Result<AuthResult>` | `POST /auth/google/token` | `{"idToken"}` |
+| `connect_with_kingschat_token(access_token) -> Result<AuthResult>` | `POST /auth/kingschat` | `{"accessToken"}` |
+| `connect_with_token(token, provider_id: Option<&str>) -> Result<AuthResult>` | `POST /auth/external` | `{"token"}` + `providerId` when given |
+| `get_kingschat_config() -> Result<KingsChatConfig>` | `GET /auth/kingschat/config` | — |
+| `revoke_access_token(token) -> Result<()>` | `POST /auth/revoke` | Bearer token, no API key |
+
+`AuthResult { access_token, user_id, is_new_user, has_share, profile }`.
+Headers on every call: `X-API-Key`, `X-App-Id` when `app_id` is set,
+`Content-Type: application/json`. An empty argument is `DecaneError::Config`
+before any request.
+
+### Per-user records — the Privy custom-metadata replacement
+
+```rust
+pub enum RecordValue { Bool(bool), Int(i64), Float(f64), String(String) }   // From impls for each
+pub type Record      = BTreeMap<String, RecordValue>;
+pub type RecordPatch = BTreeMap<String, Option<RecordValue>>;              // None removes the key
+// Keys [A-Za-z0-9_.-]{1,64}; strings ≤ 2048 chars; ≤ 100 keys; ≤ 32 KB; flat.
+
+// With the user's token:
+decane.get_preferences(token).await?                     // GET   /me/preferences → Record
+decane.update_preferences(token, patch).await?           // PATCH — merge
+decane.set_preferences(token, record).await?             // PUT   — replace
+decane.get_metadata(token).await?                        // GET   /me/metadata (read-only here)
+
+// By user id, with project_secret (dck_sk_…):
+decane.get_user_metadata(user_id) / update_user_metadata(user_id, patch) / set_user_metadata(user_id, record)
+decane.get_user_preferences(user_id) / update_user_preferences(user_id, patch) / set_user_preferences(user_id, record)
+```
+
+Failures: `InvalidRecord` (400), `NotFound` (404), `Unauthorized` (401). A
+missing secret is `DecaneError::Config` before any request.
+
+### Server-side user and wallet creation
+
+```rust
+use decane::{UserIdentifier, CreateUserOptions};
+
+let decane = DecaneClient::builder().app_id(app_id).project_secret(std::env::var("DECANE_PROJECT_SECRET")?).build()?;
+
+let r = decane.create_user(UserIdentifier::email("ada@example.com"), CreateUserOptions::default()).await?;
+r.user.id; r.user.addresses.evm; r.created; r.wallet;    // WalletOutcome::{Created, Exists, None}
+decane.create_user(UserIdentifier::phone("+2348012345678"), CreateUserOptions { metadata: Some(patch), ..Default::default() }).await?;
+decane.create_user(UserIdentifier::custom("auth0|123", "prov-1"), CreateUserOptions { create_wallet: Some(false), ..Default::default() }).await?;
+UserIdentifier::kingschat("<user id>"); UserIdentifier::x("<numeric id>");
+decane.create_user_wallet(&user_id).await?;               // POST /v1/app/users/:id/wallet
+```
+
+Decane keys the user exactly as the matching sign-in will, so the person's
+first sign-in opens the wallet made here. Idempotent on the identifier. Off
+until the Decane team switches it on for your project
+(`ServerWalletsDisabled`); sixty calls a minute per project; three creation
+attempts per user per hour on the enclave (`RetryLater`). Errors:
+`InvalidIdentifier` (400), `ServerWalletsDisabled` (403), `WalletExists` /
+`WalletFrozen` (409), `RetryLater` (429), `EnclaveUnavailable` (503).
+
+### Errors
+
+```rust
+#[non_exhaustive]
+pub enum DecaneError {
+    Auth   { reason: AuthErrorReason, message: String, source: Option<Source> },   // is_auth(), auth_reason()
+    Api    { code: ApiErrorCode, status: u16, message: String, source: Option<Source> }, // api_code(), status()
+    Config(String),                                                               // before any request
+}
+pub enum AuthErrorReason { InvalidToken, MissingUid, ProjectMismatch }            // Display gives node's spelling
+#[non_exhaustive]
+pub enum ApiErrorCode { InvalidCode, AuthFailed, InvalidToken, NoProvider, AmbiguousProvider, MissingClaim,
+    BadRequest, InvalidApiKey, AppIdMismatch, SmsNotConfigured, KingschatNotConfigured, KingschatUnavailable,
+    RevokeFailed, InvalidRecord, NotFound, Unauthorized, ServerWalletsDisabled, InvalidIdentifier, WalletExists,
+    WalletFrozen, EnclaveUnavailable, RetryLater, RateLimited, Unknown, NetworkError, Other(String) }
+// Display / FromStr round-trip the wire string ("INVALID_CODE" …).
+```
+
+---
+
+## Recipes
+
+### axum extractor
+
+```rust
+use axum::{extract::FromRequestParts, http::{request::Parts, StatusCode}};
+
+pub struct UserId(pub String);
+
+impl<S: Send + Sync> FromRequestParts<S> for UserId {
+    type Rejection = StatusCode;
+    async fn from_request_parts(parts: &mut Parts, _: &S) -> Result<Self, StatusCode> {
+        let token = parts.headers.get("authorization").and_then(|v| v.to_str().ok())
+            .and_then(|v| v.strip_prefix("Bearer ")).unwrap_or("");
+        match DECANE.verify_access_token(token).await {        // DECANE: a LazyLock<DecaneClient>
+            Ok(c) => Ok(UserId(c.user_id)),
+            Err(DecaneError::Auth { .. }) => Err(StatusCode::UNAUTHORIZED),
+            Err(_) => Err(StatusCode::SERVICE_UNAVAILABLE),    // a JWKS outage is not the caller's fault
+        }
+    }
+}
+```
+
+### Backend-owned login endpoint
+
+```rust
+async fn start(Json(b): Json<Start>) -> Result<Json<Ok>, AppError> {
+    DECANE.connect_with_email(&b.email).await?; Ok(Json(Ok { ok: true }))
+}
+async fn verify(Json(b): Json<Verify>) -> Result<Json<Session>, AppError> {
+    let s = DECANE.verify_email_code(&b.email, &b.code).await?;
+    Ok(Json(Session { access_token: s.access_token, has_share: s.has_share }))   // the client SDK takes it from here
+}
+```
+
+---
+
+## Gotchas an agent should not re-derive
+
+- **Verification is stateless.** Signature + expiry + project, not the
+  revocation list. `revoke_access_token` revokes server-side, which backend
+  calls such as `get_addresses` honour immediately.
+- **A JWKS that cannot be fetched is `NetworkError`, never `Ok(None)`.**
+  Deviation from `decane-node`, on purpose.
+- **Tokens last 8 hours and can be renewed** with `POST /auth/refresh` (still-
+  valid token as Bearer; capped at 7 days from sign-in). Not wrapped by this
+  crate.
+- **No per-IP limit on the auth endpoints.** OTP attempts: 10 per 15 min per
+  target email or phone; code sends: 3 per hour per address.
+- `connect_with_email` always answers success (anti-enumeration).
+- **`has_share == false` means no wallet yet.** The client SDK creates one on
+  that sign-in, unless your server already did with `create_user`.
+- The `rust-version = "1.85"` floor is declared, not compile-tested; only
+  stable 1.98 was used in development.
+
+## Deviations from decane-node
+
+1. A JWKS fetch failure is `Api { NetworkError, status: 0 }`, not an auth
+   error; `safe_verify_access_token` propagates it.
+2. snake_case names; the wire format is unchanged.
+3. Async-only, on tokio.
+4. The injected `http_client` is used for the JWKS fetch too.
+5. Default request timeout of 15 s.
+6. A malformed verification key fails at `build()`.
+7. Config mistakes and empty arguments are `DecaneError::Config`.
+8. `safe_verify_access_token` returns `Result<Option<Claims>>`; no standalone
+   cached helper (build one client and reuse or clone it).
+9. `ApiErrorCode::Other(String)` for unknown codes.
+10. Expired tokens keep node's `invalid_token` reason and message.
+
+## Package
+
+```yaml
+name: decane
+version: 1.0.0
+rust-version: "1.85"
+edition: "2024"
+dependencies: [reqwest (rustls-tls, json), serde, serde_json, thiserror, jsonwebtoken, percent-encoding, tokio (sync)]
+license: MIT
+docs: https://docs.rs/decane
+source: https://github.com/Korex23/decane-connect-kit/tree/main/sdk-rust
+```
+
+## Optional (human-readable pages)
+
+- https://kit.decane.app/node-docs/python-and-rust — the Python and Rust page
+- https://kit.decane.app/node-docs — the server SDK documentation (Node, the same surface)

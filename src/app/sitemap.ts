@@ -21,5 +21,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     // they discover the human pages, rather than only via the /docs callout.
     { url: `${SITE_URL}/llms.txt`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
     { url: `${SITE_URL}/llms-node.txt`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
+    { url: `${SITE_URL}/llms-python.txt`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
+    { url: `${SITE_URL}/llms-rust.txt`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
   ];
 }

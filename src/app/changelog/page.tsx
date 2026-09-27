@@ -11,6 +11,8 @@ const SECTIONS: Section[] = [
   { key: "web", label: "Web SDK", pkg: manifest.package, entries: manifest.changelog as Entry[] },
   { key: "mobile", label: "React Native SDK", pkg: manifest.mobile.package, entries: manifest.mobile.changelog as Entry[] },
   { key: "node", label: "Node SDK", pkg: manifest.node.package, entries: manifest.node.changelog as Entry[] },
+  { key: "python", label: "Python SDK", pkg: manifest.python.package, entries: manifest.python.changelog as Entry[] },
+  { key: "rust", label: "Rust SDK", pkg: manifest.rust.package, entries: manifest.rust.changelog as Entry[] },
   { key: "connect", label: "Connect API", pkg: "connect/v1", entries: manifest.connect.changelog.map((e) => ({ version: e.api, date: e.date, summary: e.summary })) },
 ];
 

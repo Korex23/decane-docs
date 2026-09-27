@@ -21,6 +21,8 @@ canonical: https://kit.decane.app/llms-node.txt
 version-manifest: https://kit.decane.app/llms-version.json   # under the "node" key
 web-sibling: https://kit.decane.app/llms.txt                 # decane-connect-kit (browser)
 expo-sibling: https://kit.decane.app/llms-expo.txt           # decane-connect-kit-expo (React Native)
+python-sibling: https://kit.decane.app/llms-python.txt       # decane on PyPI (the same surface)
+rust-sibling: https://kit.decane.app/llms-rust.txt           # decane on crates.io (the same surface)
 ```
 
 This package runs **only on the server**. The browser SDK

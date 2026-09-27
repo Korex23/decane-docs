@@ -37,7 +37,7 @@ function MenuIcon({ open }: { open: boolean }) {
 
 const LINKS = [
   { href: "/docs", label: "Docs" },
-  { href: "/node-docs", label: "Node SDK" },
+  { href: "/node-docs", label: "Server SDKs" },
   { href: "/pricing", label: "Pricing" },
   { href: "/recovery", label: "Recovery" },
 ];
