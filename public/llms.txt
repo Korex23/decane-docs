@@ -25,7 +25,7 @@ need it for a single product.
 ## Version and freshness
 
 ```yaml
-version: 2.29.0
+version: 2.29.1
 document-revision: 2026-09-27
 canonical: https://kit.decane.app/llms.txt
 version-manifest: https://kit.decane.app/llms-version.json

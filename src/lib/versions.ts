@@ -1,7 +1,7 @@
 // Published package versions shown across the site. Bump these when a package
 // is published; the docs' llms-version.json is the machine-readable source.
 export const VERSIONS = {
-  web: "2.29.0",
+  web: "2.29.1",
   expo: "0.6.0",
   node: "1.5.0",
   python: "1.0.0",
