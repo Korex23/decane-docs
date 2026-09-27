@@ -5,7 +5,7 @@ import Link from "next/link";
 import { DecaneKit, useDecane, useSignMessage, useSocialAuth, useSocialWallet, useWalletSelector } from "decane-connect-kit";
 import { ChainTypeIcon } from "@/components/ChainIcon";
 import { DecaneLogo } from "@/components/DecaneLogo";
-import { CopyIcon, CheckIcon, GoogleMark, XLogo, MailIcon, PhoneIcon, ChatIcon, WalletIcon } from "@/components/Icons";
+import { CopyIcon, CheckIcon, GoogleMark, XLogo, MailIcon, PhoneIcon, ChatIcon, WalletIcon, SlidersIcon, CloseIcon } from "@/components/Icons";
 import type { Theme } from "@/lib/theme";
 import {
   CHAINS, DEFAULT_SETTINGS, DEMO_API_KEY, DEMO_APP_ID, METHODS, MODES,
@@ -84,14 +84,21 @@ function Toggle({ checked, onChange, label }: { checked: boolean; onChange: () =
 }
 
 function ConfigPanel({
-  settings, setSettings, theme, onToggleTheme,
+  settings, setSettings, theme, onToggleTheme, open, onClose,
 }: {
   settings: DemoSettings; setSettings: (s: DemoSettings) => void; theme: Theme; onToggleTheme: () => void;
+  open: boolean; onClose: () => void;
 }) {
   const methodCount = Object.values(settings.methods).filter(Boolean).length;
   const chainCount = Object.values(settings.chains).filter(Boolean).length;
   return (
-    <aside className="demo-config" aria-label="Demo settings">
+    <aside className={`demo-config${open ? " open" : ""}`} aria-label="Demo settings">
+      {/* Phones: the settings live in a bottom sheet, so the card leads. */}
+      <div className="demo-sheet-head">
+        <span className="demo-sheet-grip" aria-hidden />
+        <b>Customize</b>
+        <button type="button" className="demo-sheet-close" onClick={onClose} aria-label="Close settings"><CloseIcon size={18} /></button>
+      </div>
       <section>
         <h2>Appearance</h2>
         <div className="demo-seg" role="radiogroup" aria-label="Theme">
@@ -587,6 +594,13 @@ function Canvas({ settings, theme }: { settings: DemoSettings; theme: Theme }) {
 
 export function DemoApp({ theme, onToggleTheme }: { theme: Theme; onToggleTheme: () => void }) {
   const [settings, setSettingsState] = useState<DemoSettings>(DEFAULT_SETTINGS);
+  const [sheet, setSheet] = useState(false);
+  useEffect(() => {
+    if (!sheet) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setSheet(false); };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [sheet]);
   useEffect(() => { setSettingsState(loadSettings()); }, []);
   function setSettings(s: DemoSettings) {
     setSettingsState(s);
@@ -598,7 +612,11 @@ export function DemoApp({ theme, onToggleTheme }: { theme: Theme; onToggleTheme:
 
   return (
     <div className="demo-layout">
-      <ConfigPanel settings={settings} setSettings={setSettings} theme={theme} onToggleTheme={onToggleTheme} />
+      <ConfigPanel settings={settings} setSettings={setSettings} theme={theme} onToggleTheme={onToggleTheme} open={sheet} onClose={() => setSheet(false)} />
+      <div className={`demo-sheet-scrim${sheet ? " open" : ""}`} onClick={() => setSheet(false)} aria-hidden />
+      <button type="button" className="demo-customize" onClick={() => setSheet(true)} aria-expanded={sheet}>
+        <SlidersIcon size={16} />Customize
+      </button>
       <DecaneKit
         // A new mode, set of methods or chains is a new SDK config; remounting applies
         // it. The session survives in storage, so a signed-in visitor stays in.
