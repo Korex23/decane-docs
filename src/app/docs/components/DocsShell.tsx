@@ -43,6 +43,8 @@ function hrefFor(basePath: string, slug: string) {
 export function DocsShell({ set, basePath, pages, page, anchors, search, lede }: DocsShellProps) {
   const [theme, toggleTheme] = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [setsOpen, setSetsOpen] = useState(false);
+  const current = TABS.find((t) => t.set === set) ?? TABS[0];
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [focusIdx, setFocusIdx] = useState(0);
@@ -115,7 +117,7 @@ export function DocsShell({ set, basePath, pages, page, anchors, search, lede }:
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") { e.preventDefault(); setPaletteOpen(true); setQuery(""); setFocusIdx(0); }
-      if (e.key === "Escape") setPaletteOpen(false);
+      if (e.key === "Escape") { setPaletteOpen(false); setMenuOpen(false); setSetsOpen(false); }
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -138,13 +140,6 @@ export function DocsShell({ set, basePath, pages, page, anchors, search, lede }:
       <div className="docs-app">
         <header className="docs-head">
           <div className="docs-topbar">
-            <button className="icon-btn docs-menu-btn" onClick={() => setMenuOpen((v) => !v)} aria-label={menuOpen ? "Close navigation" : "Open navigation"} aria-expanded={menuOpen}>
-              {menuOpen ? (
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
-              ) : (
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><line x1="3" y1="7" x2="21" y2="7" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="17" x2="21" y2="17" /></svg>
-              )}
-            </button>
             <Link href="/docs" className="brand"><DecaneLogo size={26} />Decane<span className="brand-section">Docs</span></Link>
             <button type="button" className="docs-search" onClick={() => { setPaletteOpen(true); setQuery(""); setFocusIdx(0); }}>
               <DocIcon name="search" size={15} />
@@ -163,10 +158,45 @@ export function DocsShell({ set, basePath, pages, page, anchors, search, lede }:
               </Link>
             ))}
           </nav>
+          {/* Phones: the set tabs move into the drawer, and this bar carries the
+              menu button and where you are, as Mintlify's mobile docs do. */}
+          <div className="docs-crumbs">
+            <button type="button" className="docs-menu-btn" onClick={() => setMenuOpen(true)} aria-label="Open navigation" aria-expanded={menuOpen}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><line x1="4" y1="7" x2="20" y2="7" /><line x1="4" y1="12" x2="20" y2="12" /><line x1="4" y1="17" x2="20" y2="17" /></svg>
+            </button>
+            <span className="docs-crumb-group">{page.group}</span>
+            <svg className="docs-crumb-sep" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><polyline points="9 18 15 12 9 6" /></svg>
+            <span className="docs-crumb-page">{page.navLabel ?? page.title}</span>
+          </div>
         </header>
 
-        {menuOpen && <div className="docs-sidebar-backdrop" onClick={() => setMenuOpen(false)} />}
+        {menuOpen && <div className="docs-sidebar-backdrop" onClick={() => { setMenuOpen(false); setSetsOpen(false); }} />}
         <aside className={`docs-sidebar${menuOpen ? " mobile-open" : ""}`}>
+          <div className="docs-drawer-head">
+            <Link href="/docs" className="brand" onClick={() => setMenuOpen(false)}><DecaneLogo size={24} />Decane<span className="brand-section">Docs</span></Link>
+            <button type="button" className="icon-btn" onClick={() => setMenuOpen(false)} aria-label="Close navigation">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+            </button>
+          </div>
+          <div className="docs-drawer-sets">
+            <button type="button" className="docs-set-trigger" onClick={() => setSetsOpen((v) => !v)} aria-expanded={setsOpen} aria-haspopup="listbox">
+              <span className="ib"><DocIcon name={current.icon} size={15} /></span>
+              <span className="lbl">{current.label}</span>
+              <svg className={`chev${setsOpen ? " open" : ""}`} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><polyline points="6 9 12 15 18 9" /></svg>
+            </button>
+            {setsOpen && (
+              <ul className="docs-set-menu" role="listbox" aria-label="Documentation sets">
+                {TABS.map((t) => (
+                  <li key={t.set}>
+                    <Link href={t.href} role="option" aria-selected={t.set === set} className={t.set === set ? "active" : ""} onClick={() => { setSetsOpen(false); setMenuOpen(false); }}>
+                      <span className="ib"><DocIcon name={t.icon} size={15} /></span>{t.label}
+                      {t.set === set && <svg className="tick" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><polyline points="5 12.5 9.5 17 19 7.5" /></svg>}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
           {groups.map((g) => (
             <nav key={g.title} className="docs-group">
               <div className="docs-group-title">{g.title}</div>

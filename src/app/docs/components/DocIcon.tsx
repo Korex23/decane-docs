@@ -1,4 +1,5 @@
-import { BrandLogo, LOGO_SVGS } from "@/components/BrandLogo";
+import { BrandLogo } from "@/components/BrandLogo";
+import { LOGO_SVGS } from "@/components/logoSvgs";
 
 const line = { fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round", strokeLinejoin: "round" } as const;
 
