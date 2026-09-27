@@ -533,7 +533,7 @@ input[type=range]::-moz-range-thumb { width: 24px; height: 24px; border-radius: 
 .docs-site-link { display: inline-flex; align-items: center; gap: 8px; height: 34px; padding: 0 10px; border-radius: 8px; font-size: 14px; color: var(--text-2); }
 .docs-site-link:hover { color: var(--text); background: var(--surface); }
 .docs-tabs-row { height: 48px; display: flex; align-items: stretch; gap: 8px; padding: 0 24px; }
-.docs-tab-link { display: inline-flex; align-items: center; gap: 8px; padding: 0 6px; font-size: 14px; font-weight: 500; color: var(--text-2); border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.docs-tab-link { display: inline-flex; align-items: center; gap: 8px; padding: 0 6px; white-space: nowrap; font-size: 14px; font-weight: 500; color: var(--text-2); border-bottom: 2px solid transparent; margin-bottom: -1px; }
 .docs-tab-link svg { color: var(--muted); }
 .docs-tab-link:hover { color: var(--text); }
 .docs-tab-link.active { color: var(--text); border-bottom-color: var(--accent); }
