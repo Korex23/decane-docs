@@ -18,12 +18,22 @@ export default function DemoPage() {
   return (
     <div className="site demo-root" data-theme={theme}>
       <header className="demo-bar">
-        <Link href="/" className="brand"><DecaneLogo size={24} />Decane</Link>
+        <Link href="/" className="brand">
+          <DecaneLogo size={24} />
+          Decane
+        </Link>
         <span className="demo-badge">Demo</span>
         <div className="demo-bar-end">
           <span className="demo-bar-note">Decane takes minutes to set up</span>
-          <Link href="/docs" className="btn btn-ghost btn-sm">Docs</Link>
-          <a href={`${DASHBOARD_URL}/auth/register`} className="btn btn-primary btn-sm">Get started</a>
+          <Link href="/docs" className="btn btn-ghost btn-sm">
+            Docs
+          </Link>
+          <a
+            href={`${DASHBOARD_URL}/auth/register`}
+            className="btn btn-primary btn-sm"
+          >
+            Get started
+          </a>
           <ThemeToggle theme={theme} onToggle={toggleTheme} />
         </div>
       </header>

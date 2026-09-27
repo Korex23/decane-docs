@@ -17,7 +17,8 @@ export function useTheme(): [Theme, () => void] {
     try {
       const stored = localStorage.getItem(THEME_KEY) as Theme | null;
       if (stored === "dark" || stored === "light") setTheme(stored);
-      else if (window.matchMedia?.("(prefers-color-scheme: light)").matches) setTheme("light");
+      else if (window.matchMedia?.("(prefers-color-scheme: light)").matches)
+        setTheme("light");
     } catch {
       // localStorage unavailable — default to dark, no crash
     }

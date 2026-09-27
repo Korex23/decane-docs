@@ -38,6 +38,17 @@ export interface DemoSettings {
 
 export const DEFAULT_SETTINGS: DemoSettings = {
   mode: "all",
-  methods: { google: true, email: true, phone: true, x: true, kingschat: false },
-  chains: { "evm:8453": true, "evm:1": false, "solana:mainnet": true, "tron:mainnet": true },
+  methods: {
+    google: true,
+    email: true,
+    phone: true,
+    x: true,
+    kingschat: false,
+  },
+  chains: {
+    "evm:8453": true,
+    "evm:1": false,
+    "solana:mainnet": true,
+    "tron:mainnet": true,
+  },
 };

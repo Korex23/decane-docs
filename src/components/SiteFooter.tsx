@@ -16,56 +16,151 @@ export function SiteFooter() {
               <DecaneLogo size={24} />
               Decane
             </span>
-            <p>Non-custodial wallets behind the sign-in your users already have. The key only ever comes together inside a sealed signer.</p>
+            <p>
+              Non-custodial wallets behind the sign-in your users already have.
+              The key only ever comes together inside a sealed signer.
+            </p>
             <ul className="site-footer-pkgs">
-              <li><a href={NPM.web} target="_blank" rel="noreferrer"><code>decane-connect-kit</code><span>{VERSIONS.web}</span></a></li>
-              <li><a href={NPM.expo} target="_blank" rel="noreferrer"><code>decane-connect-kit-expo</code><span>{VERSIONS.expo}</span></a></li>
-              <li><a href={NPM.node} target="_blank" rel="noreferrer"><code>decane-node</code><span>{VERSIONS.node}</span></a></li>
-              <li><a href={REGISTRY.python} target="_blank" rel="noreferrer"><code>decane</code> (PyPI)<span>{VERSIONS.python}</span></a></li>
-              <li><a href={REGISTRY.rust} target="_blank" rel="noreferrer"><code>decane</code> (crates.io)<span>{VERSIONS.rust}</span></a></li>
-              <li><a href={REGISTRY.swift} target="_blank" rel="noreferrer"><code>DecaneKit</code> (Swift)<span>{VERSIONS.swift}</span></a></li>
-              <li><a href={REGISTRY.kotlin} target="_blank" rel="noreferrer"><code>decane-kit</code> (Kotlin)<span>{VERSIONS.kotlin}</span></a></li>
+              <li>
+                <a href={NPM.web} target="_blank" rel="noreferrer">
+                  <code>decane-connect-kit</code>
+                  <span>{VERSIONS.web}</span>
+                </a>
+              </li>
+              <li>
+                <a href={NPM.expo} target="_blank" rel="noreferrer">
+                  <code>decane-connect-kit-expo</code>
+                  <span>{VERSIONS.expo}</span>
+                </a>
+              </li>
+              <li>
+                <a href={NPM.node} target="_blank" rel="noreferrer">
+                  <code>decane-node</code>
+                  <span>{VERSIONS.node}</span>
+                </a>
+              </li>
+              <li>
+                <a href={REGISTRY.python} target="_blank" rel="noreferrer">
+                  <code>decane</code> (PyPI)<span>{VERSIONS.python}</span>
+                </a>
+              </li>
+              <li>
+                <a href={REGISTRY.rust} target="_blank" rel="noreferrer">
+                  <code>decane</code> (crates.io)<span>{VERSIONS.rust}</span>
+                </a>
+              </li>
+              <li>
+                <a href={REGISTRY.swift} target="_blank" rel="noreferrer">
+                  <code>DecaneKit</code> (Swift)<span>{VERSIONS.swift}</span>
+                </a>
+              </li>
+              <li>
+                <a href={REGISTRY.kotlin} target="_blank" rel="noreferrer">
+                  <code>decane-kit</code> (Kotlin)<span>{VERSIONS.kotlin}</span>
+                </a>
+              </li>
             </ul>
           </div>
           <div>
             <h4>Product</h4>
             <ul>
-              <li><Link href="/demo">Live demo</Link></li>
-              <li><Link href="/docs">Docs</Link></li>
-              <li><Link href="/node-docs">Node SDK</Link></li>
-              <li><Link href="/python-docs">Python SDK</Link></li>
-              <li><Link href="/rust-docs">Rust SDK</Link></li>
-              <li><Link href="/swift-docs">Swift SDK</Link></li>
-              <li><Link href="/kotlin-docs">Kotlin SDK</Link></li>
-              <li><Link href="/pricing">Pricing</Link></li>
-              <li><Link href="/recovery">Recovering a wallet</Link></li>
-              <li><a href={DASHBOARD_URL}>Dashboard</a></li>
+              <li>
+                <Link href="/demo">Live demo</Link>
+              </li>
+              <li>
+                <Link href="/docs">Docs</Link>
+              </li>
+              <li>
+                <Link href="/node-docs">Node SDK</Link>
+              </li>
+              <li>
+                <Link href="/python-docs">Python SDK</Link>
+              </li>
+              <li>
+                <Link href="/rust-docs">Rust SDK</Link>
+              </li>
+              <li>
+                <Link href="/swift-docs">Swift SDK</Link>
+              </li>
+              <li>
+                <Link href="/kotlin-docs">Kotlin SDK</Link>
+              </li>
+              <li>
+                <Link href="/pricing">Pricing</Link>
+              </li>
+              <li>
+                <Link href="/recovery">Recovering a wallet</Link>
+              </li>
+              <li>
+                <a href={DASHBOARD_URL}>Dashboard</a>
+              </li>
             </ul>
           </div>
           <div>
             <h4>For agents</h4>
             <ul>
-              <li><a href="/llms.txt" target="_blank" rel="noreferrer">llms.txt</a></li>
-              <li><a href="/llms-expo.txt" target="_blank" rel="noreferrer">llms-expo.txt</a></li>
-              <li><a href="/llms-node.txt" target="_blank" rel="noreferrer">llms-node.txt</a></li>
-              <li><a href="/llms-python.txt" target="_blank" rel="noreferrer">llms-python.txt</a></li>
-              <li><a href="/llms-rust.txt" target="_blank" rel="noreferrer">llms-rust.txt</a></li>
-              <li><a href="/llms-swift.txt" target="_blank" rel="noreferrer">llms-swift.txt</a></li>
-              <li><a href="/llms-kotlin.txt" target="_blank" rel="noreferrer">llms-kotlin.txt</a></li>
-              <li><a href="/llms-version.json" target="_blank" rel="noreferrer">llms-version.json</a></li>
+              <li>
+                <a href="/llms.txt" target="_blank" rel="noreferrer">
+                  llms.txt
+                </a>
+              </li>
+              <li>
+                <a href="/llms-expo.txt" target="_blank" rel="noreferrer">
+                  llms-expo.txt
+                </a>
+              </li>
+              <li>
+                <a href="/llms-node.txt" target="_blank" rel="noreferrer">
+                  llms-node.txt
+                </a>
+              </li>
+              <li>
+                <a href="/llms-python.txt" target="_blank" rel="noreferrer">
+                  llms-python.txt
+                </a>
+              </li>
+              <li>
+                <a href="/llms-rust.txt" target="_blank" rel="noreferrer">
+                  llms-rust.txt
+                </a>
+              </li>
+              <li>
+                <a href="/llms-swift.txt" target="_blank" rel="noreferrer">
+                  llms-swift.txt
+                </a>
+              </li>
+              <li>
+                <a href="/llms-kotlin.txt" target="_blank" rel="noreferrer">
+                  llms-kotlin.txt
+                </a>
+              </li>
+              <li>
+                <a href="/llms-version.json" target="_blank" rel="noreferrer">
+                  llms-version.json
+                </a>
+              </li>
             </ul>
           </div>
           <div>
             <h4>Company</h4>
             <ul>
-              <li><Link href="/terms">Terms of Service</Link></li>
-              <li><Link href="/privacy">Privacy Policy</Link></li>
-              <li><a href="mailto:info@decane.app">info@decane.app</a></li>
+              <li>
+                <Link href="/terms">Terms of Service</Link>
+              </li>
+              <li>
+                <Link href="/privacy">Privacy Policy</Link>
+              </li>
+              <li>
+                <a href="mailto:info@decane.app">info@decane.app</a>
+              </li>
             </ul>
           </div>
         </div>
         <div className="site-footer-bottom">
-          <span>MIT-licensed connector SDK. The hosted wallet service is priced per project.</span>
+          <span>
+            MIT-licensed connector SDK. The hosted wallet service is priced per
+            project.
+          </span>
           <span className="mono">kit.decane.app</span>
         </div>
       </div>

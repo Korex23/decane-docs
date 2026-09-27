@@ -13,7 +13,17 @@ export function DocsCards({ items }: { items: DocsCard[] }) {
         <a key={c.href} href={c.href} className="docs-card">
           <span className="docs-card-title">
             {c.title}
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            >
               <path d="M5 12h14M13 6l6 6-6 6" />
             </svg>
           </span>

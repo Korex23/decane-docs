@@ -15,13 +15,22 @@ const config: NextConfig = {
       { key: "Access-Control-Allow-Origin", value: "*" },
     ];
     const specs = [
-      "/llms.txt", "/llms-expo.txt", "/llms-node.txt", "/llms-connect.txt",
-      "/llms-python.txt", "/llms-rust.txt", "/llms-swift.txt", "/llms-kotlin.txt",
+      "/llms.txt",
+      "/llms-expo.txt",
+      "/llms-node.txt",
+      "/llms-connect.txt",
+      "/llms-python.txt",
+      "/llms-rust.txt",
+      "/llms-swift.txt",
+      "/llms-kotlin.txt",
     ];
     return [
       ...specs.map((source) => ({
         source,
-        headers: [{ key: "Content-Type", value: "text/plain; charset=utf-8" }, ...readable],
+        headers: [
+          { key: "Content-Type", value: "text/plain; charset=utf-8" },
+          ...readable,
+        ],
       })),
       {
         source: "/llms-version.json",
@@ -40,7 +49,11 @@ const config: NextConfig = {
       // existing links/bookmarks/search results don't 404.
       { source: "/social", destination: "/#social", permanent: true },
       // Python and Rust used to share one page inside the Node docs.
-      { source: "/node-docs/python-and-rust", destination: "/python-docs", permanent: true },
+      {
+        source: "/node-docs/python-and-rust",
+        destination: "/python-docs",
+        permanent: true,
+      },
       // The Swift SDK used to be one page inside the web docs.
       { source: "/docs/ios", destination: "/swift-docs", permanent: true },
     ];

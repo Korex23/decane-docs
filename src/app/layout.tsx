@@ -8,7 +8,10 @@ const DESCRIPTION =
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: { default: "Decane: turn any sign-in into a wallet", template: "%s — Decane" },
+  title: {
+    default: "Decane: turn any sign-in into a wallet",
+    template: "%s — Decane",
+  },
   description: DESCRIPTION,
   alternates: { canonical: "/" },
   robots: { index: true, follow: true },
@@ -63,15 +66,38 @@ const PRICING_JSON_LD = {
   "@context": "https://schema.org",
   "@type": "Product",
   name: "decane social sign-in",
-  description: "Hosted non-custodial sign-in that creates a real EVM, Solana and Tron wallet.",
+  description:
+    "Hosted non-custodial sign-in that creates a real EVM, Solana and Tron wallet.",
   offers: [
-    { "@type": "Offer", name: "Free", price: "0", priceCurrency: "USD", url: `${SITE_URL}/pricing` },
-    { "@type": "Offer", name: "Scale (500–2,499 MAU)", price: "254", priceCurrency: "USD", url: `${SITE_URL}/pricing` },
-    { "@type": "Offer", name: "Scale (2,500–9,999 MAU)", price: "424", priceCurrency: "USD", url: `${SITE_URL}/pricing` },
+    {
+      "@type": "Offer",
+      name: "Free",
+      price: "0",
+      priceCurrency: "USD",
+      url: `${SITE_URL}/pricing`,
+    },
+    {
+      "@type": "Offer",
+      name: "Scale (500–2,499 MAU)",
+      price: "254",
+      priceCurrency: "USD",
+      url: `${SITE_URL}/pricing`,
+    },
+    {
+      "@type": "Offer",
+      name: "Scale (2,500–9,999 MAU)",
+      price: "424",
+      priceCurrency: "USD",
+      url: `${SITE_URL}/pricing`,
+    },
   ],
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en">
       <head>

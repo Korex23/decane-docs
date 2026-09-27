@@ -7,11 +7,16 @@ export const metadata: Metadata = {
   alternates: { canonical: "/pricing" },
   openGraph: {
     title: "decane — Pricing",
-    description: "Free up to 499 monthly active wallets, then two Scale bands and custom Enterprise pricing.",
+    description:
+      "Free up to 499 monthly active wallets, then two Scale bands and custom Enterprise pricing.",
     url: "/pricing",
   },
 };
 
-export default function PricingLayout({ children }: { children: React.ReactNode }) {
+export default function PricingLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return <>{children}</>;
 }

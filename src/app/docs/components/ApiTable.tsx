@@ -43,8 +43,12 @@ export function ApiTable({ groups }: { groups: ApiGroup[] }) {
             </tr>
             {g.rows.map((r) => (
               <tr key={r.name}>
-                <td className="name"><code>{r.name}</code></td>
-                <td className="type"><code>{r.type}</code></td>
+                <td className="name">
+                  <code>{r.name}</code>
+                </td>
+                <td className="type">
+                  <code>{r.type}</code>
+                </td>
                 <td className="desc">{r.desc}</td>
               </tr>
             ))}

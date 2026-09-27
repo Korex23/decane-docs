@@ -32,11 +32,20 @@ export function CookieNotice() {
   return (
     <div className="cookie-notice" role="dialog" aria-label="Cookies">
       <p>
-        <b>No tracking cookies.</b> This site keeps your theme choice in your browser and nothing
-        else. Signing in to the dashboard sets one session cookie there.{" "}
-        <Link href="/privacy" className="ulink">Privacy policy</Link>
+        <b>No tracking cookies.</b> This site keeps your theme choice in your
+        browser and nothing else. Signing in to the dashboard sets one session
+        cookie there.{" "}
+        <Link href="/privacy" className="ulink">
+          Privacy policy
+        </Link>
       </p>
-      <button type="button" className="btn btn-primary btn-sm" onClick={dismiss}>Got it</button>
+      <button
+        type="button"
+        className="btn btn-primary btn-sm"
+        onClick={dismiss}
+      >
+        Got it
+      </button>
     </div>
   );
 }

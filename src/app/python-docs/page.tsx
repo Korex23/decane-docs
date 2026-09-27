@@ -3,7 +3,8 @@ import { DocsView } from "../docs/components/DocsView";
 
 export const metadata: Metadata = {
   title: "Python SDK",
-  description: "The decane Python SDK: verify Decane access tokens, sign users in, per-user records and server-side wallet creation.",
+  description:
+    "The decane Python SDK: verify Decane access tokens, sign users in, per-user records and server-side wallet creation.",
   alternates: { canonical: "/python-docs" },
 };
 

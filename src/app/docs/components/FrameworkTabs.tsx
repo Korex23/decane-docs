@@ -24,8 +24,9 @@ export function FrameworkTabs() {
 
       <div className={`docs-tab-panel${active === "next" ? " active" : ""}`}>
         <p>
-          Client components are required for all hooks. Wrap <code>DecaneKit</code> in a{" "}
-          <code>&quot;use client&quot;</code> boundary so the server layout stays a server component.
+          Client components are required for all hooks. Wrap{" "}
+          <code>DecaneKit</code> in a <code>&quot;use client&quot;</code>{" "}
+          boundary so the server layout stays a server component.
         </p>
         <CodeBlock lang="tsx" file="src/components/Providers.tsx">
           <span className="tok-s">&quot;use client&quot;</span>
@@ -60,8 +61,7 @@ export function FrameworkTabs() {
           <span className="tok-p">{")"}</span>{" "}
           <span className="tok-p">{"{"}</span>
           {"\n  "}
-          <span className="tok-k">return</span>{" "}
-          <span className="tok-p">(</span>
+          <span className="tok-k">return</span> <span className="tok-p">(</span>
           {"\n    "}
           <span className="tok-p">&lt;</span>
           <span className="tok-t">DecaneKit</span>{" "}
@@ -103,16 +103,14 @@ export function FrameworkTabs() {
           <span className="tok-id">children</span>{" "}
           <span className="tok-p">{"}: {"}</span>{" "}
           <span className="tok-id">children</span>
-          <span className="tok-p">:</span>{" "}
-          <span className="tok-t">React</span>
+          <span className="tok-p">:</span> <span className="tok-t">React</span>
           <span className="tok-p">.</span>
           <span className="tok-t">ReactNode</span>{" "}
           <span className="tok-p">{"}"}</span>
           <span className="tok-p">{")"}</span>{" "}
           <span className="tok-p">{"{"}</span>
           {"\n  "}
-          <span className="tok-k">return</span>{" "}
-          <span className="tok-p">(</span>
+          <span className="tok-k">return</span> <span className="tok-p">(</span>
           {"\n    "}
           <span className="tok-p">&lt;</span>
           <span className="tok-t">html</span>{" "}
@@ -148,17 +146,20 @@ export function FrameworkTabs() {
           <span className="tok-p">{"}"}</span>
         </CodeBlock>
 
-        <p>Add <code>&quot;use client&quot;</code> to every component that uses a decane hook.</p>
-        <p>Add <code>transpilePackages</code> to <code>next.config.ts</code>:</p>
+        <p>
+          Add <code>&quot;use client&quot;</code> to every component that uses a
+          decane hook.
+        </p>
+        <p>
+          Add <code>transpilePackages</code> to <code>next.config.ts</code>:
+        </p>
         <CodeBlock lang="ts" file="next.config.ts">
           <span className="tok-k">const</span>{" "}
           <span className="tok-id">nextConfig</span>{" "}
-          <span className="tok-p">=</span>{" "}
-          <span className="tok-p">{"{"}</span>
+          <span className="tok-p">=</span> <span className="tok-p">{"{"}</span>
           {"\n  "}
           <span className="tok-id">transpilePackages</span>
-          <span className="tok-p">:</span>{" "}
-          <span className="tok-p">[</span>
+          <span className="tok-p">:</span> <span className="tok-p">[</span>
           <span className="tok-s">&quot;decane-connect-kit&quot;</span>
           <span className="tok-p">],</span>
           {"\n"}
@@ -169,8 +170,8 @@ export function FrameworkTabs() {
 
       <div className={`docs-tab-panel${active === "vite" ? " active" : ""}`}>
         <p>
-          No extra config needed. Wrap your root component with <code>&lt;DecaneKit&gt;</code> and use
-          hooks anywhere inside it.
+          No extra config needed. Wrap your root component with{" "}
+          <code>&lt;DecaneKit&gt;</code> and use hooks anywhere inside it.
         </p>
         <CodeBlock lang="tsx" file="src/main.tsx">
           <span className="tok-k">import</span>{" "}

@@ -5,47 +5,47 @@ import { useState } from "react";
 // URL pattern: https://icons.llamao.fi/icons/chains/rsz_{slug}
 const LLAMA_SLUGS: Record<string, string> = {
   // Tier-1 EVM
-  "eip155:1":   "ethereum",
+  "eip155:1": "ethereum",
   "eip155:8453": "base",
   "eip155:42161": "arbitrum",
-  "eip155:10":  "optimism",
-  "eip155:56":  "bsc",
+  "eip155:10": "optimism",
+  "eip155:56": "bsc",
   "eip155:137": "polygon",
   // Extended EVM
   "eip155:43114": "avax",
   "eip155:42220": "celo",
-  "eip155:100":   "xdai",
+  "eip155:100": "xdai",
   "eip155:534352": "scroll",
   "eip155:59144": "linea",
-  "eip155:324":   "zksync%20era",
-  "eip155:5000":  "mantle",
+  "eip155:324": "zksync%20era",
+  "eip155:5000": "mantle",
   "eip155:81457": "blast",
   "eip155:7777777": "zora",
-  "eip155:2020":  "ronin",
+  "eip155:2020": "ronin",
   "eip155:34443": "mode",
   "eip155:167000": "taiko",
-  "eip155:1088":  "metis",
-  "eip155:288":   "boba",
+  "eip155:1088": "metis",
+  "eip155:288": "boba",
   "eip155:42170": "arbitrum%20nova",
-  "eip155:25":    "cronos",
-  "eip155:1329":  "sei",
+  "eip155:25": "cronos",
+  "eip155:1329": "sei",
   "eip155:80094": "berachain",
-  "eip155:130":   "unichain",
-  "eip155:480":   "worldchain",
+  "eip155:130": "unichain",
+  "eip155:480": "worldchain",
   "eip155:33139": "apechain",
-  "eip155:169":   "manta",
-  "eip155:690":   "redstone",
-  "eip155:146":   "sonic",
-  "eip155:1868":  "soneium",
+  "eip155:169": "manta",
+  "eip155:690": "redstone",
+  "eip155:146": "sonic",
+  "eip155:1868": "soneium",
   "eip155:57073": "ink",
   "eip155:60808": "bob",
 };
 
 // ── Fallback colours by chain prefix ─────────────────────────────────────────
 function fallbackColor(chainId: string): string {
-  if (chainId.startsWith("eip155:"))  return "#627EEA";
-  if (chainId.startsWith("solana:"))  return "#66F9A1";
-  if (chainId.startsWith("tron:"))    return "#EF0027";
+  if (chainId.startsWith("eip155:")) return "#627EEA";
+  if (chainId.startsWith("solana:")) return "#66F9A1";
+  if (chainId.startsWith("tron:")) return "#EF0027";
   if (chainId.startsWith("bip122:")) return "#F7931A";
   return "#8A8884";
 }
@@ -69,7 +69,12 @@ interface ChainIconProps {
   radius?: number;
 }
 
-export function ChainIcon({ chainId, name, size = 20, radius = 4 }: ChainIconProps) {
+export function ChainIcon({
+  chainId,
+  name,
+  size = 20,
+  radius = 4,
+}: ChainIconProps) {
   const [errored, setErrored] = useState(false);
   const slug = LLAMA_SLUGS[chainId];
 
@@ -80,22 +85,40 @@ export function ChainIcon({ chainId, name, size = 20, radius = 4 }: ChainIconPro
         alt={name}
         width={size}
         height={size}
-        style={{ borderRadius: radius, objectFit: "cover", flexShrink: 0, display: "block" }}
+        style={{
+          borderRadius: radius,
+          objectFit: "cover",
+          flexShrink: 0,
+          display: "block",
+        }}
         onError={() => setErrored(true)}
       />
     );
   }
 
   // Inline SVG for non-EVM chains
-  if (chainId.startsWith("solana:") || chainId.startsWith("tron:") || chainId.startsWith("bip122:")) {
-    const key = chainId.startsWith("solana:") ? "solana" : chainId.startsWith("tron:") ? "tron" : "bitcoin";
+  if (
+    chainId.startsWith("solana:") ||
+    chainId.startsWith("tron:") ||
+    chainId.startsWith("bip122:")
+  ) {
+    const key = chainId.startsWith("solana:")
+      ? "solana"
+      : chainId.startsWith("tron:")
+        ? "tron"
+        : "bitcoin";
     return (
       <img
         src={`data:image/svg+xml,${encodeURIComponent(CHAIN_TYPE_SVGS[key])}`}
         alt={name}
         width={size}
         height={size}
-        style={{ borderRadius: radius, objectFit: "cover", flexShrink: 0, display: "block" }}
+        style={{
+          borderRadius: radius,
+          objectFit: "cover",
+          flexShrink: 0,
+          display: "block",
+        }}
       />
     );
   }
@@ -103,13 +126,23 @@ export function ChainIcon({ chainId, name, size = 20, radius = 4 }: ChainIconPro
   // Coloured circle fallback
   const color = fallbackColor(chainId);
   return (
-    <div style={{
-      width: size, height: size, borderRadius: radius, flexShrink: 0,
-      background: color, display: "flex", alignItems: "center",
-      justifyContent: "center", fontSize: Math.floor(size * 0.46),
-      fontWeight: 700, color: "#fff", lineHeight: 1,
-      fontFamily: "var(--doc-font-sans, system-ui)",
-    }}>
+    <div
+      style={{
+        width: size,
+        height: size,
+        borderRadius: radius,
+        flexShrink: 0,
+        background: color,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontSize: Math.floor(size * 0.46),
+        fontWeight: 700,
+        color: "#fff",
+        lineHeight: 1,
+        fontFamily: "var(--doc-font-sans, system-ui)",
+      }}
+    >
       {name.charAt(0)}
     </div>
   );
@@ -125,10 +158,20 @@ interface ChainTypeIconProps {
 export function ChainTypeIcon({ type, size = 28 }: ChainTypeIconProps) {
   if (type === "social") {
     return (
-      <svg width={size} height={size} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 32 32"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
         <circle cx="16" cy="16" r="16" fill="var(--doc-accent, #F5C800)" />
         <circle cx="16" cy="12" r="4.5" fill="#0d0d0b" fillOpacity=".85" />
-        <path fill="#0d0d0b" fillOpacity=".85" d="M7 26.5c0-5 4-8.5 9-8.5s9 3.5 9 8.5H7z" />
+        <path
+          fill="#0d0d0b"
+          fillOpacity=".85"
+          d="M7 26.5c0-5 4-8.5 9-8.5s9 3.5 9 8.5H7z"
+        />
       </svg>
     );
   }

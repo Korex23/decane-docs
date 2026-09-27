@@ -13,6 +13,10 @@ export const metadata: Metadata = {
   },
 };
 
-export default function NodeDocsLayout({ children }: { children: React.ReactNode }) {
+export default function NodeDocsLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return <>{children}</>;
 }

@@ -72,7 +72,10 @@ export function Stagger({
       variants={stagger(delay, start)}
       initial="hidden"
       {...(inView
-        ? { whileInView: "show", viewport: { once: true, margin: "0px 0px -10% 0px" } }
+        ? {
+            whileInView: "show",
+            viewport: { once: true, margin: "0px 0px -10% 0px" },
+          }
         : { animate: "show" })}
     >
       {children}
@@ -80,7 +83,13 @@ export function Stagger({
   );
 }
 
-export function Item({ children, className }: { children: ReactNode; className?: string }) {
+export function Item({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
   const reduced = useReducedMotion();
   if (reduced) return <div className={className}>{children}</div>;
   return (

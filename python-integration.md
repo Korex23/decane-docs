@@ -21,13 +21,13 @@ is plain HTTP with a bearer token, and the two things worth getting right
 
 Decide first which of these you are doing, because they need different credentials:
 
-| You want to | You need | Section |
-| --- | --- | --- |
-| Check who is calling your API | Nothing but the public keys | [Verify a token](#verify-a-token) |
-| Sign users in from your server | A publishable key, `dck_live_…` | [Sign in server-side](#sign-in-server-side) |
-| Use your existing login system | A publishable key + a configured provider | [Bring your own auth](#bring-your-own-auth) |
-| List your users and their emails | A secret key, `dck_sk_…` | [Read your users](#read-your-users) |
-| React to sign-ins | A webhook secret | [Webhooks](#webhooks) |
+| You want to                      | You need                                  | Section                                     |
+| -------------------------------- | ----------------------------------------- | ------------------------------------------- |
+| Check who is calling your API    | Nothing but the public keys               | [Verify a token](#verify-a-token)           |
+| Sign users in from your server   | A publishable key, `dck_live_…`           | [Sign in server-side](#sign-in-server-side) |
+| Use your existing login system   | A publishable key + a configured provider | [Bring your own auth](#bring-your-own-auth) |
+| List your users and their emails | A secret key, `dck_sk_…`                  | [Read your users](#read-your-users)         |
+| React to sign-ins                | A webhook secret                          | [Webhooks](#webhooks)                       |
 
 Base URL throughout: `https://backend.decane.app`.
 
@@ -58,11 +58,11 @@ def verify(token: str) -> dict:
 
 Claims you get back:
 
-| Claim | Meaning |
-| --- | --- |
-| `uid` | The Decane user id. This is your foreign key — store this, not the email. |
-| `sub` | A keyed hash of the provider identity. Opaque; never parse it. |
-| `project_id` | The project the token was minted for. Check it, as above. |
+| Claim               | Meaning                                                                                                                 |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `uid`               | The Decane user id. This is your foreign key — store this, not the email.                                               |
+| `sub`               | A keyed hash of the provider identity. Opaque; never parse it.                                                          |
+| `project_id`        | The project the token was minted for. Check it, as above.                                                               |
 | `exp`, `iat`, `jti` | Standard. Expiry is 8 hours in production. `sat` is the sign-in time; the token can be refreshed until 7 days after it. |
 
 Two things that bite people. There is **no separate refresh token**, but a still-valid token
@@ -107,16 +107,16 @@ or you rebuild the oracle the backend is avoiding.
 
 **Rate limits, precisely:** there is no per-IP limit on the auth endpoints, so your server
 being one IP for every user is fine. What is limited is guessing: OTP verification allows 10
-attempts per 15 minutes *per target email or phone*, and code sends are capped at 3 per hour
+attempts per 15 minutes _per target email or phone_, and code sends are capped at 3 per hour
 per address.
 
 Other sign-in methods, same headers, same response shape:
 
-| Endpoint | Body |
-| --- | --- |
+| Endpoint                  | Body                               |
+| ------------------------- | ---------------------------------- |
 | `POST /auth/google/token` | a Google ID token you already hold |
-| `POST /auth/kingschat` | a KingsChat OAuth access token |
-| `POST /auth/external` | your own JWT — see below |
+| `POST /auth/kingschat`    | a KingsChat OAuth access token     |
+| `POST /auth/external`     | your own JWT — see below           |
 
 Signing out is the exception: `POST /auth/revoke` authenticates with the **user's own token**
 (`Authorization: Bearer <decane token>`) and no API key. It blocklists that token's id until
@@ -199,8 +199,10 @@ The payload:
 ```json
 {
   "event": "user.signed_in",
-  "userId": "…", "projectId": "…",
-  "isNewUser": true, "authMethod": "google",
+  "userId": "…",
+  "projectId": "…",
+  "isNewUser": true,
+  "authMethod": "google",
   "profile": { "email": "…", "name": "…", "picture": "…" },
   "addresses": { "evm": "0x…", "solana": "…" },
   "timestamp": 1758700000
@@ -222,11 +224,11 @@ wrong.
 
 Every error is `{"error": {"code": "…", "message": "…"}}`. The codes you will actually see:
 
-| HTTP | Code | Usually means |
-| --- | --- | --- |
-| 400 | `INVALID_CODE` | Wrong or expired OTP |
-| 400 | `SMS_NOT_CONFIGURED` | Phone sign-in isn't enabled for this deployment |
-| 401 | `UNAUTHORIZED` | Bad or expired token, or wrong key type for the route |
-| 403 | `INSUFFICIENT_SCOPE` | Org token lacking the scope |
-| 404 | `NOT_FOUND` | Also what you get for someone else's project — not a hint |
-| 429 | `RATE_LIMITED` | See the per-IP ceiling above |
+| HTTP | Code                 | Usually means                                             |
+| ---- | -------------------- | --------------------------------------------------------- |
+| 400  | `INVALID_CODE`       | Wrong or expired OTP                                      |
+| 400  | `SMS_NOT_CONFIGURED` | Phone sign-in isn't enabled for this deployment           |
+| 401  | `UNAUTHORIZED`       | Bad or expired token, or wrong key type for the route     |
+| 403  | `INSUFFICIENT_SCOPE` | Org token lacking the scope                               |
+| 404  | `NOT_FOUND`          | Also what you get for someone else's project — not a hint |
+| 429  | `RATE_LIMITED`       | See the per-IP ceiling above                              |
