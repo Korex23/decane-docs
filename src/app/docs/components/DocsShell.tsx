@@ -87,7 +87,7 @@ export function DocsShell({ set, basePath, pages, page, anchors, search, lede }:
     // Land on the hash once the page has rendered.
     if (window.location.hash) {
       const el = document.getElementById(window.location.hash.slice(1));
-      el?.scrollIntoView({ block: "start" });
+      el?.scrollIntoView({ block: "start", behavior: "instant" });
     }
     return () => io.disconnect();
   }, [page.slug]);
@@ -118,9 +118,10 @@ export function DocsShell({ set, basePath, pages, page, anchors, search, lede }:
   }, []);
   useEffect(() => { if (paletteOpen) setTimeout(() => inputRef.current?.focus(), 0); }, [paletteOpen]);
   const q = query.trim().toLowerCase();
+  const known = search.filter((r) => r.id.startsWith("/") || anchors[r.id] || pages.some((p) => p.slug === r.id));
   const results = (q
-    ? search.filter((r) => r.title.toLowerCase().includes(q) || r.crumb.toLowerCase().includes(q))
-    : search.slice(0, 9)
+    ? known.filter((r) => r.title.toLowerCase().includes(q) || r.crumb.toLowerCase().includes(q))
+    : known.slice(0, 9)
   ).slice(0, 9);
   function go(id: string) {
     setPaletteOpen(false);
