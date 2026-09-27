@@ -292,7 +292,7 @@ input::placeholder { color: var(--muted); }
 .pkg-list { list-style: none; display: grid; gap: 12px; align-content: start; }
 .pkg-list > :not(.cta-li) { padding: 20px 22px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--shadow); }
 .pkg-list .row { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
-.pkg-list .row a { font-family: var(--f-mono); font-size: 13.5px; color: var(--text); }
+.pkg-list .row a { font-family: var(--f-mono); font-size: 13.5px; color: var(--text); display: inline-flex; align-items: center; gap: 8px; }
 .pkg-list .row span { color: var(--muted); font-size: 12.5px; font-family: var(--f-mono); }
 .pkg-list p { margin-top: 6px; font-size: 13.5px; color: var(--text-2); line-height: 1.5; }
 .pkg-list .cta-li { margin-top: 4px; }
@@ -684,6 +684,12 @@ input[type=range]::-moz-range-thumb { width: 24px; height: 24px; border-radius: 
 .docs-foot-links a { color: var(--muted); display: inline-flex; align-items: center; }
 .docs-foot-links a:hover { color: var(--text); }
 .docs-foot .mono { font-size: 12.5px; }
+
+/* Brand logos (Devicon), inline so Rust follows the text colour */
+.brand-logo { display: inline-flex; flex-shrink: 0; line-height: 0; }
+.brand-logo svg { width: 100%; height: 100%; display: block; }
+.docs-tab-link .brand-logo { opacity: .8; transition: opacity .15s; }
+.docs-tab-link.active .brand-logo, .docs-tab-link:hover .brand-logo { opacity: 1; }
 
 /* Changelog */
 .changelog { display: grid; gap: 8px; margin-top: 8px; }

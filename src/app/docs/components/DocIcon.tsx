@@ -1,3 +1,5 @@
+import { BrandLogo, LOGO_SVGS } from "@/components/BrandLogo";
+
 const line = { fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round", strokeLinejoin: "round" } as const;
 
 const PATHS: Record<string, React.ReactNode> = {
@@ -31,6 +33,7 @@ const PATHS: Record<string, React.ReactNode> = {
 };
 
 export function DocIcon({ name, size = 15 }: { name: string; size?: number }) {
+  if (LOGO_SVGS[name]) return <BrandLogo name={name} size={size} />;
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" {...line} aria-hidden>
       {PATHS[name] ?? PATHS.book}

@@ -1391,56 +1391,6 @@ decane.on("wallet-creating", () => showProgress());`)}
     ),
   },
   {
-    slug: 'ios', group: 'Native apps', title: 'iOS and macOS (Swift)', navLabel: 'iOS (Swift)', icon: 'phone',
-    body: (
-      <>
-            <p>
-              <code>DecaneKit</code> is the native Swift SDK for iOS 16+ and macOS 13+. Its wallet logic
-              is the shared Rust core, byte-compatible with this SDK and the React Native one: a user who
-              signs in on your website and in your iOS app gets the <em>same wallet</em>, at the same
-              addresses, provided both use the same <code>appId</code>. The full spec is{" "}
-              <a href="/llms-swift.txt" target="_blank" rel="noreferrer">llms-swift.txt</a>.
-            </p>
-            <h3 id="ios-install">Install ({VERSIONS.swift})</h3>
-            <CodeBlock lang="swift" file="Package.swift">
-              .package(url: <span className="tok-s">&quot;https://github.com/Korex23/decane-swift&quot;</span>, from: <span className="tok-s">&quot;{VERSIONS.swift}&quot;</span>)
-            </CodeBlock>
-            <p>
-              Or in Xcode: File → Add Package Dependencies → <code>https://github.com/Korex23/decane-swift</code>,
-              product <code>DecaneKit</code> (plus <code>DecaneKitUI</code> for the SwiftUI wrapper).
-            </p>
-            <h3 id="ios-quick-start">Quick start</h3>
-            <CodeBlock lang="swift" file="Wallet.swift">
-              <span className="tok-k">import</span> DecaneKit{"\n"}
-              {"\n"}
-              <span className="tok-k">let</span> wallet = <span className="tok-k">try</span> DecaneWallet(config: DecaneConfig({"\n"}
-              {"  "}appId: <span className="tok-s">&quot;proj_…&quot;</span>,{"\n"}
-              {"  "}apiKey: <span className="tok-s">&quot;dck_live_…&quot;</span>,{"\n"}
-              {"  "}chains: [<span className="tok-s">&quot;evm:8453&quot;</span>, <span className="tok-s">&quot;solana:mainnet&quot;</span>],{"\n"}
-              {"  "}protection: .identity{"\n"}
-              )){"\n"}
-              {"\n"}
-              <span className="tok-k">try await</span> wallet.connectWithEmail(<span className="tok-s">&quot;user@example.com&quot;</span>){"\n"}
-              <span className="tok-k">let</span> result = <span className="tok-k">try await</span> wallet.verifyEmailCode(email: <span className="tok-s">&quot;user@example.com&quot;</span>, code: <span className="tok-s">&quot;123456&quot;</span>){"\n"}
-              <span className="tok-k">let</span> signature = <span className="tok-k">try await</span> wallet.signMessage(chain: <span className="tok-s">&quot;evm:8453&quot;</span>, text: <span className="tok-s">&quot;Hello&quot;</span>)
-            </CodeBlock>
-            <h3 id="ios-scope">What {VERSIONS.swift} does</h3>
-            <p>
-              The identity tier: nothing stored on the device, every visit a sign-in. Email, phone,
-              Google-token, KingsChat-token and custom-token sign-in; wallet creation; provisioning on new
-              devices, including wallets your server made with <code>createUser</code>; signing for EVM
-              (messages, transactions, EIP-712, EIP-7702), Solana and Tron. The device tier (Face ID / PIN
-              unlock), passkeys, Google and X redirect sign-in and recovery files are not in this version
-              yet; each answers a clear error rather than failing silently.
-            </p>
-            <p>
-              A native Android library on the same core is built and on its way; until it ships, Android
-              apps use <a href="/docs/react-native">the React Native SDK</a>.
-            </p>
-      </>
-    ),
-  },
-  {
     slug: 'hooks', group: 'Hooks', title: 'Hooks', icon: 'link',
     body: (
       <>
@@ -2224,10 +2174,6 @@ decane.on("wallet-creating", () => showProgress());`)}
 // Every id that appears in the content, mapped to the page that holds it, so a
 // #hash link written when the docs were one page still lands on the right page.
 export const ANCHORS: Record<string, string> = {
-  'ios': 'ios',
-  'ios-install': 'ios',
-  'ios-quick-start': 'ios',
-  'ios-scope': 'ios',
   'overview': 'overview',
   'install': 'install',
   'quick-start': 'quick-start',
@@ -2279,8 +2225,6 @@ export const ANCHORS: Record<string, string> = {
 };
 
 export const SEARCH: SearchEntry[] = [
-  { id: 'ios', title: 'iOS and macOS (Swift)', crumb: 'Native apps', mono: false },
-  { id: 'ios-install', title: 'Install DecaneKit', crumb: 'Native apps', mono: false },
   { id: 'overview', title: 'Overview', crumb: 'Getting started', mono: false },
   { id: 'install', title: 'Install', crumb: 'Getting started', mono: false },
   { id: 'quick-start', title: 'Quick start', crumb: 'Getting started', mono: false },

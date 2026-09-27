@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 // A small tokenizer that emits the tok-* classes the docs code blocks use.
 // Enough for readable samples in TypeScript, Python, Rust, TOML and shell.
 
-export type Lang = "ts" | "python" | "rust" | "toml" | "bash";
+export type Lang = "ts" | "python" | "rust" | "toml" | "bash" | "swift" | "kotlin" | "xml" | "properties";
 
 const KEYWORDS: Record<Lang, Set<string>> = {
   ts: new Set(["const", "let", "var", "await", "async", "new", "import", "export", "from", "return", "function", "interface", "type", "true", "false", "null", "undefined", "as", "of", "in", "if", "else", "throw", "class"]),
@@ -11,10 +11,14 @@ const KEYWORDS: Record<Lang, Set<string>> = {
   rust: new Set(["use", "let", "mut", "fn", "async", "await", "pub", "struct", "enum", "impl", "match", "if", "else", "return", "Some", "None", "Ok", "Err", "self", "Self", "true", "false", "mod", "crate", "move", "where", "for", "in", "as", "ref", "type", "const"]),
   toml: new Set(["true", "false"]),
   bash: new Set(["pip", "uv", "cargo", "npm", "export", "curl"]),
+  swift: new Set(["import", "let", "var", "func", "async", "await", "try", "throws", "return", "if", "else", "guard", "for", "in", "struct", "class", "enum", "case", "switch", "default", "do", "catch", "nil", "true", "false", "self", "public", "private", "static", "some", "any", "init", "Task", "@State", "@MainActor"]),
+  kotlin: new Set(["import", "val", "var", "fun", "suspend", "return", "if", "else", "when", "is", "in", "for", "class", "object", "data", "sealed", "null", "true", "false", "this", "try", "catch", "throw", "package", "override", "private", "public", "launch", "listOf"]),
+  xml: new Set([]),
+  properties: new Set([]),
 };
 
 export function hl(code: string, lang: Lang = "ts"): ReactNode[] {
-  const comment = lang === "python" || lang === "toml" || lang === "bash" ? "#[^\\n]*" : "\\/\\/[^\\n]*|\\/\\*[\\s\\S]*?\\*\\/";
+  const comment = lang === "xml" ? "<!--[\\s\\S]*?-->" : lang === "python" || lang === "toml" || lang === "bash" || lang === "properties" ? "#[^\\n]*" : "\\/\\/[^\\n]*|\\/\\*[\\s\\S]*?\\*\\/";
   const str = lang === "rust"
     ? `"(?:[^"\\\\]|\\\\.)*"`
     : `"""[\\s\\S]*?"""|"(?:[^"\\\\]|\\\\.)*"|'(?:[^'\\\\]|\\\\.)*'`;

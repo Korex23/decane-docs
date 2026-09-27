@@ -10,7 +10,7 @@ import { useTheme } from "@/lib/theme";
 import { DocIcon } from "./DocIcon";
 import type { DocPage, SearchEntry } from "./types";
 
-export type DocSet = "web" | "node" | "python" | "rust" | "changelog";
+export type DocSet = "web" | "node" | "python" | "rust" | "swift" | "kotlin" | "changelog";
 
 interface DocsShellProps {
   set: DocSet;
@@ -24,10 +24,12 @@ interface DocsShellProps {
 }
 
 const TABS: Array<{ set: DocSet; href: string; label: string; icon: string }> = [
-  { set: "web", href: "/docs", label: "Documentation", icon: "book" },
-  { set: "node", href: "/node-docs", label: "Node SDK", icon: "server" },
-  { set: "python", href: "/python-docs", label: "Python SDK", icon: "terminal" },
-  { set: "rust", href: "/rust-docs", label: "Rust SDK", icon: "gear" },
+  { set: "web", href: "/docs", label: "Web & React Native", icon: "react" },
+  { set: "node", href: "/node-docs", label: "Node", icon: "nodejs" },
+  { set: "python", href: "/python-docs", label: "Python", icon: "python" },
+  { set: "rust", href: "/rust-docs", label: "Rust", icon: "rust" },
+  { set: "swift", href: "/swift-docs", label: "Swift", icon: "swift" },
+  { set: "kotlin", href: "/kotlin-docs", label: "Kotlin", icon: "kotlin" },
   { set: "changelog", href: "/changelog", label: "Changelog", icon: "history" },
 ];
 

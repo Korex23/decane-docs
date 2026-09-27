@@ -6,6 +6,7 @@ import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { SiteNav } from "@/components/SiteNav";
 import { SiteFooter } from "@/components/SiteFooter";
 import { ChainTypeIcon } from "@/components/ChainIcon";
+import { BrandLogo } from "@/components/BrandLogo";
 import { GoogleMark, XLogo, MailIcon, PhoneIcon, KeyIcon, CopyIcon, CheckIcon } from "@/components/Icons";
 import { Reveal, Stagger, Item } from "@/components/motion";
 import { useTheme, DASHBOARD_URL } from "@/lib/theme";
@@ -339,7 +340,7 @@ export default function Page() {
             </div>
             <p>
               Wrap your app once and you have sign-in, wallets, signing and sessions. Your backend
-              verifies who is calling with one line. Web, React Native, Node, Python and Rust, from one dashboard
+              verifies who is calling with one line. Web, React Native, iOS, Android and every major backend language, from one dashboard
               and one API key.
             </p>
           </Reveal>
@@ -347,24 +348,32 @@ export default function Page() {
             <Reveal><CodePanel /></Reveal>
             <Stagger className="pkg-list" delay={0.1} start={0.1}>
               <Item>
-                <div className="row"><a href={NPM.web} target="_blank" rel="noreferrer">decane-connect-kit</a><span>{VERSIONS.web}</span></div>
+                <div className="row"><a href={NPM.web} target="_blank" rel="noreferrer"><BrandLogo name="react" size={16} />decane-connect-kit</a><span>{VERSIONS.web}</span></div>
                 <p>Web. React provider, hooks and the sign-in UI.</p>
               </Item>
               <Item>
-                <div className="row"><a href={NPM.expo} target="_blank" rel="noreferrer">decane-connect-kit-expo</a><span>{VERSIONS.expo}</span></div>
+                <div className="row"><a href={NPM.expo} target="_blank" rel="noreferrer"><BrandLogo name="react" size={16} />decane-connect-kit-expo</a><span>{VERSIONS.expo}</span></div>
                 <p>React Native. Same wallet, native sessions.</p>
               </Item>
               <Item>
-                <div className="row"><a href={NPM.node} target="_blank" rel="noreferrer">decane-node</a><span>{VERSIONS.node}</span></div>
+                <div className="row"><a href={NPM.node} target="_blank" rel="noreferrer"><BrandLogo name="nodejs" size={16} />decane-node</a><span>{VERSIONS.node}</span></div>
                 <p>Server. Verify tokens, sign users in from your backend.</p>
               </Item>
               <Item>
-                <div className="row"><Link href="/python-docs">decane for Python</Link><span>{VERSIONS.python}</span></div>
+                <div className="row"><Link href="/python-docs"><BrandLogo name="python" size={16} />decane for Python</Link><span>{VERSIONS.python}</span></div>
                 <p>Server, on PyPI. Sync and asyncio clients.</p>
               </Item>
               <Item>
-                <div className="row"><Link href="/rust-docs">decane for Rust</Link><span>{VERSIONS.rust}</span></div>
+                <div className="row"><Link href="/rust-docs"><BrandLogo name="rust" size={16} />decane for Rust</Link><span>{VERSIONS.rust}</span></div>
                 <p>Server, on crates.io. Async, on tokio.</p>
+              </Item>
+              <Item>
+                <div className="row"><Link href="/swift-docs"><BrandLogo name="swift" size={16} />DecaneKit for Swift</Link><span>{VERSIONS.swift}</span></div>
+                <p>iOS and macOS. SwiftUI-ready.</p>
+              </Item>
+              <Item>
+                <div className="row"><Link href="/kotlin-docs"><BrandLogo name="kotlin" size={16} />decane-kit for Kotlin</Link><span>{VERSIONS.kotlin}</span></div>
+                <p>Android. Coroutines and Flow.</p>
               </Item>
               <Item className="cta-li"><Link href="/docs" className="btn btn-secondary">Read the docs</Link></Item>
             </Stagger>

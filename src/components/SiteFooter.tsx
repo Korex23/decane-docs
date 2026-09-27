@@ -24,6 +24,7 @@ export function SiteFooter() {
               <li><a href={REGISTRY.python} target="_blank" rel="noreferrer"><code>decane</code> (PyPI)<span>{VERSIONS.python}</span></a></li>
               <li><a href={REGISTRY.rust} target="_blank" rel="noreferrer"><code>decane</code> (crates.io)<span>{VERSIONS.rust}</span></a></li>
               <li><a href={REGISTRY.swift} target="_blank" rel="noreferrer"><code>DecaneKit</code> (Swift)<span>{VERSIONS.swift}</span></a></li>
+              <li><a href={REGISTRY.kotlin} target="_blank" rel="noreferrer"><code>decane-kit</code> (Kotlin)<span>{VERSIONS.kotlin}</span></a></li>
             </ul>
           </div>
           <div>
@@ -33,6 +34,8 @@ export function SiteFooter() {
               <li><Link href="/node-docs">Node SDK</Link></li>
               <li><Link href="/python-docs">Python SDK</Link></li>
               <li><Link href="/rust-docs">Rust SDK</Link></li>
+              <li><Link href="/swift-docs">Swift SDK</Link></li>
+              <li><Link href="/kotlin-docs">Kotlin SDK</Link></li>
               <li><Link href="/pricing">Pricing</Link></li>
               <li><Link href="/recovery">Recovering a wallet</Link></li>
               <li><a href={DASHBOARD_URL}>Dashboard</a></li>

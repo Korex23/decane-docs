@@ -204,7 +204,7 @@
     "registry": "https://github.com/Korex23/decane-swift",
     "version": "0.1.0",
     "llmsTxt": "https://kit.decane.app/llms-swift.txt",
-    "docs": "https://kit.decane.app/docs/ios",
+    "docs": "https://kit.decane.app/swift-docs",
     "changelog": [
       {
         "version": "0.1.0",

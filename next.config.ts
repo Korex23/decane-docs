@@ -54,6 +54,8 @@ const config: NextConfig = {
       { source: "/social", destination: "/#social", permanent: true },
       // Python and Rust used to share one page inside the Node docs.
       { source: "/node-docs/python-and-rust", destination: "/python-docs", permanent: true },
+      // The Swift SDK used to be one page inside the web docs.
+      { source: "/docs/ios", destination: "/swift-docs", permanent: true },
     ];
   },
 };
