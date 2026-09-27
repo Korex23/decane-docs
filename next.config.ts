@@ -14,28 +14,15 @@ const config: NextConfig = {
       { key: "Content-Disposition", value: "inline" },
       { key: "Access-Control-Allow-Origin", value: "*" },
     ];
+    const specs = [
+      "/llms.txt", "/llms-expo.txt", "/llms-node.txt", "/llms-connect.txt",
+      "/llms-python.txt", "/llms-rust.txt", "/llms-swift.txt", "/llms-kotlin.txt",
+    ];
     return [
-      {
-        source: "/llms.txt",
-        headers: [
-          { key: "Content-Type", value: "text/plain; charset=utf-8" },
-          ...readable,
-        ],
-      },
-      {
-        source: "/llms-expo.txt",
-        headers: [
-          { key: "Content-Type", value: "text/plain; charset=utf-8" },
-          ...readable,
-        ],
-      },
-      {
-        source: "/llms-node.txt",
-        headers: [
-          { key: "Content-Type", value: "text/plain; charset=utf-8" },
-          ...readable,
-        ],
-      },
+      ...specs.map((source) => ({
+        source,
+        headers: [{ key: "Content-Type", value: "text/plain; charset=utf-8" }, ...readable],
+      })),
       {
         source: "/llms-version.json",
         headers: [

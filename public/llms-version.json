@@ -218,6 +218,7 @@
     "registry": "https://github.com/Korex23/decane-connect-kit/packages",
     "version": "0.1.0",
     "llmsTxt": "https://kit.decane.app/llms-kotlin.txt",
+    "docs": "https://kit.decane.app/kotlin-docs",
     "changelog": [
       {
         "version": "0.1.0",

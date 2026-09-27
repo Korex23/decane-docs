@@ -58,6 +58,17 @@ export const PAGES: DocPage[] = [
             API. See <a href="/kotlin-docs/roadmap">What&rsquo;s not in this version</a>.
           </p>
         </div>
+        <div className="docs-agent">
+          <p>
+            Wiring up a coding agent? <code>kit.decane.app/llms-kotlin.txt</code> is a
+            self-contained spec for this library with real signatures, and{" "}
+            <a href="/llms-version.json" target="_blank" rel="noreferrer"><code>llms-version.json</code></a>{" "}
+            tracks its freshness under the <code>kotlin</code> key.
+          </p>
+          <div className="docs-agent-actions">
+            <a href="/llms-kotlin.txt" target="_blank" rel="noreferrer" className="btn btn-secondary btn-sm">llms-kotlin.txt</a>
+          </div>
+        </div>
         <DocsCards
           items={[
             { href: "/kotlin-docs/install", title: "Install", desc: "Add the GitHub Packages repository and the dependency." },
