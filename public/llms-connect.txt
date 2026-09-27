@@ -331,8 +331,12 @@ callback per host it is served from (the domain, a preview host,
 `http://localhost:3001/…` while developing): the init picks the entry whose
 host matches the request's `Origin` (or `Referer`), exact host including port
 first, then hostname, and falls back to the **first entry** — which is
-therefore the default, and what a native app with no Origin gets. Nothing in
-the request can name a URL that is not on the list. `callback_url` (single)
+therefore the default, and what a native app with no Origin gets. A native
+app can instead name its callback with `?redirect_uri=` on
+`/auth/google/init` or `/auth/x/init`: it is used only when it is exactly one
+of the key's `callback_urls`, and anything else fails with
+`400 CALLBACK_URL_NOT_REGISTERED` (it is never swapped for another entry).
+Nothing in the request can name a URL that is not on the list. `callback_url` (single)
 is still accepted on every route and reported as the first entry. Email and
 phone OTP need no callback at all.
 

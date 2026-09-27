@@ -90,10 +90,15 @@
   ],
   "mobile": {
     "package": "decane-connect-kit-expo",
-    "version": "0.6.0",
+    "version": "0.6.1",
     "llmsTxt": "https://kit.decane.app/llms-expo.txt",
     "npmRegistry": "https://registry.npmjs.org/decane-connect-kit-expo/latest",
     "changelog": [
+      {
+        "version": "0.6.1",
+        "date": "2026-09-27",
+        "summary": "Google and X sign-in send redirectUri to the init routes, so two apps sharing one API key each return to their own scheme instead of the key's first callback. Needs a backend that accepts redirect_uri (2026-09-27); older backends ignore it."
+      },
       {
         "version": "0.6.0",
         "date": "2026-09-26",

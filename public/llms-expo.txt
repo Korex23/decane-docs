@@ -13,8 +13,8 @@ npx expo install decane-connect-kit-expo \
 
 ```yaml
 package: decane-connect-kit-expo
-version: 0.6.0
-document-revision: 2026-09-26
+version: 0.6.1
+document-revision: 2026-09-27
 canonical: https://kit.decane.app/llms-expo.txt
 web-sibling: https://kit.decane.app/llms.txt
 swift-sibling: https://kit.decane.app/llms-swift.txt       # DecaneKit (native iOS / macOS, same wallet)
@@ -79,8 +79,11 @@ interface DecaneConnectNativeConfig {
   chains: Chain[];                    // `evm:${number}` | `solana:mainnet|devnet` | `tron:mainnet|shasta|nile`
   authMethods: Array<'google' | 'x' | 'email' | 'phone' | 'external' | 'kingschat'>;
 
-  // Needed for Google and KingsChat — must equal `scheme` in app.json,
-  // and be registered as the API key's callback_url in the dashboard.
+  // Needed for Google, X and KingsChat — must equal `scheme` in app.json,
+  // and be one of the API key's callback URLs in the dashboard. From 0.6.1
+  // the SDK sends it to /auth/{google,x}/init, so two apps sharing one key
+  // each get their own redirect; an unregistered value fails with
+  // CALLBACK_URL_NOT_REGISTERED instead of redirecting elsewhere.
   redirectUri?: string;
 
   // Required if the PIN tier can be reached. Must resolve to 4-8 digits.
@@ -201,7 +204,9 @@ give the same person a *different* wallet than your website does.
 The wallet derives from **identity**, never device. The same person signing in on
 your website and in your app gets the same addresses, provided both use the same
 `appId`. Two API keys on that one project is normal — the web redirect and the
-app deep link need different `callback_url` values.
+app deep link need different `callback_url` values. Two apps on one key also
+work from 0.6.1: register both schemes on the key, and each app's
+`redirectUri` picks its own.
 
 ---
 

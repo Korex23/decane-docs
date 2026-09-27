@@ -2,7 +2,7 @@
 // is published; the docs' llms-version.json is the machine-readable source.
 export const VERSIONS = {
   web: "2.29.1",
-  expo: "0.6.0",
+  expo: "0.6.1",
   node: "1.5.0",
   python: "1.0.0",
   rust: "1.0.0",
