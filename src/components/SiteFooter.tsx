@@ -1,63 +1,7 @@
 import Link from "next/link";
 import { DecaneLogo } from "./DecaneLogo";
 import { CookieNotice } from "./CookieNotice";
-import { BrandLogo } from "./BrandLogo";
 import { DASHBOARD_URL } from "@/lib/theme";
-import { VERSIONS, REGISTRY } from "@/lib/versions";
-
-// Every published package: one quiet panel, a row each, so the versions read
-// as a list rather than seven buttons.
-const PACKAGES = [
-  {
-    logo: "react",
-    name: "decane-connect-kit",
-    registry: "npm",
-    version: VERSIONS.web,
-    href: REGISTRY.web,
-  },
-  {
-    logo: "react",
-    name: "decane-connect-kit-expo",
-    registry: "npm",
-    version: VERSIONS.expo,
-    href: REGISTRY.expo,
-  },
-  {
-    logo: "nodejs",
-    name: "decane-node",
-    registry: "npm",
-    version: VERSIONS.node,
-    href: REGISTRY.node,
-  },
-  {
-    logo: "python",
-    name: "decane",
-    registry: "PyPI",
-    version: VERSIONS.python,
-    href: REGISTRY.python,
-  },
-  {
-    logo: "rust",
-    name: "decane",
-    registry: "crates.io",
-    version: VERSIONS.rust,
-    href: REGISTRY.rust,
-  },
-  {
-    logo: "swift",
-    name: "DecaneKit",
-    registry: "Swift PM",
-    version: VERSIONS.swift,
-    href: REGISTRY.swift,
-  },
-  {
-    logo: "kotlin",
-    name: "decane-kit",
-    registry: "Maven",
-    version: VERSIONS.kotlin,
-    href: REGISTRY.kotlin,
-  },
-];
 
 const COLUMNS: Array<{
   title: string;
@@ -129,18 +73,6 @@ export function SiteFooter() {
               Non-custodial wallets behind the sign-in your users already have.
               The key only ever comes together inside a sealed signer.
             </p>
-            <ul className="site-footer-pkgs" aria-label="Published packages">
-              {PACKAGES.map((p) => (
-                <li key={`${p.name}-${p.registry}`}>
-                  <a href={p.href} target="_blank" rel="noreferrer">
-                    <BrandLogo name={p.logo} size={16} />
-                    <code>{p.name}</code>
-                    <small>{p.registry}</small>
-                    <span className="ver">{p.version}</span>
-                  </a>
-                </li>
-              ))}
-            </ul>
           </div>
           {COLUMNS.map((col) => (
             <nav

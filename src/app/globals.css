@@ -1126,50 +1126,6 @@ input::placeholder {
   color: var(--muted);
   line-height: 1.55;
 }
-.site-footer-pkgs {
-  list-style: none;
-  margin-top: 22px;
-  max-width: 380px;
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  background: var(--bg-soft);
-  overflow: hidden;
-}
-.site-footer-pkgs li + li {
-  border-top: 1px solid var(--border);
-}
-.site-footer-pkgs a {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  height: 38px;
-  padding: 0 14px;
-  transition: background 0.15s;
-}
-.site-footer-pkgs a:hover {
-  background: var(--surface);
-}
-.site-footer-pkgs code {
-  font-family: var(--f-mono);
-  font-size: 12.5px;
-  color: var(--text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  min-width: 0;
-}
-.site-footer-pkgs small {
-  font-size: 12px;
-  color: var(--muted);
-  white-space: nowrap;
-}
-.site-footer-pkgs .ver {
-  margin-left: auto;
-  font-family: var(--f-mono);
-  font-size: 11.5px;
-  color: var(--muted);
-  font-variant-numeric: tabular-nums;
-}
 .site-footer h4 {
   font-size: 13.5px;
   font-weight: 600;
@@ -2919,9 +2875,6 @@ input[type="range"]::-moz-range-thumb {
   }
   .site-footer-brand {
     grid-column: 1 / -1;
-  }
-  .site-footer-pkgs {
-    max-width: none;
   }
   .legal-grid {
     grid-template-columns: 1fr;
