@@ -18,6 +18,7 @@ document-revision: 2026-09-26
 canonical: https://kit.decane.app/llms-expo.txt
 web-sibling: https://kit.decane.app/llms.txt
 swift-sibling: https://kit.decane.app/llms-swift.txt       # DecaneKit (native iOS / macOS, same wallet)
+kotlin-sibling: https://kit.decane.app/llms-kotlin.txt     # app.decane:decane-kit (native Android, same wallet)
 ```
 
 The web SDK (`decane-connect-kit`) is a **separate package** with its own spec at

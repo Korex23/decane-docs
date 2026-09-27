@@ -50,6 +50,7 @@ export function SiteFooter() {
               <li><a href="/llms-python.txt" target="_blank" rel="noreferrer">llms-python.txt</a></li>
               <li><a href="/llms-rust.txt" target="_blank" rel="noreferrer">llms-rust.txt</a></li>
               <li><a href="/llms-swift.txt" target="_blank" rel="noreferrer">llms-swift.txt</a></li>
+              <li><a href="/llms-kotlin.txt" target="_blank" rel="noreferrer">llms-kotlin.txt</a></li>
               <li><a href="/llms-version.json" target="_blank" rel="noreferrer">llms-version.json</a></li>
             </ul>
           </div>

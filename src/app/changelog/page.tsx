@@ -14,6 +14,7 @@ const SECTIONS: Section[] = [
   { key: "python", label: "Python SDK", pkg: manifest.python.package, entries: manifest.python.changelog as Entry[] },
   { key: "rust", label: "Rust SDK", pkg: manifest.rust.package, entries: manifest.rust.changelog as Entry[] },
   { key: "swift", label: "Swift SDK", pkg: manifest.swift.package, entries: manifest.swift.changelog as Entry[] },
+  { key: "kotlin", label: "Android SDK", pkg: manifest.kotlin.package, entries: manifest.kotlin.changelog as Entry[] },
   { key: "connect", label: "Connect API", pkg: "connect/v1", entries: manifest.connect.changelog.map((e) => ({ version: e.api, date: e.date, summary: e.summary })) },
 ];
 

@@ -1,0 +1,289 @@
+# decane-kit (Android, Kotlin)
+
+> The native Android SDK for Decane embedded wallets: social sign-in, EVM + Solana + Tron wallets from one key, signing inside an attested Intel TDX enclave. The wallet logic is the shared Rust core (the same one the Swift SDK uses), shipped as `libdecane_ffi.so` inside the AAR and byte-compatible with the web and Expo SDKs: a wallet opened here is the same wallet, at the same addresses, as on the web and on iOS. The private key is never assembled on the phone: a 2-of-3 Shamir split puts one share on the device, one on the server and one sealed in the enclave, which reconstructs the key internally, momentarily, per signature. This file is a self-contained integration spec, grounded in the library source.
+
+```kotlin
+implementation("app.decane:decane-kit:0.1.0")   // GitHub Packages, see Install
+```
+
+minSdk 28. Kotlin 2.x, coroutines. MIT.
+
+---
+
+## Version and freshness
+
+```yaml
+package: app.decane:decane-kit   # GitHub Packages, https://maven.pkg.github.com/Korex23/decane-connect-kit
+version: 0.1.0
+core: decane-core 0.1.0          # the Rust wallet core, libdecane_ffi.so (arm64-v8a, armeabi-v7a, x86_64)
+document-revision: 2026-09-27
+canonical: https://kit.decane.app/llms-kotlin.txt
+version-manifest: https://kit.decane.app/llms-version.json   # under the "kotlin" key
+swift-sibling: https://kit.decane.app/llms-swift.txt         # DecaneKit (iOS / macOS), same core
+expo-sibling: https://kit.decane.app/llms-expo.txt           # decane-connect-kit-expo (React Native)
+web-sibling: https://kit.decane.app/llms.txt                 # decane-connect-kit (browser)
+server-sibling: https://kit.decane.app/llms-node.txt         # decane-node (and the Python / Rust ports)
+```
+
+**0.1.0 implements the identity tier only** (`protection = Protection.IDENTITY`).
+Sign-in, wallet creation, provisioning and signing work. The device tier
+(`Protection.DEVICE`, refused by `DecaneWallet.create`), passkeys, browser
+sign-in (`connectWithGoogle`, `connectWithX`, `connectWithKingsChat`) and
+recovery files throw `DecaneException.CallSequence` or `PlatformHookMissing`
+with a message that says so. Their platform hooks already ship, so the next
+release turns them on without changing the API.
+
+---
+
+## Install
+
+GitHub Packages requires a token even to read a package. Create a classic
+PAT with only `read:packages` and put it in `~/.gradle/gradle.properties`
+(never in the project):
+
+```properties
+gpr.user=your-github-username
+gpr.key=ghp_…
+```
+
+```kotlin
+// settings.gradle.kts
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+        maven {
+            url = uri("https://maven.pkg.github.com/Korex23/decane-connect-kit")
+            credentials {
+                username = providers.gradleProperty("gpr.user").get()
+                password = providers.gradleProperty("gpr.key").get()
+            }
+        }
+    }
+}
+
+// app/build.gradle.kts
+android {
+    defaultConfig {
+        minSdk = 28
+        manifestPlaceholders["decaneRedirectScheme"] = "myapp"   // required, even before browser sign-in is used
+    }
+}
+dependencies {
+    implementation("app.decane:decane-kit:0.1.0")
+}
+```
+
+The AAR carries its R8 rules (JNA and the generated bindings are kept).
+Dependencies it brings: JNA, OkHttp, kotlinx-coroutines, androidx core,
+biometric, credentials, browser, startup.
+
+---
+
+## Minimal working setup
+
+```kotlin
+import app.decane.kit.*
+
+val wallet = DecaneWallet.create(
+    context,
+    DecaneConfig(
+        appId = "proj_…",
+        apiKey = "dck_live_…",                          // the project's browser key
+        chains = listOf("evm:8453", "solana:mainnet", "tron:mainnet"),
+        protection = Protection.IDENTITY,              // the tier 0.1.0 implements
+    ),
+)
+
+lifecycleScope.launch { wallet.events.collect { e -> Log.d("decane", e.name) } }
+
+wallet.connectWithEmail("ada@example.com")                        // emails a 6-digit code
+val result = wallet.verifyEmailCode("ada@example.com", "123456")  // ConnectResult
+result.addresses.evm; result.addresses.solana; result.addresses.tron
+result.isNewUser                                                  // the person's first sign-in to this app
+
+val signature = wallet.signMessage("evm:8453", "hello")
+```
+
+Create one wallet per process and keep it (`AutoCloseable`). Every call is
+`suspend` and safe from any dispatcher: the core runs on its own threads. On
+launch call `wallet.initialize()`, then branch on `wallet.isUnlocked` /
+`wallet.needsReconnect`. A persisted session survives a restart until its
+recorded expiry (`persistSession = false` turns that off). A returning user
+who signs in gets the same wallet: the enclave provisions a device share
+against the JWT alone.
+
+`Decane.init(application)` runs automatically through `androidx.startup`; if
+your app removes the startup provider, call it from `Application.onCreate`.
+It fails fast if the loaded native core is not the version the library was
+built for.
+
+---
+
+## Configuration — `DecaneConfig`
+
+| Field | Default | Meaning |
+|---|---|---|
+| `appId` | required | the project id |
+| `apiKey` | required | the project's `dck_live_…` browser key |
+| `chains` | required | CAIP-2: `evm:<chainId>`, `solana:mainnet` / `solana:devnet`, `tron:mainnet` / `shasta` / `nile` |
+| `protection` | `DEVICE` | `IDENTITY` is the only tier 0.1.0 accepts; `DEVICE` (Expo's default) is refused with a clear message |
+| `apiBaseUrl` | `https://backend.decane.app` | backend |
+| `teeUrl` | the production enclave | signer |
+| `unlockPreference` | empty | device tier (not yet) |
+| `rpId`, `rpName`, `origin` | null | passkeys (not yet); `origin` is `android:apk-key-hash:<base64url SHA-256>` |
+| `redirectUri` | null | browser sign-in (not yet) |
+| `kingsChatScopes` | empty | KingsChat |
+| `sessionDurationMinutes` | 120 | capped by the enclave session and the token |
+| `persistSession` | true | resume a live session across restarts |
+| `requireAssertionPerSignature` | false | device tier (not yet; see the Android limitation) |
+| `insecureSkipAttestation` | false | development only |
+| `verifyAttestation` | null | `suspend (AttestationQuote) -> Unit`, forward the quote to your backend |
+| `promptPin`, `recovery` | null | device tier and recovery (not yet) |
+
+---
+
+## The identity tier — the security statement, verbatim
+
+A wallet is exactly as safe as the user's identity-provider account plus Decane (the JWT signing key and the attested enclave). Anyone who can obtain a valid Decane session for the user can sign. There is no device-bound factor. Mitigations: a new-device email on every provision from an unseen device, a per-user freeze switch operated by Decane, and (follow-up) a fresh sign-in requirement for high-value operations.
+
+---
+
+## Sign-in
+
+| Method | Notes |
+|---|---|
+| `connectWithEmail(email)` + `verifyEmailCode(email, code): ConnectResult` | code sends: 3 per hour per address; attempts: 10 per 15 min |
+| `connectWithPhone(phone)` + `verifyPhoneCode(phone, code)` | E.164 |
+| `connectWithGoogleToken(idToken)` | an ID token from native Google Sign-In / Credential Manager |
+| `connectWithKingsChatToken(accessToken)` | a KingsChat access token |
+| `connectWithToken(token, providerId = null)` | your own JWT, for a custom auth provider configured in the dashboard |
+| `connectWithGoogle()`, `connectWithX()`, `connectWithKingsChat()` | browser flows — not yet |
+| `connect()` | resume |
+| `disconnect()` | revoke and forget |
+
+`ConnectResult(addresses, isNewUser, profile)`. A wallet your server made
+with `createUser` (decane-node, or the Python / Rust ports) opens on the
+person's first sign-in: this SDK provisions it and never creates a second.
+
+---
+
+## Wallet API
+
+```kotlin
+wallet.isUnlocked; wallet.needsReconnect; wallet.sessionExpiresAtMs; wallet.accessToken; wallet.addresses
+
+wallet.signMessage("evm:8453", "hello")                 // EVM / Tron: 0x r‖s‖v (EIP-191)
+wallet.signMessage("solana:mainnet", bytes)             // Solana: base64url ed25519 signature
+wallet.signEvmTransaction("evm:8453", unsignedRlp)      // unsigned envelope bytes → signed envelope bytes
+wallet.signTypedData("evm:8453", typedDataJson)         // EIP-712
+wallet.signAuthorization(chainId = 8453, address = "0x…", nonce = 0)   // EIP-7702 → yParity, r, s
+wallet.signSolanaTransaction(serialized)                // → signed transaction bytes
+wallet.signTronTransaction(rawDataHex)                  // → 0x signature
+wallet.recordTransaction(RecordTransactionInput(chain = "evm:8453", txHash = hash))
+wallet.getTransactionHistory(limit = 50)
+wallet.getCapabilities()
+```
+
+Sign-only: broadcast with your own web3 stack (web3j, sol4k, Trident).
+EVM transactions cover legacy, EIP-2930, EIP-1559 and EIP-7702 envelopes.
+
+### Events
+
+`wallet.events: SharedFlow<DecaneEvent>`; `event.name` is the JS event name:
+`connected`, `disconnected`, `session-started`, `session-expired`,
+`session-renewed`, `wallet-creating`, `wallet-unlocking`, `enrolment-failed`,
+`migrated-to-identity`.
+
+---
+
+## Errors
+
+`DecaneException` is a sealed hierarchy with one subclass per error class and
+two properties shared with the JS SDKs: `code` (identical to `error.code` in
+decane-connect-kit / -expo: `NETWORK`, `RECONNECT_REQUIRED`,
+`WALLET_ENROLMENT_FAILED`, `PROVISIONING_RATE_LIMITED`, `NEW_DEVICE`,
+`ATTESTATION_FAILED`, `WALLET_EXISTS`, `NATIVE_MODULE_MISSING`, …) and
+`retryable`.
+
+- `WalletEnrolmentFailed` — the enclave did not accept a new wallet after
+  three attempts. Nothing was created; signing in again creates afresh.
+- `ProvisioningRateLimited` — ten devices in an hour for this user. Wait.
+- `NewDevice` — an old wallet from before enrolment; recovery needed.
+- `AttestationFailed` — the enclave's measurement is not one this build
+  accepts. Update the library.
+- `CallSequence` / `PlatformHookMissing` — a feature this version does not
+  implement yet, or a call before sign-in.
+
+---
+
+## Platform hooks
+
+`DecaneWallet.create(context, config, platform = DecanePlatform())`: replace
+any default through `DecanePlatform`.
+
+| Hook | Default | Notes |
+|---|---|---|
+| HTTP | `OkHttpTransport` | non-2xx is a response, a transport failure is `Network` |
+| Secure store | `KeystoreStorage` | SharedPreferences file `decane-connect-kit`, values AES-GCM under the non-exportable AndroidKeyStore key `decane.storage`; a restored backup reads as empty |
+| Device key | `BiometricKey` | keystore key `decane.enclave.<userId>`, `AUTH_BIOMETRIC_STRONG`, per-operation `BiometricPrompt`; needs a `FragmentActivity` in the foreground |
+| Passkeys | `CredentialManagerPasskeyProvider` | Credential Manager with the PRF extension; support is found by trying |
+| Browser sign-in | `CustomTabsAuthSession` + `DecaneRedirectActivity` | the `${decaneRedirectScheme}` placeholder; the app resuming without a redirect = cancelled |
+
+---
+
+## App setup
+
+- **Backups:** point `android:dataExtractionRules` (API 31+) and
+  `android:fullBackupContent` (API 28–30) at `@xml/decane_backup_rules`, or
+  copy its two `<exclude>` lines into your own rules.
+- **Redirect scheme** (browser sign-in, next release): the placeholder,
+  `redirectUri = "myapp://auth"`, and that exact URL as the API key's first
+  callback URL in the dashboard (a native app sends no Origin, so it gets the
+  first).
+- **Passkeys** (next release): `rpId` a domain you control, serving
+  `/.well-known/assetlinks.json` with `delegate_permission/common.get_login_creds`
+  for your package and signing-certificate SHA-256; `origin` =
+  `android:apk-key-hash:<base64url of that SHA-256>`.
+
+## Known limitation on Android
+
+Per-signature passkey assertions (`requireAssertionPerSignature`),
+`rotateShares` and `exportPortableBackup` do not work on Android yet: the
+enclave derives the WebAuthn RP ID from the origin's hostname, and
+`android:apk-key-hash:` origins have none. The core already sends an explicit
+`rpId`; the enclave change to accept it is pending. Passkey unlock (PRF)
+itself is unaffected.
+
+---
+
+## Attestation
+
+Before any share moves, the SDK asks the enclave for a TDX quote on a fresh
+nonce, checks its measurement against the list pinned in this build, and has
+the Decane backend verify the quote (or your `verifyAttestation`). Cached ten
+minutes per enclave URL. A measurement change on Decane's side ships as a new
+library version.
+
+---
+
+## Differences from the Expo SDK
+
+- `suspend` functions and a `SharedFlow` of events instead of promises and
+  `on(...)`; hooks on `DecanePlatform` instead of config closures.
+- Transactions are bytes in, signed bytes out. No `sendTransaction`, no
+  balances, no `rpcUrls`.
+- No `authMethods`: call the sign-in you want.
+
+---
+
+## Package
+
+```yaml
+coordinates: app.decane:decane-kit:0.1.0
+repository: https://maven.pkg.github.com/Korex23/decane-connect-kit   # read:packages token required
+source: https://github.com/Korex23/decane-connect-kit/tree/main/sdk-native/kotlin
+min-sdk: 28
+abis: [arm64-v8a, armeabi-v7a, x86_64]
+license: MIT
+```

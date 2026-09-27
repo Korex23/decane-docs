@@ -20,6 +20,7 @@ core: decane-core 0.1.0    # the Rust wallet core in DecaneFFI.xcframework (rele
 document-revision: 2026-09-27
 canonical: https://kit.decane.app/llms-swift.txt
 version-manifest: https://kit.decane.app/llms-version.json   # under the "swift" key
+kotlin-sibling: https://kit.decane.app/llms-kotlin.txt       # app.decane:decane-kit (Android), same core
 expo-sibling: https://kit.decane.app/llms-expo.txt           # decane-connect-kit-expo (React Native)
 web-sibling: https://kit.decane.app/llms.txt                 # decane-connect-kit (browser)
 server-sibling: https://kit.decane.app/llms-node.txt         # decane-node (and the Python / Rust ports)

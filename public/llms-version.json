@@ -212,5 +212,18 @@
         "summary": "First release of the Swift SDK for iOS 16+ / macOS 13+, on the shared Rust wallet core (UniFFI, XCFramework on the GitHub release). The identity tier: email, phone, Google-token, KingsChat-token and custom-token sign-in; wallet creation and enrolment; provisioning, including wallets a server created with createUser; signing for EVM (messages, transactions, EIP-712, EIP-7702), Solana and Tron; session resume and refresh; events. Not yet: the device tier, passkeys, redirect sign-in, recovery files (each answers a clear error)."
       }
     ]
+  },
+  "kotlin": {
+    "package": "app.decane:decane-kit",
+    "registry": "https://github.com/Korex23/decane-connect-kit/packages",
+    "version": "0.1.0",
+    "llmsTxt": "https://kit.decane.app/llms-kotlin.txt",
+    "changelog": [
+      {
+        "version": "0.1.0",
+        "date": "2026-09-27",
+        "summary": "First release of the Android SDK (minSdk 28) on the shared Rust wallet core, published to GitHub Packages. The identity tier: email, phone, Google-token, KingsChat-token and custom-token sign-in; wallet creation and enrolment; provisioning, including wallets a server created with createUser; signing for EVM (messages, transactions, EIP-712, EIP-7702), Solana and Tron; session resume and refresh; events. Not yet: the device tier, passkeys, browser sign-in, recovery files (each answers a clear error). Per-signature assertions, rotate and export wait on an enclave change for Android origins."
+      }
+    ]
   }
 }
