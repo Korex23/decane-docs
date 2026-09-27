@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import { useReducedMotion } from "framer-motion";
 import { SiteNav } from "@/components/SiteNav";
 import { SiteFooter } from "@/components/SiteFooter";
 import { ChainTypeIcon } from "@/components/ChainIcon";
-import { BrandLogo } from "@/components/BrandLogo";
+import { Integrations } from "@/components/Integrations";
 import {
   GoogleMark,
   XLogo,
@@ -18,7 +18,6 @@ import {
 } from "@/components/Icons";
 import { Reveal, Stagger, Item } from "@/components/motion";
 import { useTheme, DASHBOARD_URL } from "@/lib/theme";
-import { VERSIONS, NPM } from "@/lib/versions";
 
 // ─── Small icons used only here ──────────────────────────────────────────────
 
@@ -194,209 +193,6 @@ function FlowPanel() {
           Try the live demo
         </Link>
       </div>
-    </div>
-  );
-}
-
-// ─── Code samples ────────────────────────────────────────────────────────────
-// Taken from public/llms.txt and llms-expo.txt so the landing never drifts
-// from the spec. Highlighted with the same tok-* classes the docs use.
-
-const HL_KEYWORDS = new Set([
-  "const",
-  "let",
-  "var",
-  "await",
-  "async",
-  "new",
-  "import",
-  "export",
-  "from",
-  "return",
-  "function",
-  "interface",
-  "type",
-  "true",
-  "false",
-  "null",
-  "undefined",
-  "as",
-  "if",
-]);
-
-function hl(code: string): ReactNode[] {
-  const re =
-    /(\/\/[^\n]*)|("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')|(\b\d+(?:[\d_]*\d)?(?:\.\d+)?n?\b)|([A-Za-z_$][A-Za-z0-9_$]*)|(\s+)|([^\s])/g;
-  const out: ReactNode[] = [];
-  let m: RegExpExecArray | null;
-  let i = 0;
-  while ((m = re.exec(code)) !== null) {
-    const key = i++;
-    if (m[1] !== undefined)
-      out.push(
-        <span key={key} className="tok-c">
-          {m[1]}
-        </span>,
-      );
-    else if (m[2] !== undefined)
-      out.push(
-        <span key={key} className="tok-s">
-          {m[2]}
-        </span>,
-      );
-    else if (m[3] !== undefined)
-      out.push(
-        <span key={key} className="tok-n">
-          {m[3]}
-        </span>,
-      );
-    else if (m[4] !== undefined) {
-      const w = m[4];
-      const next = code[re.lastIndex];
-      if (HL_KEYWORDS.has(w))
-        out.push(
-          <span key={key} className="tok-k">
-            {w}
-          </span>,
-        );
-      else if (next === "(")
-        out.push(
-          <span key={key} className="tok-f">
-            {w}
-          </span>,
-        );
-      else if (/^[A-Z]/.test(w))
-        out.push(
-          <span key={key} className="tok-t">
-            {w}
-          </span>,
-        );
-      else
-        out.push(
-          <span key={key} className="tok-id">
-            {w}
-          </span>,
-        );
-    } else if (m[5] !== undefined) out.push(m[5]);
-    else
-      out.push(
-        <span key={key} className="tok-p">
-          {m[6]}
-        </span>,
-      );
-  }
-  return out;
-}
-
-const SAMPLES = {
-  web: {
-    label: "Web",
-    file: "App.tsx",
-    code: `import { DecaneKit, useSocialAuth } from 'decane-connect-kit';
-
-function App() {
-  return (
-    <DecaneKit config={{
-      mode: 'social',
-      social: { apiKey: 'dck_live_...', authMethods: ['google', 'email'] },
-    }}>
-      <SignInButton />
-    </DecaneKit>
-  );
-}
-
-function SignInButton() {
-  const { isConnected, addresses, signInWithGoogle } = useSocialAuth();
-  if (isConnected) return <div>Signed in: {addresses?.evm}</div>;
-  return <button onClick={signInWithGoogle}>Sign in with Google</button>;
-}`,
-  },
-  expo: {
-    label: "React Native",
-    file: "wallet.ts",
-    code: `import { createDecaneConnect } from "decane-connect-kit-expo";
-
-const decane = await createDecaneConnect({
-  appId:       "proj_...",
-  apiKey:      "dck_live_...",
-  chains:      ["evm:8453", "solana:mainnet"],
-  authMethods: ["email"],
-});
-
-await decane.connectWithEmail("user@example.com");
-await decane.verifyEmailCode("user@example.com", "123456");
-
-const { evm, solana, tron } = decane.getAddresses()!;
-await decane.sendTransaction({ chain: "evm:8453", to: "0x...", value: 10_000n });`,
-  },
-  node: {
-    label: "Your backend",
-    file: "server.ts",
-    code: `import { DecaneClient } from 'decane-node';
-
-const decane = new DecaneClient({ appId: process.env.DECANE_APP_ID });
-
-// The client sends its Decane token as a bearer token.
-const claims = await decane.verifyAccessToken(token);
-claims.userId;
-
-const user = await decane.getUser(token); // { id, addresses, linkedAccounts }`,
-  },
-} as const;
-
-type SampleKey = keyof typeof SAMPLES;
-
-function CodePanel() {
-  const [tab, setTab] = useState<SampleKey>("web");
-  const [done, setDone] = useState(false);
-  const s = SAMPLES[tab];
-  function copy() {
-    navigator.clipboard?.writeText(s.code).then(() => {
-      setDone(true);
-      setTimeout(() => setDone(false), 1400);
-    });
-  }
-  return (
-    <div className="code-panel">
-      <div className="code-panel-head">
-        <div className="pills" role="tablist">
-          {(Object.keys(SAMPLES) as SampleKey[]).map((k) => (
-            <button
-              key={k}
-              type="button"
-              role="tab"
-              aria-selected={tab === k}
-              className={`pill${tab === k ? " active" : ""}`}
-              onClick={() => setTab(k)}
-            >
-              {SAMPLES[k].label}
-            </button>
-          ))}
-        </div>
-        <span className="file">{s.file}</span>
-        <button
-          type="button"
-          className={`copy-btn${done ? " done" : ""}`}
-          onClick={copy}
-          aria-label={done ? "Copied" : "Copy code"}
-          title="Copy"
-        >
-          {done ? <CheckIcon /> : <CopyIcon />}
-        </button>
-      </div>
-      <AnimatePresence mode="wait" initial={false}>
-        <motion.div
-          key={tab}
-          initial={{ opacity: 0, y: 6 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -6 }}
-          transition={{ duration: 0.22 }}
-        >
-          <pre>
-            <code>{hl(s.code)}</code>
-          </pre>
-        </motion.div>
-      </AnimatePresence>
     </div>
   );
 }
@@ -599,88 +395,9 @@ export default function Page() {
               one dashboard and one API key.
             </p>
           </Reveal>
-          <div className="integration">
-            <Reveal>
-              <CodePanel />
-            </Reveal>
-            <Stagger className="pkg-list" delay={0.1} start={0.1}>
-              <Item>
-                <div className="row">
-                  <a href={NPM.web} target="_blank" rel="noreferrer">
-                    <BrandLogo name="react" size={16} />
-                    decane-connect-kit
-                  </a>
-                  <span>{VERSIONS.web}</span>
-                </div>
-                <p>Web. React provider, hooks and the sign-in UI.</p>
-              </Item>
-              <Item>
-                <div className="row">
-                  <a href={NPM.expo} target="_blank" rel="noreferrer">
-                    <BrandLogo name="react" size={16} />
-                    decane-connect-kit-expo
-                  </a>
-                  <span>{VERSIONS.expo}</span>
-                </div>
-                <p>React Native. Same wallet, native sessions.</p>
-              </Item>
-              <Item>
-                <div className="row">
-                  <a href={NPM.node} target="_blank" rel="noreferrer">
-                    <BrandLogo name="nodejs" size={16} />
-                    decane-node
-                  </a>
-                  <span>{VERSIONS.node}</span>
-                </div>
-                <p>Server. Verify tokens, sign users in from your backend.</p>
-              </Item>
-              <Item>
-                <div className="row">
-                  <Link href="/python-docs">
-                    <BrandLogo name="python" size={16} />
-                    decane for Python
-                  </Link>
-                  <span>{VERSIONS.python}</span>
-                </div>
-                <p>Server, on PyPI. Sync and asyncio clients.</p>
-              </Item>
-              <Item>
-                <div className="row">
-                  <Link href="/rust-docs">
-                    <BrandLogo name="rust" size={16} />
-                    decane for Rust
-                  </Link>
-                  <span>{VERSIONS.rust}</span>
-                </div>
-                <p>Server, on crates.io. Async, on tokio.</p>
-              </Item>
-              <Item>
-                <div className="row">
-                  <Link href="/swift-docs">
-                    <BrandLogo name="swift" size={16} />
-                    DecaneKit for Swift
-                  </Link>
-                  <span>{VERSIONS.swift}</span>
-                </div>
-                <p>iOS and macOS. SwiftUI-ready.</p>
-              </Item>
-              <Item>
-                <div className="row">
-                  <Link href="/kotlin-docs">
-                    <BrandLogo name="kotlin" size={16} />
-                    decane-kit for Kotlin
-                  </Link>
-                  <span>{VERSIONS.kotlin}</span>
-                </div>
-                <p>Android. Coroutines and Flow.</p>
-              </Item>
-              <Item className="cta-li">
-                <Link href="/docs" className="btn btn-secondary">
-                  Read the docs
-                </Link>
-              </Item>
-            </Stagger>
-          </div>
+          <Reveal>
+            <Integrations />
+          </Reveal>
         </div>
       </section>
 
