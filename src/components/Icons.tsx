@@ -71,20 +71,10 @@ export function WalletIcon({ size = 18 }: P) {
   );
 }
 
-export function SlidersIcon({ size = 18 }: P) {
+export function ArrowLeftIcon({ size = 18 }: P) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" {...line} aria-hidden>
-      <path d="M4 7h9M17 7h3M4 17h3M11 17h9" />
-      <circle cx="15" cy="7" r="2" />
-      <circle cx="9" cy="17" r="2" />
-    </svg>
-  );
-}
-
-export function CloseIcon({ size = 18 }: P) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" {...line} aria-hidden>
-      <path d="M6 6l12 12M18 6 6 18" />
+      <path d="M19 12H5M11 6l-6 6 6 6" />
     </svg>
   );
 }

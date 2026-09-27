@@ -509,36 +509,29 @@ input[type=range]::-moz-range-thumb { width: 24px; height: 24px; border-radius: 
   .demo-canvas { grid-template-columns: 1fr; }
   .demo-side { position: static; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); }
 }
-.demo-sheet-head, .demo-customize, .demo-sheet-scrim { display: none; }
+.demo-back, .demo-launch { display: none; }
 @media (max-width: 860px) {
-  .demo-layout { grid-template-columns: 1fr; }
   .demo-bar-note { display: none; }
   .demo-bar { padding: 0 16px; gap: 10px; }
-  .demo-canvas { padding: 20px 16px 104px; gap: 16px; min-height: calc(100vh - 60px); }
+  /* One pane at a time: settings first, then the preview behind "Launch". */
+  .demo-layout { display: block; min-height: 0; }
+  .demo-layout.on-customize > :not(.demo-config) { display: none; }
+  .demo-layout.on-preview > .demo-config { display: none; }
+  .demo-layout > * { animation: demo-pane-in .24s cubic-bezier(.2,.8,.2,1); }
+  .demo-config { position: static; height: auto; border-right: 0; background: var(--bg); padding: 20px 16px 32px; }
+  .demo-launch { display: flex; width: 100%; height: 48px; justify-content: center; }
+  .demo-back { display: block; position: sticky; top: 60px; z-index: 30; padding: 10px 16px; background: color-mix(in oklab, var(--bg) 88%, transparent);
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-bottom: 1px solid var(--border); }
+  .demo-back button { display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 12px 0 8px; margin-left: -8px; border: 0; border-radius: 10px;
+    background: transparent; color: var(--text); font: inherit; font-size: 14.5px; font-weight: 600; cursor: pointer; }
+  .demo-back button:hover { background: var(--bg-soft); }
+  .demo-canvas { padding: 16px 16px 40px; gap: 16px; min-height: 0; }
   .demo-stage { justify-content: center; }
   .demo-login { width: 100%; max-width: 420px; padding: 28px 20px 18px; }
   .demo-side { grid-template-columns: 1fr; }
-  /* Settings become a bottom sheet over the page, opened from the pill below. */
-  .demo-config { position: fixed; left: 0; right: 0; bottom: 0; top: auto; z-index: 60; height: auto; max-height: 82vh;
-    border: 1px solid var(--border); border-bottom: 0; border-radius: 22px 22px 0 0; background: var(--bg);
-    padding: 8px 16px calc(28px + env(safe-area-inset-bottom)); gap: 22px; box-shadow: 0 -18px 50px rgba(0,0,0,.28);
-    transform: translateY(105%); visibility: hidden; transition: transform .28s cubic-bezier(.2,.8,.2,1), visibility 0s linear .28s; }
-  .demo-config.open { transform: none; visibility: visible; transition: transform .28s cubic-bezier(.2,.8,.2,1); }
-  .demo-sheet-head { display: grid; grid-template-columns: 1fr auto; align-items: center; position: sticky; top: -8px; z-index: 1;
-    margin: 0 -16px; padding: 18px 16px 10px; background: var(--bg); }
-  .demo-sheet-head b { font-size: 16px; font-weight: 600; }
-  .demo-sheet-grip { position: absolute; top: 7px; left: 50%; width: 36px; height: 4px; margin-left: -18px; border-radius: 99px; background: var(--border-strong); }
-  .demo-sheet-close { width: 34px; height: 34px; border-radius: 10px; border: 0; background: var(--bg-soft); color: var(--text-2); display: grid; place-items: center; cursor: pointer; }
-  .demo-sheet-scrim { display: block; position: fixed; inset: 0; z-index: 55; background: rgba(0,0,0,.45); opacity: 0; pointer-events: none; transition: opacity .25s; }
-  .demo-sheet-scrim.open { opacity: 1; pointer-events: auto; }
-  .demo-customize { display: inline-flex; align-items: center; gap: 8px; position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom)); z-index: 50;
-    transform: translateX(-50%); height: 44px; padding: 0 18px; border-radius: 999px; border: 1px solid var(--border-strong);
-    background: var(--surface); color: var(--text); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; box-shadow: var(--shadow-lg); }
-  .demo-customize svg { color: var(--accent); }
 }
-@media (max-width: 860px) and (prefers-reduced-motion: reduce) {
-  .demo-config, .demo-config.open, .demo-sheet-scrim { transition: none; }
-}
+@keyframes demo-pane-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .demo-layout > * { animation: none; } }
 @media (max-width: 520px) {
   .demo-bar .btn-ghost { display: none; }
 }

@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { DecaneKit, useDecane, useSignMessage, useSocialAuth, useSocialWallet, useWalletSelector } from "decane-connect-kit";
 import { ChainTypeIcon } from "@/components/ChainIcon";
 import { DecaneLogo } from "@/components/DecaneLogo";
-import { CopyIcon, CheckIcon, GoogleMark, XLogo, MailIcon, PhoneIcon, ChatIcon, WalletIcon, SlidersIcon, CloseIcon } from "@/components/Icons";
+import { CopyIcon, CheckIcon, GoogleMark, XLogo, MailIcon, PhoneIcon, ChatIcon, WalletIcon, ArrowLeftIcon } from "@/components/Icons";
 import type { Theme } from "@/lib/theme";
 import {
   CHAINS, DEFAULT_SETTINGS, DEMO_API_KEY, DEMO_APP_ID, METHODS, MODES,
@@ -84,21 +84,15 @@ function Toggle({ checked, onChange, label }: { checked: boolean; onChange: () =
 }
 
 function ConfigPanel({
-  settings, setSettings, theme, onToggleTheme, open, onClose,
+  settings, setSettings, theme, onToggleTheme, onLaunch,
 }: {
   settings: DemoSettings; setSettings: (s: DemoSettings) => void; theme: Theme; onToggleTheme: () => void;
-  open: boolean; onClose: () => void;
+  onLaunch: () => void;
 }) {
   const methodCount = Object.values(settings.methods).filter(Boolean).length;
   const chainCount = Object.values(settings.chains).filter(Boolean).length;
   return (
-    <aside className={`demo-config${open ? " open" : ""}`} aria-label="Demo settings">
-      {/* Phones: the settings live in a bottom sheet, so the card leads. */}
-      <div className="demo-sheet-head">
-        <span className="demo-sheet-grip" aria-hidden />
-        <b>Customize</b>
-        <button type="button" className="demo-sheet-close" onClick={onClose} aria-label="Close settings"><CloseIcon size={18} /></button>
-      </div>
+    <aside className="demo-config" aria-label="Demo settings">
       <section>
         <h2>Appearance</h2>
         <div className="demo-seg" role="radiogroup" aria-label="Theme">
@@ -175,6 +169,10 @@ function ConfigPanel({
           <Link href="/docs/social" className="ulink">device tier</Link> adds a passkey or password.
         </p>
       </section>
+
+      {/* Phones only: the settings come first and this opens the preview,
+          as Privy's "Launch" does. */}
+      <button type="button" className="btn btn-primary demo-launch" onClick={onLaunch}>Launch the preview</button>
     </aside>
   );
 }
@@ -592,31 +590,43 @@ function Canvas({ settings, theme }: { settings: DemoSettings; theme: Theme }) {
   );
 }
 
+type Pane = "customize" | "preview";
+const PANE_STORE = "decane-demo-pane";
+
 export function DemoApp({ theme, onToggleTheme }: { theme: Theme; onToggleTheme: () => void }) {
   const [settings, setSettingsState] = useState<DemoSettings>(DEFAULT_SETTINGS);
-  const [sheet, setSheet] = useState(false);
-  useEffect(() => {
-    if (!sheet) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setSheet(false); };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, [sheet]);
   useEffect(() => { setSettingsState(loadSettings()); }, []);
   function setSettings(s: DemoSettings) {
     setSettingsState(s);
     try { localStorage.setItem(STORE, JSON.stringify(s)); } catch { /* not persisted; fine */ }
   }
 
+  // Phones show one pane at a time: the settings, then the preview behind a
+  // "Launch" button, with a back button to return. Wider screens show both
+  // side by side and ignore this.
+  const [pane, setPaneState] = useState<Pane>("customize");
+  const setPane = useCallback((p: Pane) => {
+    setPaneState(p);
+    try { sessionStorage.setItem(PANE_STORE, p); } catch { /* not persisted; fine */ }
+    window.scrollTo({ top: 0 });
+  }, []);
+  useEffect(() => {
+    // A Google or X sign-in leaves the page and comes back: return the
+    // visitor to the preview they left from, not to the settings.
+    try { if (sessionStorage.getItem(PANE_STORE) === "preview") setPaneState("preview"); } catch { /* default */ }
+  }, []);
+
   const authMethods = METHODS.filter((m) => settings.methods[m.id]).map((m) => m.id);
   const chains = CHAINS.filter((c) => settings.chains[c.id]).map((c) => c.id);
 
   return (
-    <div className="demo-layout">
-      <ConfigPanel settings={settings} setSettings={setSettings} theme={theme} onToggleTheme={onToggleTheme} open={sheet} onClose={() => setSheet(false)} />
-      <div className={`demo-sheet-scrim${sheet ? " open" : ""}`} onClick={() => setSheet(false)} aria-hidden />
-      <button type="button" className="demo-customize" onClick={() => setSheet(true)} aria-expanded={sheet}>
-        <SlidersIcon size={16} />Customize
-      </button>
+    <div className={`demo-layout on-${pane}`}>
+      <ConfigPanel settings={settings} setSettings={setSettings} theme={theme} onToggleTheme={onToggleTheme} onLaunch={() => setPane("preview")} />
+      <div className="demo-back">
+        <button type="button" onClick={() => setPane("customize")}>
+          <ArrowLeftIcon size={18} />Customize
+        </button>
+      </div>
       <DecaneKit
         // A new mode, set of methods or chains is a new SDK config; remounting applies
         // it. The session survives in storage, so a signed-in visitor stays in.
