@@ -1,12 +1,17 @@
 {
   "$comment": "Freshness manifest for https://kit.decane.app/llms.txt — fetch this (small) document to check whether a cached copy of llms.txt is stale, instead of re-reading the full spec.",
   "package": "decane-connect-kit",
-  "version": "2.29.1",
-  "documentRevision": "2026-09-27",
+  "version": "2.29.2",
+  "documentRevision": "2026-09-28",
   "llmsTxt": "https://kit.decane.app/llms.txt",
   "npmRegistry": "https://registry.npmjs.org/decane-connect-kit/latest",
   "docs": "https://kit.decane.app/docs",
   "changelog": [
+    {
+      "version": "2.29.2",
+      "date": "2026-09-28",
+      "summary": "The wallet session now lasts 8 hours by default, up from 120 minutes, matching the signer. The saved session lived only as long as that default, so a page refresh two hours after sign-in read as signed out while the token was still valid. sessionDurationMinutes can now be set on <DecaneKit> (it was only honoured by the headless client). No other API changes."
+    },
     {
       "version": "2.29.1",
       "date": "2026-09-27",
