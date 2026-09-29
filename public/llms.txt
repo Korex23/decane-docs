@@ -25,7 +25,7 @@ need it for a single product.
 ## Version and freshness
 
 ```yaml
-version: 2.29.2
+version: 2.30.0
 document-revision: 2026-09-27
 canonical: https://kit.decane.app/llms.txt
 version-manifest: https://kit.decane.app/llms-version.json
@@ -282,6 +282,9 @@ interface DecaneConnect {
   connectWithEmail(email: string): Promise<{ codeRequired: true }>;
   verifyEmailCode(email: string, code: string): Promise<ConnectResult>;
   connectWithToken(token: string, opts?: { providerId?: string }): Promise<ConnectResult>; // custom auth — see below
+  linkWithToken(token: string, opts?: { providerId?: string }): Promise<{ alreadyLinked: boolean; id?: string }>; // 2.30.0, linked logins
+  listLinkedLogins(): Promise<LinkedLogin[]>;
+  unlinkLogin(id: string): Promise<void>;
   unlock(): Promise<void>;                                        // re-authenticate an expired session
   isUnlocked(): boolean;
   sessionExpiresAt(): number | null;
@@ -524,6 +527,30 @@ The JWKS URL must return a standard key set and must be `https://` (or localhost
 ```
 
 EC keys work too (`kty: "EC"`, `crv`, `x`, `y` instead of `n`/`e`). The `kid` must match the JWT header's `kid`. Multiple keys in the array is how rotation works.
+
+Always set `exp` on the tokens you issue, and keep it short. Sign-in still accepts a token without one, and logs it; linking a login refuses one.
+
+### Linked logins: one wallet, email and phone — since 2.30.0
+
+An account is keyed by the login it was created with, so the same person signing in by email and by a phone number your backend verified would reach two different wallets. Linking fixes that: while someone is signed in, attach a login from your own provider to their account, and from then on that login opens the same wallet.
+
+```ts
+// Signed in (by email, Google, anything). Your backend verified their phone
+// and signed a fresh token for it with your custom-auth issuer.
+const { linkWithToken, listLinkedLogins, unlinkLogin } = useSocialAuth();
+await linkWithToken(phoneToken /*, { providerId } */);   // { alreadyLinked, id? }
+
+// Later, signed out: the phone token opens the same account and wallet.
+await signInWithToken(phoneToken);
+```
+
+- `linkWithToken(token, opts?)` needs a signed-in session. The token must be fresh: it carries `exp` and `iat` and was issued in the last ten minutes (30 s of clock skew allowed). Linking one already on this account is a no-op (`alreadyLinked: true`).
+- A login that already opens a different account throws `LoginInUseError` (`LOGIN_IN_USE`). Decane never merges accounts: each is its own key and its own addresses, so merging would mean choosing a wallet to abandon.
+- `listLinkedLogins()` returns `{ id, providerId, providerName, identifier (masked), linkedAt }[]`. `unlinkLogin(id)` removes one, for "change my number": unlink the old, link the new. The login an account was created with cannot be removed.
+- Headless: `connect.linkWithToken`, `connect.listLinkedLogins`, `connect.unlinkLogin`. Server: decane-node `linkExternalLogin(accessToken, token, opts?)`, `listLinkedLogins(accessToken)`, `unlinkLogin(accessToken, id)` (1.6.0), and the same in Python and Rust (1.1.0).
+- Backend: `POST /auth/link/external` `{ token, providerId? }`, `GET /auth/link/external`, `DELETE /auth/link/external/:id`, each with `X-API-Key` and the user's Bearer token.
+- Use a stable id as the identity claim (`sub` = your user id), not the phone number itself: carriers recycle numbers, and an id lets a person change theirs without losing the wallet.
+- Whoever holds your issuer's signing key can sign in as any of those logins, and Decane provisions a new device from a sign-in alone. Keep the key in a secret manager and issue tokens that live minutes, not hours.
 
 ### Errors
 

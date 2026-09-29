@@ -16,7 +16,7 @@ Rust 1.85+, edition 2024. TLS is rustls (no OpenSSL). MIT.
 
 ```yaml
 package: decane            # crates.io
-version: 1.0.0
+version: 1.1.0
 mirrors: decane-node 1.5.0 # same endpoints, same error codes, same test suite
 document-revision: 2026-09-27
 canonical: https://kit.decane.app/llms-rust.txt
@@ -172,6 +172,9 @@ Ethereum | Solana | Tron, address }>` in that order.
 | `connect_with_token(token, provider_id: Option<&str>) -> Result<AuthResult>` | `POST /auth/external` | `{"token"}` + `providerId` when given |
 | `get_kingschat_config() -> Result<KingsChatConfig>` | `GET /auth/kingschat/config` | — |
 | `revoke_access_token(token) -> Result<()>` | `POST /auth/revoke` | Bearer token, no API key |
+| `link_external_login(access_token, token, provider_id: Option<&str>) -> Result<LinkResult>` | `POST /auth/link/external` | Bearer + `{"token"}`; `ApiErrorCode::LoginInUse` when it opens another account (1.1.0) |
+| `list_linked_logins(access_token) -> Result<Vec<LinkedLogin>>` | `GET /auth/link/external` | Bearer (1.1.0) |
+| `unlink_login(access_token, id) -> Result<()>` | `DELETE /auth/link/external/:id` | Bearer (1.1.0) |
 
 `AuthResult { access_token, user_id, is_new_user, has_share, profile }`.
 Headers on every call: `X-API-Key`, `X-App-Id` when `app_id` is set,
@@ -317,7 +320,7 @@ async fn verify(Json(b): Json<Verify>) -> Result<Json<Session>, AppError> {
 
 ```yaml
 name: decane
-version: 1.0.0
+version: 1.1.0
 rust-version: "1.85"
 edition: "2024"
 dependencies: [reqwest (rustls-tls, json), serde, serde_json, thiserror, jsonwebtoken, percent-encoding, tokio (sync)]

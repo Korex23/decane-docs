@@ -15,7 +15,7 @@ Typed (`py.typed`). MIT.
 
 ```yaml
 package: decane            # PyPI
-version: 1.0.0
+version: 1.1.0
 mirrors: decane-node 1.5.0 # same endpoints, same error codes, same test suite
 document-revision: 2026-09-27
 canonical: https://kit.decane.app/llms-python.txt
@@ -190,6 +190,9 @@ address)` in that order, for the addresses that exist.
 | `connect_with_token(token, *, provider_id=None) -> AuthResult` | `POST /auth/external` | `{"token"}` + `providerId` when given |
 | `get_kingschat_config() -> KingsChatConfig` | `GET /auth/kingschat/config` | — |
 | `revoke_access_token(token) -> None` | `POST /auth/revoke` | Bearer token, no API key |
+| `link_external_login(access_token, token, *, provider_id=None) -> LinkResult` | `POST /auth/link/external` | Bearer + `{"token"}`; `LOGIN_IN_USE` when it opens another account (1.1.0) |
+| `list_linked_logins(access_token) -> list[LinkedLogin]` | `GET /auth/link/external` | Bearer (1.1.0) |
+| `unlink_login(access_token, id) -> None` | `DELETE /auth/link/external/:id` | Bearer (1.1.0) |
 
 `AuthResult(access_token, user_id, is_new_user, has_share, profile)`. Headers
 on every call: `X-API-Key`, `X-App-Id` when `app_id` is set,
@@ -358,7 +361,7 @@ def verify(body):
 
 ```yaml
 name: decane
-version: 1.0.0
+version: 1.1.0
 python: ">=3.10"
 dependencies: [httpx>=0.27, pyjwt[crypto]>=2.8]
 typed: true            # py.typed shipped; mypy --strict clean

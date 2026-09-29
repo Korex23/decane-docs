@@ -15,7 +15,7 @@ client options. Dual ESM + CJS build. Single runtime dependency: `jose`.
 
 ```yaml
 package: decane-node
-version: 1.5.0
+version: 1.6.0
 document-revision: 2026-09-26
 canonical: https://kit.decane.app/llms-node.txt
 version-manifest: https://kit.decane.app/llms-version.json   # under the "node" key
@@ -43,7 +43,8 @@ of their first sign-in. Signing stays in the client SDKs.
 4. **Resolve addresses** → `getAddresses` / `getUser` (`{ evm, solana, tron }`)
 5. **Sign users in server-side** (since 1.2.0) → `connectWithEmail` +
    `verifyEmailCode`, `connectWithGoogleToken`, `connectWithKingsChatToken`,
-   `connectWithToken` (custom auth), `revokeAccessToken`
+   `connectWithToken` (custom auth), `revokeAccessToken`, linked logins
+   (`linkExternalLogin`, `listLinkedLogins`, `unlinkLogin`)
 
 ---
 
@@ -247,6 +248,18 @@ decane.connectWithToken(token, opts?: { providerId?: string }): Promise<DecaneAu
 // (Auth0, Clerk, Firebase, your backend), registered as an auth provider in
 // the Decane dashboard (issuer + JWKS URL + identity claim). providerId is
 // required only when >1 provider is enabled ("AMBIGUOUS_PROVIDER" otherwise).
+
+decane.linkExternalLogin(accessToken, token, opts?: { providerId?: string }): Promise<{ alreadyLinked: boolean; id?: string }>
+// POST /auth/link/external, since 1.6.0. Attach a login from your own issuer
+// (a phone number you verified, say) to the account behind accessToken, so it
+// opens the same wallet from then on. token must be fresh: exp and iat, issued
+// within 10 minutes. "LOGIN_IN_USE" (409) when it already opens another
+// account; accounts are never merged. Linking one already there is a no-op.
+decane.listLinkedLogins(accessToken): Promise<DecaneLinkedLogin[]>
+// GET /auth/link/external. { id, providerId, providerName, identifier (masked), linkedAt }.
+decane.unlinkLogin(accessToken, id): Promise<void>
+// DELETE /auth/link/external/:id — for "change my number". The login the
+// account was created with cannot be removed.
 
 decane.getKingsChatConfig(): Promise<{ clientId: string; authorizationUrl: string }>
 // GET /auth/kingschat/config. 400 "KINGSCHAT_NOT_CONFIGURED" when unset.
