@@ -164,7 +164,7 @@ decane-connect-kit / -expo: `NETWORK`, `RECONNECT_REQUIRED`,
 
 - `.walletEnrolmentFailed` — the enclave did not accept a new wallet after
   three attempts. Nothing was created; signing in again creates afresh.
-- `.provisioningRateLimited` — ten devices in an hour for this user. Wait.
+- `.provisioningRateLimited` — sixty provisions in an hour for this user (every visit, tab or device without a stored share is one). Wait.
 - `.newDevice` — an old wallet from before enrolment; recovery needed.
 - `.attestationFailed` — the enclave's measurement is not one this build
   accepts. Update the package.
