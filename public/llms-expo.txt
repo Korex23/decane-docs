@@ -119,7 +119,7 @@ interface DecaneConnectNativeConfig {
   persistSession?: boolean;           // default true
   requireAssertionPerSignature?: boolean;
   kingsChatScopes?: string[];         // default ['send_chat_message']
-  verifyAttestation?: (q: { quote: string; measurement: string; nonce: string }) => Promise<void>;
+  verifyAttestation?: (q: { quote: string; eventLog: unknown; measurement?: string; nonce: string }) => Promise<void>; // 0.7.0: eventLog added; measurement is the enclave's own claim, ignore it
   rotateOnNewDeviceRecovery?: boolean;
 }
 ```
@@ -440,18 +440,36 @@ await decane.dismissRecoveryPrompt();
 
 ## Attestation
 
-Before any share moves, the SDK fetches a TDX attestation quote bound to a fresh
-nonce and checks the measurement against a pinned value.
+Where the enclave is, and what it may run, come from a **signed enclave
+manifest** (0.7.0). The SDK fetches it from Decane's backend
+(`GET /attestation/manifest`), verifies its ECDSA P-256 signature **on the
+device** against public keys pinned in the package, and refuses one older than
+the newest this install has accepted (remembered in SecureStore). If the
+backend is unreachable it uses the last accepted manifest, then the one bundled
+in the package; with none it talks to no enclave. Moving the enclave or
+changing what it runs is a newly signed manifest, not a package release. An
+explicit `teeUrl` pins the URL (tests, a self-hosted signer).
 
-React Native has **no WebAssembly**, so the Intel DCAP verifier the web SDK runs
-locally cannot execute on device. The SDK therefore posts the quote to Decane's
-backend, which runs the full check: signature chain to Intel's root CA, TCB
-status, nonce binding, and measurement allowlist. This happens automatically.
+Before any share moves, the SDK fetches a TDX attestation quote bound to a
+fresh nonce, together with the enclave's dstack event log. React Native has
+**no WebAssembly**, so the Intel DCAP verifier cannot run on device; the SDK
+posts the quote and the log to Decane's backend, which checks:
 
-That catches a third party impersonating the enclave (hijacked `teeUrl`, MITM)
-but cannot catch Decane swapping in a malicious image, since the same party
-vouches for it. Supply `verifyAttestation` to verify independently — throw from
-it to refuse the session.
+- the signature chain to Intel's root CA, the TCB status and the nonce;
+- MRTD and RTMR0-2 **read from the quote** against an approved OS;
+- that the event log replays to the quote's RTMR3, and that the app-id and
+  compose-hash dstack recorded at boot are approved in the signed manifest.
+
+An enclave that sends no event log is refused. Before 0.7.0 the SDK compared a
+measurement string the enclave reported about itself, which any TDX machine
+could claim; that check is gone.
+
+The backend check catches a third party impersonating the enclave but cannot
+catch Decane approving a malicious one, since the same party vouches for it.
+Supply `verifyAttestation` to verify independently: verify the quote's
+signature, TCB status and nonce, then run `verifyEvidence` from
+`infra/enclave-evidence.ts` (one file, no dependencies) on its registers, the
+`eventLog` and the signed manifest. Throw from it to refuse the session.
 
 ---
 
@@ -472,7 +490,7 @@ so shared code can branch identically.
 | `USER_CANCELLED` | user dismissed a prompt |
 | `BIOMETRIC_UNAVAILABLE` | biometrics dismissed, or keystore entry gone |
 | `NATIVE_MODULE_MISSING` | a peer dependency is absent — install and rebuild |
-| `ATTESTATION_FAILED` | the enclave is not the one pinned |
+| `ATTESTATION_FAILED` | the enclave is not one the signed manifest approves, or no trusted manifest was available |
 | `WALLET_ENROLMENT_FAILED` | creation stopped: the enclave did not seal the wallet's share; nothing was created — sign in again (0.5.0) |
 | `PROVISIONING_RATE_LIMITED` | `/signer/provision` answered 429; the wallet is fine, wait and sign in again — never a new-device dead end (0.5.0) |
 | `ENCLAVE_HTTP` | any other non-OK enclave answer; `.status` carries the HTTP status (0.5.0) |

@@ -81,7 +81,7 @@ await model.verifyEmailCode(email: email, code: code)
 | `chains` | required | CAIP-2: `evm:<chainId>`, `solana:mainnet` / `solana:devnet`, `tron:mainnet` / `shasta` / `nile` |
 | `protection` | `.device` | `.identity` is the only tier 0.1.0 accepts; `.device` (Expo's default) is refused with a clear error |
 | `apiBaseURL` | `https://backend.decane.app` | backend |
-| `teeURL` | the production enclave | signer |
+| `teeURL` | the enclave the signed manifest names | tests / self-hosted signer only |
 | `unlockPreference` | `[]` | device tier (not yet) |
 | `rpId`, `rpName` | nil | passkeys (not yet) |
 | `redirectURI` | nil | redirect sign-in (not yet) |
@@ -166,8 +166,8 @@ decane-connect-kit / -expo: `NETWORK`, `RECONNECT_REQUIRED`,
   three attempts. Nothing was created; signing in again creates afresh.
 - `.provisioningRateLimited` — sixty provisions in an hour for this user (every visit, tab or device without a stored share is one). Wait.
 - `.newDevice` — an old wallet from before enrolment; recovery needed.
-- `.attestationFailed` — the enclave's measurement is not one this build
-  accepts. Update the package.
+- `.attestationFailed` — the enclave is not one the signed manifest approves,
+  or no trusted manifest was available.
 - `.callSequence` / `.platformHookMissing` — a feature this version does not
   implement yet, or a call before sign-in.
 
@@ -191,11 +191,25 @@ decane-connect-kit / -expo: `NETWORK`, `RECONNECT_REQUIRED`,
 
 ## Attestation
 
+Where the enclave is, and what it may run, come from a **signed enclave
+manifest** (0.2.0). The SDK fetches it from Decane's backend
+(`GET /attestation/manifest`), verifies its ECDSA P-256 signature on the
+device against public keys pinned in this build, and refuses one older than
+the newest this install has accepted (kept in the Keychain). If the backend is
+unreachable it uses the last accepted manifest, then the bundled one; with
+none it talks to no enclave. Moving the enclave or changing what it runs is a
+newly signed manifest, not a package release. An explicit `teeURL` pins the
+URL (tests, a self-hosted signer).
+
 Before any share moves, the SDK asks the enclave for a TDX quote on a fresh
-nonce, checks its measurement against the list pinned in this build
-(`Decane.acceptedMeasurements`), and has the Decane backend verify the quote
-(or your `DecaneAttestationVerifier`). Cached ten minutes per enclave URL. A
-measurement change on Decane's side ships as a new package version.
+nonce together with its dstack event log, and has the Decane backend verify
+them (or your `DecaneAttestationVerifier`): Intel signature chain, TCB status, nonce, MRTD and
+RTMR0-2 read from the quote against an approved OS, and the event log
+replayed to the quote's RTMR3 with its boot-time app-id and compose-hash
+checked against the manifest. `AttestationQuote` carries `eventLog` for a
+verifier of your own; its `measurement` is the enclave's claim about itself
+and proves nothing. An enclave that sends no event log is refused. Cached ten
+minutes per enclave URL.
 
 ---
 

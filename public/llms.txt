@@ -236,7 +236,7 @@ interface DecaneConnectConfig {
   rpId?: string;                      // WebAuthn RP ID, defaults to window.location.hostname
   rpName?: string;                    // WebAuthn RP display name
   rpcUrls?: Record<string, string>;   // override built-in public RPCs per chain
-  teeUrl?: string;                    // advanced/self-hosted override only
+  teeUrl?: string;                    // tests/self-hosted only; default is the enclave the signed manifest names (2.32.0), and an override is still attested against that manifest
   // Require a fresh passkey assertion for EVERY signature (TEE-verified,
   // single-use 60s challenge) instead of letting an unlocked session sign
   // freely until expiry. Does NOT shorten the session — see "Signing
@@ -571,6 +571,34 @@ await signInWithToken(phoneToken);
 - Use a stable id as the identity claim (`sub` = your user id), not the phone number itself: carriers recycle numbers, and an id lets a person change theirs without losing the wallet.
 - Whoever holds your issuer's signing key can sign in as any of those logins, and Decane provisions a new device from a sign-in alone. Keep the key in a secret manager and issue tokens that live minutes, not hours.
 
+### Which enclave, and how it is checked — since 2.32.0
+
+The SDK no longer has the enclave's URL or measurements built in. They come
+from a **signed enclave manifest**: a small JSON document listing the enclave
+URL, the approved OS measurements (MRTD, RTMR0-2) and the approved app id and
+compose hashes, signed (ECDSA P-256) with a key Decane keeps offline. Only the
+public keys are pinned in the package.
+
+- The SDK fetches it from `GET {apiBaseUrl}/attestation/manifest` and uses it
+  only if a signature verifies against a pinned key and its `version` is not
+  lower than the highest this browser has accepted (kept in localStorage).
+  Otherwise it uses the last accepted manifest, then the one bundled in the
+  package; with none it talks to no enclave (`AttestationError`).
+- The backend serves the manifest but cannot change it.
+- Moving the enclave or changing what it runs is a newly signed manifest, not
+  a package release.
+
+Attestation reads the measurements from the Intel-verified quote itself:
+signature chain and TCB status (DCAP, in the browser), the nonce, MRTD and
+RTMR0-2 against an approved OS, the enclave's dstack event log replayed to the
+quote's RTMR3, and the app-id and compose-hash recorded at boot against the
+manifest. The instance id, which changes on every restart, is not pinned.
+Before 2.32.0 the SDK compared a measurement string the enclave reported about
+itself, which any TDX machine could claim.
+
+The verifier is one dependency-free file shared by every Decane client and
+the backend: `infra/enclave-evidence.ts` (`openManifest`, `verifyEvidence`).
+
 ### Gas sponsorship — since 2.32.0 (early access)
 
 In `decane-connect-kit` 2.32.0 and later (`npm install decane-connect-kit`).
@@ -634,7 +662,7 @@ All extend `DecaneConnectError` (`{ code: string; message: string; retryable: bo
 | `ShareCorruptedError` | `SHARE_CORRUPTED` | no | Locally stored device share is corrupted |
 | `NewDeviceError` | `NEW_DEVICE` | no | No device share found on this device — re-authenticate to provision it |
 | `PromptPinNotConfiguredError` | `PROMPT_PIN_NOT_CONFIGURED` | no | Passkey unavailable and no `promptPin` callback was provided |
-| `AttestationError` | `ATTESTATION_FAILED` | no | TEE attestation quote failed verification |
+| `AttestationError` | `ATTESTATION_FAILED` | no | the enclave's quote failed verification, it runs something the signed manifest does not approve, or no trusted manifest was available |
 | `RecoveryFailedError` | `RECOVERY_FAILED` | yes | Recovery flow failed |
 | `InvalidRecoveryFileError` | `INVALID_RECOVERY_FILE` | no | Uploaded file isn't a valid recovery file |
 | `WrongPasswordError` | `WRONG_PASSWORD` | yes | Incorrect password for the recovery file |
