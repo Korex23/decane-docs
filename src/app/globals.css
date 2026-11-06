@@ -4315,3 +4315,114 @@ input[type="range"]::-moz-range-thumb {
 .docs-root ::-webkit-scrollbar-track {
   background: transparent;
 }
+
+/* =========================================================================
+   LANDING: the point field behind the page (components/WalletField.tsx)
+   ========================================================================= */
+/* .site paints an opaque background; isolating it lets the field, fixed
+   at z-index -1, sit above that background and below every section. */
+.site:has(.dk-field) {
+  isolation: isolate;
+}
+.dk-field {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 1.4s ease;
+}
+.dk-field[data-on] {
+  opacity: 1;
+}
+.dk-field canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+/* The section's colour, glowing softly where the shape is. */
+.dk-field[data-on]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      40% 45% at var(--wash-x, 50%) var(--wash-y, 45%),
+      rgb(var(--wash, 240 196 90) / 0.1),
+      transparent 70%
+    ),
+    radial-gradient(
+      30% 30% at calc(100% - var(--wash-x, 50%)) 70%,
+      rgb(var(--wash, 240 196 90) / 0.05),
+      transparent 70%
+    );
+}
+.site[data-theme="light"] .dk-field[data-on]::before {
+  opacity: 0.6;
+}
+.site[data-grab] {
+  cursor: grab;
+}
+.site[data-grabbing] {
+  cursor: grabbing;
+  user-select: none;
+}
+
+/* Readability over the field: frosted cards and panels, lifted headings. */
+.site:has(.dk-field[data-on]) .card {
+  background: color-mix(in srgb, var(--surface) 72%, transparent);
+  backdrop-filter: blur(12px) saturate(1.15);
+  -webkit-backdrop-filter: blur(12px) saturate(1.15);
+}
+.site:has(.dk-field[data-on]) .panel {
+  background: color-mix(in srgb, var(--bg-soft) 70%, transparent);
+  backdrop-filter: blur(12px) saturate(1.1);
+  -webkit-backdrop-filter: blur(12px) saturate(1.1);
+}
+.site:has(.dk-field[data-on]) .hero {
+  background: transparent;
+}
+.site:has(.dk-field[data-on]) h1,
+.site:has(.dk-field[data-on]) .hero .lede,
+.site:has(.dk-field[data-on]) .section h2 {
+  text-shadow: 0 2px 30px var(--bg);
+}
+
+/* The flow panel leans toward the cursor (the panel itself is GSAP's). */
+.flow.tilt .flow-grid {
+  transform: perspective(1400px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+/* Gas sponsorship */
+.gas-code {
+  padding: 0;
+  overflow: hidden;
+}
+.gas-code .kit-code {
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+}
+.gas-code pre {
+  white-space: pre;
+  overflow-x: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dk-field {
+    display: none;
+  }
+  .flow.tilt .flow-grid {
+    transform: none;
+  }
+}
+
+/* The footer stays solid over the field, so its links read cleanly. */
+.site:has(.dk-field[data-on]) .site-footer {
+  position: relative;
+  background: color-mix(in srgb, var(--bg) 94%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}

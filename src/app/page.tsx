@@ -17,6 +17,7 @@ import {
   CheckIcon,
 } from "@/components/Icons";
 import { Reveal, Stagger, Item } from "@/components/motion";
+import { WalletField } from "@/components/WalletField";
 import { useTheme, DASHBOARD_URL } from "@/lib/theme";
 
 // ─── Small icons used only here ──────────────────────────────────────────────
@@ -59,6 +60,25 @@ const RefreshIcon = () => (
     <path d="M21 3v5h-5" />
     <path d="M21 12a9 9 0 0 1-15.5 6.3L3 16" />
     <path d="M3 21v-5h5" />
+  </svg>
+);
+const FuelIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" {...line}>
+    <path d="M12 3.5c3.2 3.8 5.5 6.9 5.5 10a5.5 5.5 0 0 1-11 0c0-3.1 2.3-6.2 5.5-10z" />
+    <path d="M10 15.5a2 2 0 0 0 2 2" />
+  </svg>
+);
+const CoinIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" {...line}>
+    <circle cx="12" cy="12" r="8.5" />
+    <path d="M14.5 9.5c-.4-.9-1.3-1.5-2.5-1.5-1.5 0-2.5.8-2.5 2s1 1.7 2.5 2 2.5.8 2.5 2-1 2-2.5 2c-1.2 0-2.1-.6-2.5-1.5M12 6.5V8M12 16v1.5" />
+  </svg>
+);
+const SlidersIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" {...line}>
+    <path d="M4 7h10M18 7h2M4 17h4M12 17h8" />
+    <circle cx="16" cy="7" r="2" />
+    <circle cx="10" cy="17" r="2" />
   </svg>
 );
 const WalletIcon = () => (
@@ -197,6 +217,103 @@ function FlowPanel() {
   );
 }
 
+// ─── Gas sponsorship ─────────────────────────────────────────────────────────
+
+const GAS_SNIPPET = `// The project pays the gas. The user just taps "Send".
+const { transactionHash } = await decane.sendSponsoredTransaction({
+  chain: "evm:8453",
+  to: shop,
+  data: checkoutCall,
+});
+
+// Or they pay the fee in USDC, never touching ETH
+await decane.sendSponsoredTransaction({
+  chain: "evm:8453",
+  to: shop,
+  data: checkoutCall,
+  payGasWith: { token: USDC },
+});`;
+
+function GasSection() {
+  return (
+    <section className="section" id="gas">
+      <div className="container">
+        <Reveal className="section-split">
+          <div>
+            <div className="eyebrow">Gas sponsorship · New</div>
+            <h2>Your users never need gas</h2>
+          </div>
+          <p>
+            A new user has a wallet but no ETH to move anything with. Sponsor
+            their transactions and they just send: your project covers the fee,
+            or they pay it in USDC. Same wallet, same address, on EVM chains.
+          </p>
+        </Reveal>
+        <Stagger className="bento" delay={0.08}>
+          <Item className="card bento-3">
+            <div>
+              <h3>Sponsored by default</h3>
+              <p>
+                One call sends a transaction your project pays for, a single
+                call or a batch that lands together. The first send also
+                upgrades the wallet in place, so nothing moves and no new
+                address appears.
+              </p>
+            </div>
+            <div className="chips">
+              <span className="chip">ERC-4337</span>
+              <span className="chip">EIP-7702</span>
+              <span className="chip">Batched calls</span>
+              <span className="chip dashed">Pay in USDC</span>
+            </div>
+          </Item>
+          <Item className="card bento-3 gas-code">
+            <div className="kit-code">
+              <div className="kit-code-head">
+                <span className="file">checkout.ts</span>
+              </div>
+              <pre>
+                <code>{GAS_SNIPPET}</code>
+              </pre>
+            </div>
+          </Item>
+          <Item className="card bento-2">
+            <span className="icon-box">
+              <FuelIcon />
+            </span>
+            <h3>No ETH to buy first</h3>
+            <p>
+              Someone who just signed in with Google can mint, pay or swap on
+              their first visit. No exchange, no faucet, no bridge.
+            </p>
+          </Item>
+          <Item className="card bento-2">
+            <span className="icon-box">
+              <CoinIcon />
+            </span>
+            <h3>Or let them pay in USDC</h3>
+            <p>
+              Users holding stablecoins pay the fee in USDC. Show the price
+              first with one quote call; the approval is capped, never
+              unlimited.
+            </p>
+          </Item>
+          <Item className="card bento-2">
+            <span className="icon-box">
+              <SlidersIcon />
+            </span>
+            <h3>Limits you control</h3>
+            <p>
+              Spending caps count per person, not per wallet, and your policy
+              decides what is paid for. Turned on per project, on request.
+            </p>
+          </Item>
+        </Stagger>
+      </div>
+    </section>
+  );
+}
+
 // ─── Page ────────────────────────────────────────────────────────────────────
 
 export default function Page() {
@@ -205,6 +322,30 @@ export default function Page() {
 
   // The flow panel drifts up a little faster than the page as you scroll
   // away from it. Scroll-linked work is GSAP's; everything else is Framer.
+  // The flow panel leans toward the cursor, a little.
+  useEffect(() => {
+    if (reduced || !matchMedia("(hover: hover)").matches) return;
+    const el = document.querySelector<HTMLElement>(".flow");
+    if (!el) return;
+    el.classList.add("tilt");
+    const move = (e: PointerEvent) => {
+      const r = el.getBoundingClientRect();
+      el.style.setProperty("--rx", `${-((e.clientY - r.top) / r.height - 0.5) * 5}deg`);
+      el.style.setProperty("--ry", `${((e.clientX - r.left) / r.width - 0.5) * 7}deg`);
+    };
+    const leave = () => {
+      el.style.setProperty("--rx", "0deg");
+      el.style.setProperty("--ry", "0deg");
+    };
+    el.addEventListener("pointermove", move);
+    el.addEventListener("pointerleave", leave);
+    return () => {
+      el.removeEventListener("pointermove", move);
+      el.removeEventListener("pointerleave", leave);
+      el.classList.remove("tilt");
+    };
+  }, [reduced]);
+
   useEffect(() => {
     if (reduced) return;
     let ctx: { revert: () => void } | null = null;
@@ -235,6 +376,7 @@ export default function Page() {
 
   return (
     <div className="site" data-theme={theme}>
+      <WalletField />
       <SiteNav theme={theme} onToggleTheme={toggleTheme} />
 
       <header className="hero">
@@ -276,13 +418,13 @@ export default function Page() {
         </Stagger>
       </header>
 
-      <section style={{ padding: "24px 0 0" }}>
+      <section id="how" style={{ padding: "24px 0 0" }}>
         <div className="container">
           <FlowPanel />
         </div>
       </section>
 
-      <section className="section">
+      <section className="section" id="features">
         <div className="container">
           <Reveal className="section-title">
             <div className="eyebrow">What you get</div>
@@ -381,7 +523,9 @@ export default function Page() {
         </div>
       </section>
 
-      <section className="section pad-b">
+      <GasSection />
+
+      <section className="section pad-b" id="integrate">
         <div className="container">
           <Reveal className="section-split">
             <div>
@@ -401,7 +545,7 @@ export default function Page() {
         </div>
       </section>
 
-      <section style={{ padding: "0 0 112px" }}>
+      <section id="start" style={{ padding: "0 0 112px" }}>
         <div className="container">
           <Reveal className="panel glow-bottom cta-panel">
             <div className="inner">
