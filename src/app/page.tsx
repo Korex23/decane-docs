@@ -337,11 +337,11 @@ export default function Page() {
       <section className="lp-section lp-sheet" id="how">
         <div className="container">
           <Reveal className="lp-title">
-            <h2>One sign-in, end to end.</h2>
+            <h2>Sign in once. Own it everywhere.</h2>
             <p>The person signs in. The key splits three ways. The wallet is ready on every chain.</p>
           </Reveal>
           <FlowPanel />
-          <Reveal className="lp-spec" delay={0.08}>
+          <Reveal className="lp-facts" delay={0.08}>
             {[
               ["Sign-in", "Google · email · phone · X · JWT"],
               ["Key model", "Shamir · 2 of 3"],
@@ -350,8 +350,7 @@ export default function Page() {
               ["Sessions", "ES256 · self-renewing"],
             ].map(([k, v]) => (
               <div key={k}>
-                <small>{k}</small>
-                <code>{v}</code>
+                <b>{k}</b> {v}
               </div>
             ))}
           </Reveal>

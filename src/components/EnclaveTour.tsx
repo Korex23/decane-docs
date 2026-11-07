@@ -204,54 +204,42 @@ export function EnclaveTour() {
 
   const s = STAGES[stage]!;
   return (
-    <section ref={ref} className="lp-tour" id="inside" aria-label="Inside the enclave">
+    <section ref={ref} className="lp-tour" id="inside" aria-label="From sign-in to signature">
       <div className="lp-tour-pin">
         <div className="container">
           <div className="lp-tour-head">
-            <h2>Inside the enclave.</h2>
-            <p>What happens between a sign-in and a signature, one stage at a time.</p>
+            <h2>From sign-in to signature.</h2>
+            <p>Keep scrolling: four steps, and the key is only whole for one of them.</p>
           </div>
           <div className="lp-tour-body">
-            <div className="lp-deck">
-              <div className="lp-deck-card" key={stage}>
-                <div className="lp-deck-num">
-                  <b>0{stage + 1}</b> / 04
-                </div>
-                <h3>{s.title}</h3>
-                <p>{s.body}</p>
-                <dl>
-                  {s.rows.map(([k, v]) => (
-                    <div key={k}>
-                      <dt>{k}</dt>
-                      <dd>{v}</dd>
-                    </div>
-                  ))}
-                </dl>
-                <div className="lp-deck-bar" style={{ transform: `scaleX(${part})` }} />
-              </div>
-              <div className="lp-deck-under" />
-              <div className="lp-deck-under two" />
-            </div>
             <div className="lp-tour-scene">
               <Board stage={stage} />
             </div>
-          </div>
-          <div className="lp-tour-tabs" role="tablist">
-            {STAGES.map((t, i) => (
-              <button
-                key={t.tab}
-                type="button"
-                role="tab"
-                aria-selected={i === stage}
-                className={i === stage ? "on" : i < stage ? "done" : ""}
-                onClick={() => go(i)}
-              >
-                <span className="bar">
-                  <span style={{ transform: `scaleX(${i < stage ? 1 : i === stage ? part : 0})` }} />
-                </span>
-                0{i + 1} {t.tab}
-              </button>
-            ))}
+            <div className="lp-step-col">
+              <ol className="lp-stepper">
+                {STAGES.map((t, i) => (
+                  <li key={t.tab} className={i === stage ? "on" : i < stage ? "done" : ""}>
+                    <button type="button" onClick={() => go(i)} aria-current={i === stage ? "step" : undefined}>
+                      <i />
+                      {t.tab}
+                    </button>
+                  </li>
+                ))}
+              </ol>
+              <div className="lp-step-card" key={stage}>
+                <span className="lp-step-big" aria-hidden="true">{stage + 1}</span>
+                <h3>{s.title}</h3>
+                <p>{s.body}</p>
+                <div className="lp-step-facts">
+                  {s.rows.map(([k, v]) => (
+                    <span key={k}>
+                      <em>{k}</em> {v}
+                    </span>
+                  ))}
+                </div>
+                <div className="lp-step-progress" style={{ transform: `scaleY(${part})` }} />
+              </div>
+            </div>
           </div>
         </div>
       </div>
