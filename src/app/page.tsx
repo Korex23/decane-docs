@@ -16,6 +16,7 @@ import {
   CheckIcon,
 } from "@/components/Icons";
 import { Reveal, Stagger, Item } from "@/components/motion";
+import { HeroScene } from "@/components/HeroScene";
 import { useTheme, DASHBOARD_URL } from "@/lib/theme";
 
 // One idea per section, plenty of room around it, and the product itself as
@@ -50,16 +51,6 @@ const LockIcon = () => (
 );
 
 // ─── Small pieces ────────────────────────────────────────────────────────────
-
-function Eyebrow({ children }: { children: string }) {
-  return (
-    <div className="lp-eyebrow">
-      <span />
-      {children}
-      <span />
-    </div>
-  );
-}
 
 function InstallLine() {
   const [done, setDone] = useState(false);
@@ -292,10 +283,8 @@ export default function Page() {
       <SiteNav theme={theme} onToggleTheme={toggleTheme} />
 
       <header className="lp-hero">
+        <HeroScene />
         <Stagger className="container lp-hero-inner" inView={false} delay={0.1} start={0.05}>
-          <Item>
-            <Eyebrow>Embedded wallets</Eyebrow>
-          </Item>
           <Item>
             <h1>
               Turn any <span style={{ whiteSpace: "nowrap" }}>sign-in</span>
@@ -347,7 +336,6 @@ export default function Page() {
       <section className="lp-section" id="how">
         <div className="container">
           <Reveal className="lp-title">
-            <Eyebrow>How it works</Eyebrow>
             <h2>One sign-in, end to end.</h2>
             <p>The person signs in. The key splits three ways. The wallet is ready on every chain.</p>
           </Reveal>
@@ -363,7 +351,6 @@ export default function Page() {
       <section className="lp-section lp-soft" id="features">
         <div className="container">
           <Reveal className="lp-title">
-            <Eyebrow>What you get</Eyebrow>
             <h2>Everything a wallet should do.</h2>
             <p>None of what makes them hard.</p>
           </Reveal>
@@ -399,8 +386,9 @@ export default function Page() {
       <section className="lp-section lp-deep" id="gas">
         <div className="container lp-split">
           <Reveal className="lp-split-text">
-            <Eyebrow>Gas sponsorship · New</Eyebrow>
-            <h2>Your users never need gas.</h2>
+            <h2>
+              Your users never need gas. <span className="lp-new">New</span>
+            </h2>
             <p>
               A new user has a wallet but no ETH to move anything with. Sponsor the transaction and
               they just send: your project covers the fee, or they pay it in USDC. The first send
@@ -424,7 +412,6 @@ export default function Page() {
       <section className="lp-section" id="integrate">
         <div className="container">
           <Reveal className="lp-title">
-            <Eyebrow>Integration</Eyebrow>
             <h2>Ship it in an afternoon.</h2>
             <p>
               Wrap your app once for sign-in, wallets, signing and sessions. Web, React Native, iOS,

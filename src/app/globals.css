@@ -4323,8 +4323,8 @@ input[type="range"]::-moz-range-thumb {
    ========================================================================= */
 .lp {
   --lp-ink: #0f0f12;
-  --lp-deep: #12241d;
-  --lp-deep-text: #eaf2ee;
+  --lp-deep: #111114;
+  --lp-deep-text: #f2f1ec;
   --lp-radius: 22px;
 }
 .lp-eyebrow {
@@ -4637,9 +4637,8 @@ input[type="range"]::-moz-range-thumb {
   background: var(--lp-deep);
   color: var(--lp-deep-text);
 }
-.lp-deep .lp-eyebrow,
 .lp-deep .lp-split-text > p {
-  color: rgba(234, 242, 238, 0.72);
+  color: rgba(242, 241, 236, 0.7);
 }
 .lp-split {
   display: grid;
@@ -4664,11 +4663,11 @@ input[type="range"]::-moz-range-thumb {
 .lp-checks li::before {
   content: "✓";
   margin-right: 10px;
-  color: #7fd6a8;
+  color: oklch(82% 0.13 85);
   font-weight: 700;
 }
 .lp-code {
-  background: #0b1612;
+  background: #0a0a0c;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--lp-radius);
   overflow: hidden;
@@ -4678,7 +4677,7 @@ input[type="range"]::-moz-range-thumb {
   padding: 12px 18px;
   font-family: var(--f-mono);
   font-size: 12px;
-  color: rgba(234, 242, 238, 0.55);
+  color: rgba(242, 241, 236, 0.5);
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 .lp-code pre {
@@ -4688,7 +4687,7 @@ input[type="range"]::-moz-range-thumb {
   font-family: var(--f-mono);
   font-size: 12.5px;
   line-height: 1.65;
-  color: #d7e6de;
+  color: #e7e5de;
 }
 
 /* Close */
@@ -4719,4 +4718,77 @@ input[type="range"]::-moz-range-thumb {
 .lp[data-theme="light"] {
   --bg: #ffffff;
   --bg-soft: #f6f6f3;
+}
+
+/* The hero: text over a soft sky at the top, the 3D world (components/
+   HeroScene.tsx) filling the screen behind it, fading into the page below. */
+.lp-hero {
+  position: relative;
+  overflow: hidden;
+  /* Exactly the first screen (under the 64px nav), stats on its bottom edge. */
+  height: calc(100svh - 64px);
+  min-height: 640px;
+  display: flex;
+  align-items: stretch;
+  padding: clamp(56px, 9vh, 104px) 0 28px;
+  background: linear-gradient(180deg, #e9eef4 0%, #f6f1e7 52%, #efe6d3 100%);
+}
+.site[data-theme="dark"] .lp-hero {
+  background: linear-gradient(180deg, #0c0d12 0%, #15130f 55%, #1a160f 100%);
+}
+.lp-hero::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 140px;
+  background: linear-gradient(180deg, transparent, var(--bg));
+  pointer-events: none;
+  z-index: 1;
+}
+.lp-scene {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0;
+  transition: opacity 1.4s ease;
+}
+.lp-scene[data-on] {
+  opacity: 1;
+}
+.lp-scene canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.lp-hero-inner {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+}
+.lp-hero .lp-stats,
+.lp-hero .install {
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
+  backdrop-filter: blur(14px) saturate(1.2);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+}
+.lp-hero-inner {
+  justify-content: flex-start;
+}
+.lp-hero .lp-stats {
+  margin-top: auto;
+}
+.lp-new {
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0;
+  background: oklch(82% 0.13 85);
+  color: #1b1a17;
+  transform: translateY(-6px);
 }
