@@ -152,7 +152,11 @@ const FAQS: Array<{ q: string; a: string }> = [
   },
   {
     q: "What happens if I go over my plan's limit?",
-    a: "Existing wallets keep working. New wallet creation pauses until you move to the next band. The project owner is emailed before that happens, not after.",
+    a: "Nothing stops. Each project is billed on the 1st for the month before, at the band its monthly active wallets fell in, so a busier month moves up a band on its own. The owner is emailed as a Free project nears 499, before any invoice.",
+  },
+  {
+    q: "How do I pay?",
+    a: "Each invoice has a pay link: send USDC or USDT on Base, Ethereum, Arbitrum, Polygon, Solana or Tron to an exact-amount address, and it settles and marks the invoice paid by itself. Invoices are due seven days after they are issued; a project with an invoice fourteen days overdue is paused until it is paid.",
   },
   {
     q: "What about users who only sign in, without a wallet?",
