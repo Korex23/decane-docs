@@ -17,6 +17,7 @@ import {
 } from "@/components/Icons";
 import { Reveal, Stagger, Item } from "@/components/motion";
 import { HeroScene } from "@/components/HeroScene";
+import { EnclaveTour } from "@/components/EnclaveTour";
 import { useTheme, DASHBOARD_URL } from "@/lib/theme";
 
 // One idea per section, plenty of room around it, and the product itself as
@@ -333,13 +334,27 @@ export default function Page() {
         </Stagger>
       </header>
 
-      <section className="lp-section" id="how">
+      <section className="lp-section lp-sheet" id="how">
         <div className="container">
           <Reveal className="lp-title">
             <h2>One sign-in, end to end.</h2>
             <p>The person signs in. The key splits three ways. The wallet is ready on every chain.</p>
           </Reveal>
           <FlowPanel />
+          <Reveal className="lp-spec" delay={0.08}>
+            {[
+              ["Sign-in", "Google · email · phone · X · JWT"],
+              ["Key model", "Shamir · 2 of 3"],
+              ["Signer", "Intel TDX enclave"],
+              ["Chains", "EVM · Solana · Tron"],
+              ["Sessions", "ES256 · self-renewing"],
+            ].map(([k, v]) => (
+              <div key={k}>
+                <small>{k}</small>
+                <code>{v}</code>
+              </div>
+            ))}
+          </Reveal>
           <Reveal className="lp-center" delay={0.1}>
             <Link href="/demo" className="btn btn-secondary">
               Try the live demo
@@ -347,6 +362,8 @@ export default function Page() {
           </Reveal>
         </div>
       </section>
+
+      <EnclaveTour />
 
       <section className="lp-section lp-soft" id="features">
         <div className="container">
