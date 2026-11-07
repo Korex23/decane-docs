@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { DecaneLogo } from "./DecaneLogo";
@@ -110,9 +110,17 @@ export function SiteNav({
 }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  // Over the landing hero the bar is see-through until the page scrolls.
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const on = () => setScrolled(scrollY > 24);
+    on();
+    addEventListener("scroll", on, { passive: true });
+    return () => removeEventListener("scroll", on);
+  }, []);
 
   return (
-    <nav className="site-nav">
+    <nav className={`site-nav${scrolled ? " is-scrolled" : ""}`}>
       <div className="container site-nav-inner">
         <Link href="/" className="brand" onClick={() => setOpen(false)}>
           <DecaneLogo size={26} />
