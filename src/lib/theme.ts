@@ -11,16 +11,15 @@ export type Theme = "dark" | "light";
 const THEME_KEY = "dc-theme";
 
 export function useTheme(): [Theme, () => void] {
-  const [theme, setTheme] = useState<Theme>("dark");
+  // Light unless the visitor chose dark with the toggle (remembered).
+  const [theme, setTheme] = useState<Theme>("light");
 
   useEffect(() => {
     try {
       const stored = localStorage.getItem(THEME_KEY) as Theme | null;
       if (stored === "dark" || stored === "light") setTheme(stored);
-      else if (window.matchMedia?.("(prefers-color-scheme: light)").matches)
-        setTheme("light");
     } catch {
-      // localStorage unavailable — default to dark, no crash
+      // localStorage unavailable: stay light, no crash
     }
   }, []);
 

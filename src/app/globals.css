@@ -4317,112 +4317,406 @@ input[type="range"]::-moz-range-thumb {
 }
 
 /* =========================================================================
-   LANDING: the point field behind the page (components/WalletField.tsx)
+   LANDING (app/page.tsx): one idea per section, room around it, the product
+   as the picture. Light by default; sections alternate plain, soft, deep and
+   dark for rhythm.
    ========================================================================= */
-/* .site paints an opaque background; isolating it lets the field, fixed
-   at z-index -1, sit above that background and below every section. */
-.site:has(.dk-field) {
-  isolation: isolate;
+.lp {
+  --lp-ink: #0f0f12;
+  --lp-deep: #12241d;
+  --lp-deep-text: #eaf2ee;
+  --lp-radius: 22px;
 }
-.dk-field {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 1.4s ease;
+.lp-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--f-mono);
+  font-size: 11.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
-.dk-field[data-on] {
-  opacity: 1;
-}
-.dk-field canvas {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-/* The section's colour, glowing softly where the shape is. */
-.dk-field[data-on]::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(
-      40% 45% at var(--wash-x, 50%) var(--wash-y, 45%),
-      rgb(var(--wash, 240 196 90) / 0.1),
-      transparent 70%
-    ),
-    radial-gradient(
-      30% 30% at calc(100% - var(--wash-x, 50%)) 70%,
-      rgb(var(--wash, 240 196 90) / 0.05),
-      transparent 70%
-    );
-}
-.site[data-theme="light"] .dk-field[data-on]::before {
+.lp-eyebrow span {
+  width: 28px;
+  height: 1px;
+  background: currentColor;
   opacity: 0.6;
 }
-.site[data-grab] {
-  cursor: grab;
-}
-.site[data-grabbing] {
-  cursor: grabbing;
-  user-select: none;
-}
 
-/* Readability over the field: frosted cards and panels, lifted headings. */
-.site:has(.dk-field[data-on]) .card {
-  background: color-mix(in srgb, var(--surface) 72%, transparent);
-  backdrop-filter: blur(12px) saturate(1.15);
-  -webkit-backdrop-filter: blur(12px) saturate(1.15);
+/* Hero */
+.lp-hero {
+  padding: 112px 0 72px;
+  text-align: center;
 }
-.site:has(.dk-field[data-on]) .panel {
-  background: color-mix(in srgb, var(--bg-soft) 70%, transparent);
-  backdrop-filter: blur(12px) saturate(1.1);
-  -webkit-backdrop-filter: blur(12px) saturate(1.1);
+.lp-hero-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
 }
-.site:has(.dk-field[data-on]) .hero {
-  background: transparent;
+.lp .lp-hero h1 {
+  margin: 0;
+  font-size: clamp(44px, 7vw, 92px);
+  line-height: 0.98;
+  letter-spacing: -0.045em;
+  font-weight: 700;
 }
-.site:has(.dk-field[data-on]) h1,
-.site:has(.dk-field[data-on]) .hero .lede,
-.site:has(.dk-field[data-on]) .section h2 {
-  text-shadow: 0 2px 30px var(--bg);
+.lp-lede {
+  max-width: 620px;
+  margin: 0 auto;
+  font-size: clamp(16px, 1.6vw, 19px);
+  line-height: 1.55;
+  color: var(--text-2);
 }
-
-/* The flow panel leans toward the cursor (the panel itself is GSAP's). */
-.flow.tilt .flow-grid {
-  transform: perspective(1400px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
-  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-  will-change: transform;
+.lp-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
 }
-
-/* Gas sponsorship */
-.gas-code {
-  padding: 0;
+.lp-stats {
+  margin-top: 36px;
+  width: 100%;
+  max-width: 820px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface);
   overflow: hidden;
 }
-.gas-code .kit-code {
-  height: 100%;
-  border: 0;
-  border-radius: 0;
+.lp-stats > div {
+  padding: 20px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
-.gas-code pre {
-  white-space: pre;
+.lp-stats > div + div {
+  border-left: 1px solid var(--border);
+}
+.lp-stats b {
+  font-size: 28px;
+  letter-spacing: -0.03em;
+}
+.lp-stats small {
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+/* Sections */
+.lp-section {
+  padding: 112px 0;
+}
+.lp-soft {
+  background: var(--bg-soft);
+}
+.lp-title {
+  max-width: 720px;
+  margin: 0 auto 56px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+.lp .lp-title h2,
+.lp .lp-split h2 {
+  margin: 0;
+  font-size: clamp(34px, 4.6vw, 58px);
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+}
+.lp-title p,
+.lp-split-text > p {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--text-2);
+}
+.lp-center {
+  display: flex;
+  justify-content: center;
+  margin-top: 40px;
+}
+
+/* How it works: the three steps as product cards */
+.lp-flow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+.lp-flow-card {
+  padding: 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--lp-radius);
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+}
+.lp-flow-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  font-weight: 600;
+  font-size: 15px;
+}
+.lp-flow-head .ok {
+  margin-left: auto;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--success);
+}
+.lp-step {
+  font-family: var(--f-mono);
+  font-size: 11.5px;
+  color: var(--muted);
+}
+.lp-flow-card .foot {
+  margin-top: auto;
+  padding-top: 16px;
+  font-size: 13px;
+  color: var(--text-2);
+  line-height: 1.5;
+}
+
+/* What you get: tiles, each with its own small picture */
+.lp-tiles {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+.lp-tile {
+  padding: 18px 18px 22px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--lp-radius);
+  display: flex;
+  flex-direction: column;
+}
+.lp-tile h3 {
+  margin: 18px 0 6px;
+  font-size: 16px;
+  letter-spacing: -0.01em;
+}
+.lp-tile p {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--text-2);
+}
+.lp-tile-art {
+  height: 132px;
+  border-radius: 14px;
+  background: var(--bg-soft);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  color: var(--text);
+}
+.lp-tile.is-dark {
+  background: var(--lp-ink);
+  border-color: var(--lp-ink);
+  color: #f4f4f5;
+}
+.lp-tile.is-dark p {
+  color: #a1a1aa;
+}
+.lp-tile.is-dark .lp-tile-art {
+  background: #1c1c21;
+  color: #f4f4f5;
+}
+.art-chips,
+.art-logos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  padding: 0 12px;
+}
+.art-chips span,
+.art-logos span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-size: 12px;
+}
+.art-chips .dashed {
+  border-style: dashed;
+}
+.art-logos span {
+  font-weight: 600;
+}
+.art-chains {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.art-chains span {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+.art-chains em {
+  flex-basis: 100%;
+  text-align: center;
+  font-style: normal;
+  font-size: 12px;
+  color: var(--muted);
+}
+.art-svg {
+  width: 82%;
+  height: auto;
+}
+.art-svg .a-fill { fill: var(--accent); }
+.art-svg .a-fill-soft { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.5; }
+.art-svg .a-ring { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-dasharray: 3 3; opacity: 0.7; }
+.art-svg .a-line { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.art-svg .a-gauge { fill: none; stroke: var(--accent); stroke-width: 8; stroke-linecap: round; }
+.art-svg .a-needle { stroke: currentColor; stroke-width: 3; stroke-linecap: round; }
+.art-svg .a-dot { fill: currentColor; }
+.art-svg .a-text { font-family: var(--f-mono); font-size: 9px; letter-spacing: 0.12em; fill: currentColor; opacity: 0.7; }
+.art-svg .a-text-strong { font-family: var(--f-mono); font-size: 9px; fill: var(--accent); font-weight: 600; }
+.art-code {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-family: var(--f-mono);
+  font-size: 11.5px;
+  padding: 0 14px;
+  width: 100%;
+}
+.art-code code {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 8px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.art-code i {
+  font-style: normal;
+  color: var(--accent);
+}
+.art-code small {
+  margin-top: 4px;
+  color: var(--muted);
+  font-family: var(--f-sans);
+  text-align: center;
+}
+.art-price {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.art-price b {
+  font-size: 56px;
+  letter-spacing: -0.05em;
+  line-height: 1;
+}
+.art-price small {
+  font-size: 12px;
+  color: #a1a1aa;
+}
+
+/* Gas: a deep band with text beside the code */
+.lp-deep {
+  background: var(--lp-deep);
+  color: var(--lp-deep-text);
+}
+.lp-deep .lp-eyebrow,
+.lp-deep .lp-split-text > p {
+  color: rgba(234, 242, 238, 0.72);
+}
+.lp-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  gap: 56px;
+  align-items: center;
+}
+.lp-split-text {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.lp-checks {
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 15px;
+}
+.lp-checks li::before {
+  content: "✓";
+  margin-right: 10px;
+  color: #7fd6a8;
+  font-weight: 700;
+}
+.lp-code {
+  background: #0b1612;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--lp-radius);
+  overflow: hidden;
+  box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.6);
+}
+.lp-code-head {
+  padding: 12px 18px;
+  font-family: var(--f-mono);
+  font-size: 12px;
+  color: rgba(234, 242, 238, 0.55);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.lp-code pre {
+  margin: 0;
+  padding: 18px;
   overflow-x: auto;
+  font-family: var(--f-mono);
+  font-size: 12.5px;
+  line-height: 1.65;
+  color: #d7e6de;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .dk-field {
-    display: none;
-  }
-  .flow.tilt .flow-grid {
-    transform: none;
-  }
+/* Close */
+.lp-close {
+  border-top: 1px solid var(--border);
 }
 
-/* The footer stays solid over the field, so its links read cleanly. */
-.site:has(.dk-field[data-on]) .site-footer {
-  position: relative;
-  background: color-mix(in srgb, var(--bg) 94%, transparent);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+@media (max-width: 1000px) {
+  .lp-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .lp-flow { grid-template-columns: 1fr; }
+  .lp-split { grid-template-columns: 1fr; gap: 32px; }
+}
+@media (max-width: 640px) {
+  .lp-hero { padding: 72px 0 48px; }
+  .lp-section { padding: 72px 0; }
+  .lp-tiles { grid-template-columns: 1fr; }
+  .lp-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .lp-stats > div:nth-child(3) { border-left: 0; }
+  .lp-stats > div:nth-child(n + 3) { border-top: 1px solid var(--border); }
+}
+/* Headings on the dark tiles and the deep band: the site-wide heading colour is
+   the page ink, which vanishes there. */
+.lp .lp-tile.is-dark h3,
+.lp .lp-deep h2 {
+  color: #f4f4f5;
+}
+/* The landing reads cleaner on pure white than on the docs' warm paper. */
+.lp[data-theme="light"] {
+  --bg: #ffffff;
+  --bg-soft: #f6f6f3;
 }

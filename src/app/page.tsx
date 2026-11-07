@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { useReducedMotion } from "framer-motion";
 import { SiteNav } from "@/components/SiteNav";
 import { SiteFooter } from "@/components/SiteFooter";
 import { ChainTypeIcon } from "@/components/ChainIcon";
@@ -17,10 +16,11 @@ import {
   CheckIcon,
 } from "@/components/Icons";
 import { Reveal, Stagger, Item } from "@/components/motion";
-import { WalletField } from "@/components/WalletField";
 import { useTheme, DASHBOARD_URL } from "@/lib/theme";
 
-// ─── Small icons used only here ──────────────────────────────────────────────
+// One idea per section, plenty of room around it, and the product itself as
+// the picture: the sign-in, the key split and the wallet, then a grid of
+// tiles, each with one small illustration of its own.
 
 const line = {
   fill: "none",
@@ -48,57 +48,22 @@ const LockIcon = () => (
     <path d="M8 10V7a4 4 0 0 1 8 0v3" />
   </svg>
 );
-const ShieldIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" {...line}>
-    <path d="M12 3 4 6.5v5c0 4.6 3.4 8.4 8 9.5 4.6-1.1 8-4.9 8-9.5v-5z" />
-    <path d="m9 12 2 2 4-4" />
-  </svg>
-);
-const RefreshIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" {...line}>
-    <path d="M3 12a9 9 0 0 1 15.5-6.3L21 8" />
-    <path d="M21 3v5h-5" />
-    <path d="M21 12a9 9 0 0 1-15.5 6.3L3 16" />
-    <path d="M3 21v-5h5" />
-  </svg>
-);
-const FuelIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" {...line}>
-    <path d="M12 3.5c3.2 3.8 5.5 6.9 5.5 10a5.5 5.5 0 0 1-11 0c0-3.1 2.3-6.2 5.5-10z" />
-    <path d="M10 15.5a2 2 0 0 0 2 2" />
-  </svg>
-);
-const CoinIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" {...line}>
-    <circle cx="12" cy="12" r="8.5" />
-    <path d="M14.5 9.5c-.4-.9-1.3-1.5-2.5-1.5-1.5 0-2.5.8-2.5 2s1 1.7 2.5 2 2.5.8 2.5 2-1 2-2.5 2c-1.2 0-2.1-.6-2.5-1.5M12 6.5V8M12 16v1.5" />
-  </svg>
-);
-const SlidersIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" {...line}>
-    <path d="M4 7h10M18 7h2M4 17h4M12 17h8" />
-    <circle cx="16" cy="7" r="2" />
-    <circle cx="10" cy="17" r="2" />
-  </svg>
-);
-const WalletIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" {...line}>
-    <rect x="3" y="6" width="18" height="13" rx="2.5" />
-    <path d="M3 10h18M16 15h2" />
-  </svg>
-);
 
-// ─── Install line ────────────────────────────────────────────────────────────
+// ─── Small pieces ────────────────────────────────────────────────────────────
+
+function Eyebrow({ children }: { children: string }) {
+  return (
+    <div className="lp-eyebrow">
+      <span />
+      {children}
+      <span />
+    </div>
+  );
+}
 
 function InstallLine() {
   const [done, setDone] = useState(false);
   const cmd = "npm install decane-connect-kit";
-  function copy() {
-    navigator.clipboard?.writeText(cmd).then(() => {
-      setDone(true);
-      setTimeout(() => setDone(false), 1400);
-    });
-  }
   return (
     <div className="install">
       <span className="prompt">$</span>
@@ -106,7 +71,12 @@ function InstallLine() {
       <button
         type="button"
         className={`copy${done ? " done" : ""}`}
-        onClick={copy}
+        onClick={() =>
+          navigator.clipboard?.writeText(cmd).then(() => {
+            setDone(true);
+            setTimeout(() => setDone(false), 1400);
+          })
+        }
         aria-label={done ? "Copied" : "Copy install command"}
         title="Copy"
       >
@@ -116,106 +86,186 @@ function InstallLine() {
   );
 }
 
-// ─── Flow panel: sign in → key split → wallet ready ─────────────────────────
+// ─── The product, end to end: sign in → key split → wallet ready ────────────
 
 function FlowPanel() {
   return (
-    <div className="panel flow">
-      <Stagger className="flow-grid" delay={0.14}>
-        <Item className="flow-card">
-          <div className="flow-head">
-            <span className="eyebrow">01 · Sign in</span>
-            <span className="dot" />
+    <Stagger className="lp-flow" delay={0.14}>
+      <Item className="lp-flow-card">
+        <div className="lp-flow-head">
+          <span className="lp-step">01</span> Sign in
+        </div>
+        <div className="mock-btn">
+          <GoogleMark size={18} /> Continue with Google
+        </div>
+        <div className="mock-row">
+          <div className="mock-btn">
+            <XLogo size={15} />
           </div>
           <div className="mock-btn">
-            <GoogleMark size={18} /> Continue with Google
+            <PhoneIcon size={17} />
           </div>
-          <div className="mock-row">
-            <div className="mock-btn">
-              <XLogo size={15} />
-            </div>
-            <div className="mock-btn">
-              <PhoneIcon size={17} />
-            </div>
-          </div>
-          <div className="mock-input">name@example.com</div>
-          <div className="mock-primary">Continue with email</div>
-          <p className="foot">The same ten seconds it takes everywhere else.</p>
-        </Item>
-        <Item className="flow-card">
-          <div className="flow-head">
-            <span className="eyebrow">02 · Key split three ways</span>
-            <span className="dot" />
-          </div>
-          <div className="share-rows">
-            <div className="share-row">
-              <span className="ib">
-                <DeviceIcon />
-              </span>
+        </div>
+        <div className="mock-input">name@example.com</div>
+        <div className="mock-primary">Continue with email</div>
+        <p className="foot">The same ten seconds it takes everywhere else.</p>
+      </Item>
+      <Item className="lp-flow-card">
+        <div className="lp-flow-head">
+          <span className="lp-step">02</span> Key split three ways
+        </div>
+        <div className="share-rows">
+          {(
+            [
+              [<DeviceIcon key="d" />, "Your device", "Issued per session"],
+              [<ServerIcon key="s" />, "Decane server", "Encrypted at rest"],
+              [<LockIcon key="l" />, "Sealed enclave", "Opens only for you"],
+            ] as const
+          ).map(([icon, title, sub]) => (
+            <div className="share-row" key={title}>
+              <span className="ib">{icon}</span>
               <span>
-                <b>Your device</b>
-                <small>Issued per session</small>
+                <b>{title}</b>
+                <small>{sub}</small>
               </span>
             </div>
-            <div className="share-row">
-              <span className="ib">
-                <ServerIcon />
-              </span>
-              <span>
-                <b>Decane server</b>
-                <small>Encrypted at rest</small>
-              </span>
-            </div>
-            <div className="share-row">
-              <span className="ib">
-                <LockIcon />
-              </span>
-              <span>
-                <b>Sealed enclave</b>
-                <small>Opens only for you</small>
-              </span>
-            </div>
-          </div>
-          <p className="foot">
-            Any two open the wallet. No single piece can do anything alone.
-          </p>
-        </Item>
-        <Item className="flow-card strong">
-          <div className="flow-head">
-            <span className="eyebrow">03 · Wallet ready</span>
-            <span className="ok">Signed in</span>
-          </div>
-          <div className="user-row">
-            <span className="avatar">A</span>ada@example.com
-          </div>
-          <ul className="wallet-list">
-            <li>
-              <ChainTypeIcon type="evm" size={18} />
-              Ethereum<code>0x7a3f…c21e</code>
-            </li>
-            <li>
-              <ChainTypeIcon type="solana" size={18} />
-              Solana<code>9xQe…4kPz</code>
-            </li>
-            <li>
-              <ChainTypeIcon type="tron" size={18} />
-              Tron<code>TQn9…Vb3d</code>
-            </li>
-          </ul>
-          <p className="foot">
-            Same addresses on every device and in every app on your project.
-          </p>
-        </Item>
-      </Stagger>
-      <div className="flow-cta">
-        <p>See it for yourself: a real wallet in a few seconds.</p>
-        <Link href="/demo" className="btn btn-primary">
-          Try the live demo
-        </Link>
-      </div>
-    </div>
+          ))}
+        </div>
+        <p className="foot">Any two open the wallet. No single piece can do anything alone.</p>
+      </Item>
+      <Item className="lp-flow-card">
+        <div className="lp-flow-head">
+          <span className="lp-step">03</span> Wallet ready
+          <span className="ok">Signed in</span>
+        </div>
+        <div className="user-row">
+          <span className="avatar">A</span>ada@example.com
+        </div>
+        <ul className="wallet-list">
+          <li>
+            <ChainTypeIcon type="evm" size={18} />
+            Ethereum<code>0x7a3f…c21e</code>
+          </li>
+          <li>
+            <ChainTypeIcon type="solana" size={18} />
+            Solana<code>9xQe…4kPz</code>
+          </li>
+          <li>
+            <ChainTypeIcon type="tron" size={18} />
+            Tron<code>TQn9…Vb3d</code>
+          </li>
+        </ul>
+        <p className="foot">Same addresses on every device and in every app on your project.</p>
+      </Item>
+    </Stagger>
   );
 }
+
+// ─── Feature tiles, each with one small picture ─────────────────────────────
+
+function Tile({
+  art,
+  title,
+  children,
+  dark = false,
+}: {
+  art: React.ReactNode;
+  title: string;
+  children: React.ReactNode;
+  dark?: boolean;
+}) {
+  return (
+    <Item className={`lp-tile${dark ? " is-dark" : ""}`}>
+      <div className="lp-tile-art">{art}</div>
+      <h3>{title}</h3>
+      <p>{children}</p>
+    </Item>
+  );
+}
+
+const SignInArt = () => (
+  <div className="art-chips">
+    <span>
+      <GoogleMark size={14} /> Google
+    </span>
+    <span>
+      <MailIcon size={14} /> Email
+    </span>
+    <span>
+      <PhoneIcon size={14} /> Phone
+    </span>
+    <span>
+      <XLogo size={12} /> X
+    </span>
+    <span className="dashed">
+      <KeyIcon size={14} /> Your login
+    </span>
+  </div>
+);
+
+const ChainsArt = () => (
+  <div className="art-chains">
+    {(["evm", "solana", "tron"] as const).map((t) => (
+      <span key={t}>
+        <ChainTypeIcon type={t} size={26} />
+      </span>
+    ))}
+    <em>+58 EVM networks</em>
+  </div>
+);
+
+const SharesArt = () => (
+  <svg viewBox="0 0 160 90" className="art-svg" aria-hidden="true">
+    <circle cx="40" cy="58" r="14" className="a-fill" />
+    <circle cx="120" cy="58" r="14" className="a-fill" />
+    <circle cx="80" cy="20" r="14" className="a-ring" />
+    <path d="M54 58h52" className="a-line" />
+    <text x="80" y="88" textAnchor="middle" className="a-text">ANY 2 OF 3</text>
+  </svg>
+);
+
+const RecoveryArt = () => (
+  <svg viewBox="0 0 160 90" className="art-svg" aria-hidden="true">
+    <rect x="22" y="12" width="34" height="62" rx="7" className="a-ring" />
+    <rect x="104" y="12" width="34" height="62" rx="7" className="a-fill-soft" />
+    <path d="M62 43h34M90 37l7 6-7 6" className="a-line" />
+    <text x="121" y="47" textAnchor="middle" className="a-text-strong">0x7a3f</text>
+  </svg>
+);
+
+const ConnectArt = () => (
+  <div className="art-logos">
+    {["MetaMask", "Rabby", "Phantom", "TronLink"].map((w) => (
+      <span key={w}>{w}</span>
+    ))}
+  </div>
+);
+
+const GasArt = () => (
+  <svg viewBox="0 0 160 90" className="art-svg" aria-hidden="true">
+    <path d="M30 76a50 50 0 0 1 100 0" className="a-gauge" />
+    <path d="M80 76l24-26" className="a-needle" />
+    <circle cx="80" cy="76" r="4" className="a-dot" />
+    <text x="80" y="56" textAnchor="middle" className="a-text">ON US</text>
+  </svg>
+);
+
+const SdkArt = () => (
+  <div className="art-code">
+    <code>
+      <i>const</i> user = <i>await</i> decane
+    </code>
+    <code>&nbsp;&nbsp;.verifyAccessToken(token)</code>
+    <small>Node · Python · Rust · Swift · Kotlin</small>
+  </div>
+);
+
+const FreeArt = () => (
+  <div className="art-price">
+    <b>$0</b>
+    <small>up to 499 wallets a month</small>
+  </div>
+);
 
 // ─── Gas sponsorship ─────────────────────────────────────────────────────────
 
@@ -228,183 +278,41 @@ const { transactionHash } = await decane.sendSponsoredTransaction({
 
 // Or they pay the fee in USDC, never touching ETH
 await decane.sendSponsoredTransaction({
-  chain: "evm:8453",
-  to: shop,
-  data: checkoutCall,
+  chain: "evm:8453", to: shop, data: checkoutCall,
   payGasWith: { token: USDC },
 });`;
-
-function GasSection() {
-  return (
-    <section className="section" id="gas">
-      <div className="container">
-        <Reveal className="section-split">
-          <div>
-            <div className="eyebrow">Gas sponsorship · New</div>
-            <h2>Your users never need gas</h2>
-          </div>
-          <p>
-            A new user has a wallet but no ETH to move anything with. Sponsor
-            their transactions and they just send: your project covers the fee,
-            or they pay it in USDC. Same wallet, same address, on EVM chains.
-          </p>
-        </Reveal>
-        <Stagger className="bento" delay={0.08}>
-          <Item className="card bento-3">
-            <div>
-              <h3>Sponsored by default</h3>
-              <p>
-                One call sends a transaction your project pays for, a single
-                call or a batch that lands together. The first send also
-                upgrades the wallet in place, so nothing moves and no new
-                address appears.
-              </p>
-            </div>
-            <div className="chips">
-              <span className="chip">ERC-4337</span>
-              <span className="chip">EIP-7702</span>
-              <span className="chip">Batched calls</span>
-              <span className="chip dashed">Pay in USDC</span>
-            </div>
-          </Item>
-          <Item className="card bento-3 gas-code">
-            <div className="kit-code">
-              <div className="kit-code-head">
-                <span className="file">checkout.ts</span>
-              </div>
-              <pre>
-                <code>{GAS_SNIPPET}</code>
-              </pre>
-            </div>
-          </Item>
-          <Item className="card bento-2">
-            <span className="icon-box">
-              <FuelIcon />
-            </span>
-            <h3>No ETH to buy first</h3>
-            <p>
-              Someone who just signed in with Google can mint, pay or swap on
-              their first visit. No exchange, no faucet, no bridge.
-            </p>
-          </Item>
-          <Item className="card bento-2">
-            <span className="icon-box">
-              <CoinIcon />
-            </span>
-            <h3>Or let them pay in USDC</h3>
-            <p>
-              Users holding stablecoins pay the fee in USDC. Show the price
-              first with one quote call; the approval is capped, never
-              unlimited.
-            </p>
-          </Item>
-          <Item className="card bento-2">
-            <span className="icon-box">
-              <SlidersIcon />
-            </span>
-            <h3>Limits you control</h3>
-            <p>
-              Spending caps count per person, not per wallet, and your policy
-              decides what is paid for. Turned on per project, on request.
-            </p>
-          </Item>
-        </Stagger>
-      </div>
-    </section>
-  );
-}
 
 // ─── Page ────────────────────────────────────────────────────────────────────
 
 export default function Page() {
   const [theme, toggleTheme] = useTheme();
-  const reduced = useReducedMotion();
-
-  // The flow panel drifts up a little faster than the page as you scroll
-  // away from it. Scroll-linked work is GSAP's; everything else is Framer.
-  // The flow panel leans toward the cursor, a little.
-  useEffect(() => {
-    if (reduced || !matchMedia("(hover: hover)").matches) return;
-    const el = document.querySelector<HTMLElement>(".flow");
-    if (!el) return;
-    el.classList.add("tilt");
-    const move = (e: PointerEvent) => {
-      const r = el.getBoundingClientRect();
-      el.style.setProperty("--rx", `${-((e.clientY - r.top) / r.height - 0.5) * 5}deg`);
-      el.style.setProperty("--ry", `${((e.clientX - r.left) / r.width - 0.5) * 7}deg`);
-    };
-    const leave = () => {
-      el.style.setProperty("--rx", "0deg");
-      el.style.setProperty("--ry", "0deg");
-    };
-    el.addEventListener("pointermove", move);
-    el.addEventListener("pointerleave", leave);
-    return () => {
-      el.removeEventListener("pointermove", move);
-      el.removeEventListener("pointerleave", leave);
-      el.classList.remove("tilt");
-    };
-  }, [reduced]);
-
-  useEffect(() => {
-    if (reduced) return;
-    let ctx: { revert: () => void } | null = null;
-    let cancelled = false;
-    (async () => {
-      const { gsap } = await import("gsap");
-      const { ScrollTrigger } = await import("gsap/ScrollTrigger");
-      if (cancelled) return;
-      gsap.registerPlugin(ScrollTrigger);
-      ctx = gsap.context(() => {
-        gsap.to(".flow", {
-          yPercent: -6,
-          ease: "none",
-          scrollTrigger: {
-            trigger: ".hero",
-            start: "top top",
-            end: "bottom top",
-            scrub: 0.6,
-          },
-        });
-      });
-    })();
-    return () => {
-      cancelled = true;
-      ctx?.revert();
-    };
-  }, [reduced]);
 
   return (
-    <div className="site" data-theme={theme}>
-      <WalletField />
+    <div className="site lp" data-theme={theme}>
       <SiteNav theme={theme} onToggleTheme={toggleTheme} />
 
-      <header className="hero">
-        <Stagger
-          className="container hero-inner"
-          inView={false}
-          delay={0.1}
-          start={0.05}
-        >
+      <header className="lp-hero">
+        <Stagger className="container lp-hero-inner" inView={false} delay={0.1} start={0.05}>
           <Item>
-            <h1 style={{ marginTop: 0 }}>
-              Turn any <span style={{ whiteSpace: "nowrap" }}>sign-in</span>{" "}
+            <Eyebrow>Embedded wallets</Eyebrow>
+          </Item>
+          <Item>
+            <h1>
+              Turn any <span style={{ whiteSpace: "nowrap" }}>sign-in</span>
+              <br />
               into a wallet.
             </h1>
           </Item>
           <Item>
-            <p className="lede">
-              Your users sign in with Google, email or phone and get a wallet
-              they own, on every chain you support. Nothing to install, nothing
-              to write down, and no one can spend from it but them. Not even us.
+            <p className="lp-lede">
+              Your users sign in with Google, email or phone and get a wallet they own, on every
+              chain you support. Nothing to install, nothing to write down, and no one can spend
+              from it but them. Not even us.
             </p>
           </Item>
           <Item>
-            <div className="hero-actions">
-              <a
-                href={`${DASHBOARD_URL}/auth/register`}
-                className="btn btn-primary btn-lg glow"
-              >
+            <div className="lp-actions">
+              <a href={`${DASHBOARD_URL}/auth/register`} className="btn btn-primary btn-lg">
                 Start free
               </a>
               <Link href="/docs" className="btn btn-secondary btn-lg">
@@ -415,128 +323,112 @@ export default function Page() {
           <Item>
             <InstallLine />
           </Item>
+          <Item className="lp-stats">
+            <div>
+              <b>3</b>
+              <small>chain families</small>
+            </div>
+            <div>
+              <b>59</b>
+              <small>EVM networks</small>
+            </div>
+            <div>
+              <b>2 of 3</b>
+              <small>key shares to sign</small>
+            </div>
+            <div>
+              <b>$0</b>
+              <small>to start</small>
+            </div>
+          </Item>
         </Stagger>
       </header>
 
-      <section id="how" style={{ padding: "24px 0 0" }}>
+      <section className="lp-section" id="how">
         <div className="container">
+          <Reveal className="lp-title">
+            <Eyebrow>How it works</Eyebrow>
+            <h2>One sign-in, end to end.</h2>
+            <p>The person signs in. The key splits three ways. The wallet is ready on every chain.</p>
+          </Reveal>
           <FlowPanel />
+          <Reveal className="lp-center" delay={0.1}>
+            <Link href="/demo" className="btn btn-secondary">
+              Try the live demo
+            </Link>
+          </Reveal>
         </div>
       </section>
 
-      <section className="section" id="features">
+      <section className="lp-section lp-soft" id="features">
         <div className="container">
-          <Reveal className="section-title">
-            <div className="eyebrow">What you get</div>
-            <h2>Everything a wallet should do, none of what makes them hard</h2>
+          <Reveal className="lp-title">
+            <Eyebrow>What you get</Eyebrow>
+            <h2>Everything a wallet should do.</h2>
+            <p>None of what makes them hard.</p>
           </Reveal>
-          <Stagger className="bento" delay={0.08}>
-            <Item className="card bento-3">
-              <div>
-                <h3>Sign in the way people already do</h3>
-                <p>
-                  Google, email, phone and X are built in. Bring your own login
-                  and Decane accepts it too. Someone who signs in with Google
-                  today and with the same email tomorrow is one user with one
-                  wallet.
-                </p>
-              </div>
-              <div className="chips">
-                <span className="chip">
-                  <GoogleMark size={16} /> Google
-                </span>
-                <span className="chip">
-                  <MailIcon size={16} /> Email
-                </span>
-                <span className="chip">
-                  <PhoneIcon size={16} /> Phone
-                </span>
-                <span className="chip">
-                  <XLogo size={14} /> X
-                </span>
-                <span className="chip dashed">
-                  <KeyIcon size={16} /> Your own login
-                </span>
-              </div>
-            </Item>
-            <Item className="card bento-3">
-              <div>
-                <h3>One wallet across Ethereum, Solana and Tron</h3>
-                <p>
-                  Every user gets addresses on all three from one sign-in, with
-                  Base, Arbitrum, Polygon and 55 more EVM networks included.
-                  Send, sign and switch chains with the same calls.
-                </p>
-              </div>
-              <div className="chain-mini">
-                <div>
-                  <ChainTypeIcon type="evm" size={22} />
-                  <b>Ethereum</b>
-                  <small>+ 58 EVM networks</small>
-                </div>
-                <div>
-                  <ChainTypeIcon type="solana" size={22} />
-                  <b>Solana</b>
-                  <small>Mainnet, devnet</small>
-                </div>
-                <div>
-                  <ChainTypeIcon type="tron" size={22} />
-                  <b>Tron</b>
-                  <small>Mainnet, Shasta</small>
-                </div>
-              </div>
-            </Item>
-            <Item className="card bento-2">
-              <span className="icon-box">
-                <ShieldIcon />
-              </span>
-              <h3>Nobody can spend it but them</h3>
-              <p>
-                The key only ever comes together inside a sealed signer. A
-                breach of our database gives an attacker nothing they can use.
-              </p>
-            </Item>
-            <Item className="card bento-2">
-              <span className="icon-box">
-                <RefreshIcon />
-              </span>
-              <h3>Lose the phone, keep the wallet</h3>
-              <p>
-                No seed phrase to lose. Sign in on the new device and the wallet
-                is back, same addresses, same balance.{" "}
-                <Link href="/recovery" className="ulink">
-                  How recovery works
-                </Link>
-              </p>
-            </Item>
-            <Item className="card bento-2">
-              <span className="icon-box">
-                <WalletIcon />
-              </span>
-              <h3>Already have a wallet? Connect it.</h3>
-              <p>
-                MetaMask, Rabby, Phantom, TronLink and any other wallet, through
-                the same kit. One integration covers everyone.
-              </p>
-            </Item>
+          <Stagger className="lp-tiles" delay={0.06}>
+            <Tile art={<SignInArt />} title="Sign in the way people do">
+              Google, email, phone and X built in, or your own login. One person, one wallet.
+            </Tile>
+            <Tile art={<ChainsArt />} title="Ethereum, Solana and Tron">
+              Addresses on all three from one sign-in, with Base, Arbitrum, Polygon and more.
+            </Tile>
+            <Tile art={<SharesArt />} title="Nobody can spend it but them" dark>
+              The key only comes together inside a sealed signer. Our database alone is useless.
+            </Tile>
+            <Tile art={<RecoveryArt />} title="Lose the phone, keep the wallet">
+              No seed phrase. Sign in on the new device: same addresses, same balance.
+            </Tile>
+            <Tile art={<ConnectArt />} title="Bring your own wallet">
+              MetaMask, Rabby, Phantom, TronLink and the rest, through the same kit.
+            </Tile>
+            <Tile art={<GasArt />} title="Gas, sponsored">
+              Your project pays the fee, or users pay it in USDC. Same wallet, same address.
+            </Tile>
+            <Tile art={<SdkArt />} title="Every backend, one line">
+              Verify who is calling from Node, Python or Rust; build on iOS and Android too.
+            </Tile>
+            <Tile art={<FreeArt />} title="Free to start" dark>
+              Every sign-in method and every chain. You pay once your users do.
+            </Tile>
           </Stagger>
         </div>
       </section>
 
-      <GasSection />
-
-      <section className="section pad-b" id="integrate">
-        <div className="container">
-          <Reveal className="section-split">
-            <div>
-              <div className="eyebrow">Integration</div>
-              <h2>Ship it in an afternoon</h2>
-            </div>
+      <section className="lp-section lp-deep" id="gas">
+        <div className="container lp-split">
+          <Reveal className="lp-split-text">
+            <Eyebrow>Gas sponsorship · New</Eyebrow>
+            <h2>Your users never need gas.</h2>
             <p>
-              Wrap your app once and you have sign-in, wallets, signing and
-              sessions. Your backend verifies who is calling with one line. Web,
-              React Native, iOS, Android and every major backend language, from
-              one dashboard and one API key.
+              A new user has a wallet but no ETH to move anything with. Sponsor the transaction and
+              they just send: your project covers the fee, or they pay it in USDC. The first send
+              upgrades the wallet in place, so the address never changes.
+            </p>
+            <ul className="lp-checks">
+              <li>Sponsored by default; batched calls land together</li>
+              <li>Pay in USDC, with a capped approval</li>
+              <li>Spending limits per person, set by you</li>
+            </ul>
+          </Reveal>
+          <Reveal className="lp-code" delay={0.1}>
+            <div className="lp-code-head">checkout.ts</div>
+            <pre>
+              <code>{GAS_SNIPPET}</code>
+            </pre>
+          </Reveal>
+        </div>
+      </section>
+
+      <section className="lp-section" id="integrate">
+        <div className="container">
+          <Reveal className="lp-title">
+            <Eyebrow>Integration</Eyebrow>
+            <h2>Ship it in an afternoon.</h2>
+            <p>
+              Wrap your app once for sign-in, wallets, signing and sessions. Web, React Native, iOS,
+              Android and every major backend, from one dashboard and one API key.
             </p>
           </Reveal>
           <Reveal>
@@ -545,26 +437,18 @@ export default function Page() {
         </div>
       </section>
 
-      <section id="start" style={{ padding: "0 0 112px" }}>
+      <section className="lp-section lp-close" id="start">
         <div className="container">
-          <Reveal className="panel glow-bottom cta-panel">
-            <div className="inner">
-              <h2>Start free. Upgrade when your users do.</h2>
-              <p>
-                Up to 499 monthly active wallets, every sign-in method, every
-                chain.
-              </p>
-              <div className="hero-actions">
-                <a
-                  href={`${DASHBOARD_URL}/auth/register`}
-                  className="btn btn-primary btn-lg"
-                >
-                  Get an API key
-                </a>
-                <Link href="/pricing" className="btn btn-secondary btn-lg">
-                  See pricing
-                </Link>
-              </div>
+          <Reveal className="lp-title">
+            <h2>Start free. Upgrade when your users do.</h2>
+            <p>Up to 499 monthly active wallets, every sign-in method, every chain.</p>
+            <div className="lp-actions">
+              <a href={`${DASHBOARD_URL}/auth/register`} className="btn btn-primary btn-lg">
+                Get an API key
+              </a>
+              <Link href="/pricing" className="btn btn-secondary btn-lg">
+                See pricing
+              </Link>
             </div>
           </Reveal>
         </div>
