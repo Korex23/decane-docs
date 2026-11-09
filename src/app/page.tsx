@@ -233,13 +233,14 @@ const ConnectArt = () => (
   </div>
 );
 
-const GasArt = () => (
-  <svg viewBox="0 0 160 90" className="art-svg" aria-hidden="true">
-    <path d="M30 76a50 50 0 0 1 100 0" className="a-gauge" />
-    <path d="M80 76l24-26" className="a-needle" />
-    <circle cx="80" cy="76" r="4" className="a-dot" />
-    <text x="80" y="56" textAnchor="middle" className="a-text">ON US</text>
-  </svg>
+const ServerArt = () => (
+  <div className="art-code">
+    <code>
+      <i>await</i> decane.createUser(&#123; type: &quot;email&quot;,
+    </code>
+    <code>&nbsp;&nbsp;value: &quot;ada@example.com&quot; &#125;)</code>
+    <small>wallet ready before the first sign-in</small>
+  </div>
 );
 
 const SdkArt = () => (
@@ -276,8 +277,301 @@ await decane.sendSponsoredTransaction({
 
 // ─── Page ────────────────────────────────────────────────────────────────────
 
+
+// ─── Three products, one key ─────────────────────────────────────────────────
+
+type Product = "wallets" | "gas" | "rpc";
+
+const Soon = () => <span className="lp-soon">Coming soon</span>;
+
+const WalletMock = () => (
+  <div className="pm pm-wallet" aria-hidden="true">
+    <div className="pm-card">
+      <small>Sign in to Northgate</small>
+      <span className="pm-btn">
+        <GoogleMark size={13} /> Continue with Google
+      </span>
+      <span className="pm-field">ada@example.com</span>
+    </div>
+    <div className="pm-chip">
+      <i /> 0x7a3f…c21e <b>Wallet ready</b>
+    </div>
+  </div>
+);
+
+const GasMock = () => (
+  <div className="pm pm-gas" aria-hidden="true">
+    <div className="pm-card">
+      <small>Send</small>
+      <strong>25.00 USDC</strong>
+      <div className="pm-row">
+        <span>To</span>
+        <span>shop.base.eth</span>
+      </div>
+      <div className="pm-row">
+        <span>Network fee</span>
+        <span>
+          <s>$0.004</s> <em>Sponsored</em>
+        </span>
+      </div>
+      <span className="pm-btn solid">Send</span>
+    </div>
+  </div>
+);
+
+const RpcMock = () => (
+  <div className="pm pm-rpc" aria-hidden="true">
+    <code className="pm-url">…/rpc/v1/8453/dck_rpc_…</code>
+    <div className="pm-card">
+      <div className="pm-row">
+        <span>This second</span>
+        <span>
+          <b>18</b> / 20 req/s
+        </span>
+      </div>
+      <span className="pm-meter">
+        <span />
+      </span>
+      {[
+        ["eth_call", 62],
+        ["eth_getLogs", 21],
+        ["eth_blockNumber", 11],
+      ].map(([m, n]) => (
+        <div className="pm-bar" key={m as string}>
+          <span>{m}</span>
+          <i style={{ width: `${n}%` }} />
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+function ProductCards({ onExplore }: { onExplore: (p: Product) => void }) {
+  const cards: { id: Product; art: React.ReactNode; title: string; soon?: boolean; body: string }[] = [
+    {
+      id: "wallets",
+      art: <WalletMock />,
+      title: "Embedded wallets",
+      body: "A wallet for every user the moment they sign in, on Ethereum, Solana and Tron. Theirs alone.",
+    },
+    {
+      id: "gas",
+      art: <GasMock />,
+      title: "Gas sponsorship",
+      soon: true,
+      body: "Your users send without holding ETH. You cover the fee, or they pay it in USDC.",
+    },
+    {
+      id: "rpc",
+      art: <RpcMock />,
+      title: "Decane RPC",
+      soon: true,
+      body: "Read and write the chain with one URL. 20 requests a second free, 200 in the Builder Club.",
+    },
+  ];
+  return (
+    <Stagger className="lp-products" delay={0.08}>
+      {cards.map((c) => (
+        <Item key={c.id} className="lp-product">
+          <div className="lp-product-art">{c.art}</div>
+          <h3>
+            {c.title} {c.soon && <Soon />}
+          </h3>
+          <p>{c.body}</p>
+          <button type="button" className="lp-more" onClick={() => onExplore(c.id)}>
+            How it works <span aria-hidden="true">→</span>
+          </button>
+        </Item>
+      ))}
+    </Stagger>
+  );
+}
+
+const WALLET_SNIPPET = `<DecaneKit config={{
+  social: { apiKey: "dck_live_…", authMethods: ["google", "email"] },
+}}>
+  <App />
+</DecaneKit>
+
+// Anywhere inside: sign in, then sign.
+const { openModal, signMessage } = useSocialWallet();
+await signMessage("evm:8453", "gm");`;
+
+const RPC_SNIPPET = `import { createPublicClient, http } from "viem";
+import { base } from "viem/chains";
+
+const client = createPublicClient({
+  chain: base,
+  transport: http("https://backend.decane.app/rpc/v1/8453/dck_rpc_…"),
+});
+
+await client.getBlockNumber();`;
+
+const PLATFORM: Record<Product, { label: string; title: string; body: string; checks: string[]; file: string; code: string; soon?: boolean }> = {
+  wallets: {
+    label: "Wallets",
+    title: "A wallet behind every sign-in",
+    body: "People sign in the way they already do and get addresses on every chain you support. No extension, no seed phrase, and nobody can move their funds but them.",
+    checks: [
+      "Google, email, phone, X, KingsChat or your own login",
+      "Ethereum, Solana and Tron from one key",
+      "A new phone is just another sign-in",
+    ],
+    file: "app.tsx",
+    code: WALLET_SNIPPET,
+  },
+  gas: {
+    label: "Gas",
+    title: "Your users never need gas",
+    soon: true,
+    body: "A new user has a wallet but no ETH to move anything with. Sponsor the transaction and they just send: you cover the fee, or they pay it in USDC. The address never changes.",
+    checks: [
+      "Sponsored by default, or paid in USDC",
+      "Caps per day and per user, and only the contracts you allow",
+      "You pay the gas used plus a small fee; nothing monthly",
+    ],
+    file: "checkout.ts",
+    code: GAS_SNIPPET,
+  },
+  rpc: {
+    label: "RPC",
+    title: "Node access on the same account",
+    soon: true,
+    body: "One URL works in viem, ethers, wagmi, MetaMask or Foundry. The limit belongs to your account and is shared across its projects, with usage per day and per method in the dashboard.",
+    checks: [
+      "Free: 20 requests a second",
+      "Builder Club: 200 a second, free, by application",
+      "Base first, with more chains to follow",
+    ],
+    file: "client.ts",
+    code: RPC_SNIPPET,
+  },
+};
+
+function Platform({ product, setProduct }: { product: Product; setProduct: (p: Product) => void }) {
+  const p = PLATFORM[product];
+  return (
+    <section className="lp-section lp-soft" id="platform">
+      <div className="container">
+        <Reveal className="lp-title">
+          <h2>Wallets, gas and RPC. One key.</h2>
+          <p>Everything your app needs onchain, from one dashboard and one bill.</p>
+        </Reveal>
+        <Reveal className="lp-platform" delay={0.06}>
+          <div className="lp-platform-list" role="tablist" aria-label="Products">
+            {(Object.keys(PLATFORM) as Product[]).map((k) => (
+              <button
+                key={k}
+                type="button"
+                role="tab"
+                aria-selected={k === product}
+                className={k === product ? "on" : ""}
+                onClick={() => setProduct(k)}
+              >
+                <small>{PLATFORM[k].label}</small>
+                <span>{PLATFORM[k].title}</span>
+              </button>
+            ))}
+          </div>
+          <div className="lp-platform-panel" key={product} role="tabpanel">
+            <div className="lp-platform-text">
+              <h3>
+                {p.title} {p.soon && <Soon />}
+              </h3>
+              <p>{p.body}</p>
+              <ul className="lp-ticks">
+                {p.checks.map((c) => (
+                  <li key={c}>{c}</li>
+                ))}
+              </ul>
+              {product === "rpc" && (
+                <div className="lp-plans">
+                  <div>
+                    <small>Free</small>
+                    <b>20</b> req/s
+                  </div>
+                  <div className="club">
+                    <small>Builder Club</small>
+                    <b>200</b> req/s
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="lp-code">
+              <div className="lp-code-head">{p.file}</div>
+              <pre>
+                <code>{p.code}</code>
+              </pre>
+            </div>
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+// ─── Security ────────────────────────────────────────────────────────────────
+
+const SECURITY: { icon: React.ReactNode; title: string; body: string }[] = [
+  {
+    icon: <KeyIcon size={20} />,
+    title: "Split three ways",
+    body: "Every key is cut into three shares and any two rebuild it. The device holds one, we hold one encrypted, the enclave seals the third. Our database alone opens nothing.",
+  },
+  {
+    icon: <LockIcon />,
+    title: "Whole only inside the enclave",
+    body: "Two shares meet inside an attested Intel TDX enclave for the moment it takes to sign, then the key is gone. Never in a browser, on a phone or on our servers.",
+  },
+  {
+    icon: <CheckIcon size={20} />,
+    title: "Checked, not trusted",
+    body: "Before your app sends anything, it verifies the enclave's hardware quote against a signed manifest. A changed enclave is refused, not believed.",
+  },
+  {
+    icon: <DeviceIcon />,
+    title: "Recovery without a seed phrase",
+    body: "Lose the phone, sign in on the next one: same addresses, same balance. A full recovery file opens offline, without us.",
+  },
+];
+
+function Security() {
+  return (
+    <section className="lp-section" id="security">
+      <div className="container lp-sec">
+        <Reveal className="lp-sec-head">
+          <h2>No one holds the key. Not even us.</h2>
+          <p>
+            Each layer is there so that no single machine, company or breach can move a user&apos;s
+            funds, and so that you can check that for yourself.
+          </p>
+          <Link href="/docs" className="lp-more">
+            Read the security model <span aria-hidden="true">→</span>
+          </Link>
+        </Reveal>
+        <Stagger className="lp-sec-list" delay={0.07}>
+          {SECURITY.map((x) => (
+            <Item key={x.title} className="lp-sec-item">
+              <span className="lp-sec-icon">{x.icon}</span>
+              <div>
+                <h3>{x.title}</h3>
+                <p>{x.body}</p>
+              </div>
+            </Item>
+          ))}
+        </Stagger>
+      </div>
+    </section>
+  );
+}
+
 export default function Page() {
   const [theme, toggleTheme] = useTheme();
+  const [product, setProduct] = useState<Product>("wallets");
+  const explore = (p: Product) => {
+    setProduct(p);
+    document.getElementById("platform")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   return (
     <div className="site lp" data-theme={theme}>
@@ -334,7 +628,13 @@ export default function Page() {
         </Stagger>
       </header>
 
-      <section className="lp-section lp-sheet" id="how">
+      <section className="lp-section lp-sheet" id="products">
+        <div className="container">
+          <ProductCards onExplore={explore} />
+        </div>
+      </section>
+
+      <section className="lp-section" id="how">
         <div className="container">
           <Reveal className="lp-title">
             <h2>Sign in once. Own it everywhere.</h2>
@@ -364,7 +664,7 @@ export default function Page() {
 
       <EnclaveTour />
 
-      <section className="lp-section lp-soft" id="features">
+      <section className="lp-section" id="features">
         <div className="container">
           <Reveal className="lp-title">
             <h2>Everything a wallet should do.</h2>
@@ -386,8 +686,8 @@ export default function Page() {
             <Tile art={<ConnectArt />} title="Bring your own wallet">
               MetaMask, Rabby, Phantom, TronLink and the rest, through the same kit.
             </Tile>
-            <Tile art={<GasArt />} title="Gas, sponsored">
-              Your project pays the fee, or users pay it in USDC. Same wallet, same address.
+            <Tile art={<ServerArt />} title="Wallets from your server">
+              Create a user and their wallet from your backend, before they ever sign in.
             </Tile>
             <Tile art={<SdkArt />} title="Every backend, one line">
               Verify who is calling from Node, Python or Rust; build on iOS and Android too.
@@ -399,31 +699,9 @@ export default function Page() {
         </div>
       </section>
 
-      <section className="lp-section lp-deep" id="gas">
-        <div className="container lp-split">
-          <Reveal className="lp-split-text">
-            <h2>
-              Your users never need gas. <span className="lp-new">New</span>
-            </h2>
-            <p>
-              A new user has a wallet but no ETH to move anything with. Sponsor the transaction and
-              they just send: your project covers the fee, or they pay it in USDC. The first send
-              upgrades the wallet in place, so the address never changes.
-            </p>
-            <ul className="lp-checks">
-              <li>Sponsored by default; batched calls land together</li>
-              <li>Pay in USDC, with a capped approval</li>
-              <li>Spending limits per person, set by you</li>
-            </ul>
-          </Reveal>
-          <Reveal className="lp-code" delay={0.1}>
-            <div className="lp-code-head">checkout.ts</div>
-            <pre>
-              <code>{GAS_SNIPPET}</code>
-            </pre>
-          </Reveal>
-        </div>
-      </section>
+      <Platform product={product} setProduct={setProduct} />
+
+      <Security />
 
       <section className="lp-section" id="integrate">
         <div className="container">
