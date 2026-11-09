@@ -58,6 +58,16 @@ const ShieldIcon = ({ size = 18 }: { size?: number }) => (
   </svg>
 );
 
+/** The rounded, angled tab a section rises into the one above with. */
+const Tab = () => (
+  <div className="k-tab" aria-hidden="true">
+    <span />
+    <svg viewBox="0 0 96 60" width="96" height="60">
+      <path d="M0 0H22Q34 0 40 10L62 50Q68 60 80 60H96V60H0Z" fill="currentColor" />
+    </svg>
+  </div>
+);
+
 const Soon = () => <span className="k-soon">Coming soon</span>;
 
 type Product = "wallets" | "gas" | "rpc";
@@ -500,6 +510,7 @@ export default function Page() {
 
       {/* ── SDKs ────────────────────────────────────────────────────────── */}
       <section className="k-section k-tinted" id="integrate">
+        <Tab />
         <div className="k-wrap">
           <Reveal className="k-head-row">
             <h2 className="k-h2">Ship it in an afternoon</h2>
@@ -515,6 +526,7 @@ export default function Page() {
 
       {/* ── Live demo ───────────────────────────────────────────────────── */}
       <section className="k-section k-demo" id="demo">
+        <Tab />
         <div className="k-wrap k-demo-grid">
           <Reveal className="k-demo-copy">
             <small className="k-eyebrow">Live demo</small>
@@ -565,6 +577,7 @@ export default function Page() {
 
       {/* ── Close ───────────────────────────────────────────────────────── */}
       <section className="k-close">
+        <Tab />
         <div className="k-wrap">
           <Reveal className="k-close-card">
             <div className="k-close-copy">

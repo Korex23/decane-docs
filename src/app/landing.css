@@ -1074,3 +1074,49 @@
 .lp .site-footer .brand {
   color: #ffffff;
 }
+
+/* The tab a section rises into the one above with: a flat run, then a
+   rounded slope down to the section's own edge. Drawn in the section's
+   colour, so it reads as one shape with it. */
+.k-close {
+  position: relative;
+}
+.k-tab {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(100% - 1px);
+  height: 60px;
+  display: flex;
+  pointer-events: none;
+}
+.k-tab span {
+  width: min(560px, 40%);
+  background: currentColor;
+}
+.k-tab svg {
+  flex: none;
+  display: block;
+  margin-left: -1px;
+}
+.k-tinted .k-tab {
+  color: var(--k-tint);
+}
+.k-demo .k-tab {
+  color: var(--k-demo);
+}
+.k-close .k-tab {
+  color: var(--k-close);
+}
+.k-tinted {
+  margin-top: 108px;
+}
+@media (max-width: 720px) {
+  .k-tab {
+    height: 40px;
+  }
+  .k-tab svg {
+    width: 64px;
+    height: 40px;
+  }
+}
