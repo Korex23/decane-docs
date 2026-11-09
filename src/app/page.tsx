@@ -74,73 +74,132 @@ type Product = "wallets" | "gas" | "rpc";
 
 // ─── Product previews ────────────────────────────────────────────────────────
 
+const Copy = () => (
+  <svg width="12" height="12" viewBox="0 0 24 24" {...line} strokeWidth={2}>
+    <rect x="9" y="9" width="11" height="11" rx="2" />
+    <path d="M5 15V6a2 2 0 0 1 2-2h9" />
+  </svg>
+);
+const Close = () => (
+  <svg width="12" height="12" viewBox="0 0 24 24" {...line} strokeWidth={2}>
+    <path d="M6 6l12 12M18 6 6 18" />
+  </svg>
+);
+
 const WalletMock = () => (
   <div className="pm" aria-hidden="true">
-    <div className="pm-card">
-      <b className="pm-title">Sign in or sign up</b>
-      <span className="pm-field">
-        ada@example.com <Arrow />
-      </span>
-      <span className="pm-or">or</span>
-      <span className="pm-btn">
-        <GoogleMark size={13} /> Continue with Google
-      </span>
+    <div className="pm-win">
+      <div className="pm-head">
+        <span className="pm-app">N</span>
+        <span>Sign in to Northgate</span>
+        <i className="pm-x">
+          <Close />
+        </i>
+      </div>
+      <div className="pm-body">
+        <span className="pm-btn">
+          <GoogleMark size={14} /> Continue with Google
+        </span>
+        <span className="pm-div">or</span>
+        <span className="pm-input">ada@example.com</span>
+        <span className="pm-btn primary">Continue with email</span>
+      </div>
+      <div className="pm-foot">
+        <span className="pm-dot" /> Secured by Decane
+      </div>
     </div>
-    <div className="pm-float">
-      <small>Wallet ready</small>
-      <b>0x7a3f…c21e</b>
-      <span className="pm-chains">
-        <ChainTypeIcon type="evm" size={14} />
-        <ChainTypeIcon type="solana" size={14} />
-        <ChainTypeIcon type="tron" size={14} />
-      </span>
+    <div className="pm-toast">
+      <i>
+        <CheckIcon size={10} />
+      </i>
+      Wallet created <code>0x7a3f…c21e</code>
     </div>
   </div>
 );
 
 const GasMock = () => (
   <div className="pm" aria-hidden="true">
-    <div className="pm-card">
-      <small>Send</small>
-      <strong>25.00 USDC</strong>
-      <div className="pm-row">
-        <span>To</span>
-        <span>shop.base.eth</span>
+    <div className="pm-win">
+      <div className="pm-head">
+        <span className="pm-app">N</span>
+        <span>Confirm payment</span>
+        <i className="pm-x">
+          <Close />
+        </i>
       </div>
-      <div className="pm-row">
-        <span>Network fee</span>
-        <span>
-          <s>$0.004</s> <em>Sponsored</em>
-        </span>
+      <div className="pm-body">
+        <div className="pm-amount">
+          <span className="pm-token">$</span>
+          <b>25.00</b> USDC
+        </div>
+        <dl className="pm-list">
+          <div>
+            <dt>To</dt>
+            <dd>shop.base.eth</dd>
+          </div>
+          <div>
+            <dt>Network</dt>
+            <dd>
+              <ChainTypeIcon type="evm" size={12} /> Base
+            </dd>
+          </div>
+          <div>
+            <dt>Network fee</dt>
+            <dd>
+              <span className="pm-free">Free</span>
+              <small>Paid by Northgate</small>
+            </dd>
+          </div>
+        </dl>
+        <span className="pm-btn primary">Confirm</span>
       </div>
-      <span className="pm-btn solid">Send</span>
     </div>
   </div>
 );
 
 const RpcMock = () => (
   <div className="pm" aria-hidden="true">
-    <code className="pm-url">…/rpc/v1/8453/dck_rpc_…</code>
-    <div className="pm-card">
-      <div className="pm-row">
-        <span>This second</span>
-        <span>
-          <b>18</b> / 20 req/s
-        </span>
+    <div className="pm-win">
+      <div className="pm-head">
+        <span>Base mainnet</span>
+        <span className="pm-live">Live</span>
       </div>
-      <span className="pm-meter">
-        <span />
-      </span>
-      {[
-        ["eth_call", 62],
-        ["eth_getLogs", 21],
-        ["eth_blockNumber", 11],
-      ].map(([m, n]) => (
-        <div className="pm-bar" key={m as string}>
-          <span>{m}</span>
-          <i style={{ width: `${n}%` }} />
+      <div className="pm-body">
+        <span className="pm-input mono">
+          …/rpc/v1/8453/dck_rpc_•••• <Copy />
+        </span>
+        <div className="pm-kpis">
+          <div>
+            <small>Requests · 24h</small>
+            <b>1.28M</b>
+          </div>
+          <div>
+            <small>Peak</small>
+            <b>
+              18<em>/20 rps</em>
+            </b>
+          </div>
         </div>
-      ))}
+        <svg className="pm-chart" viewBox="0 0 200 54" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="pmFill" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0" stopColor="#c48f1f" stopOpacity="0.28" />
+              <stop offset="1" stopColor="#c48f1f" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          <path
+            d="M0 44 L14 40 L28 42 L42 33 L56 36 L70 28 L84 31 L98 22 L112 26 L126 17 L140 21 L154 12 L168 16 L182 9 L200 11 L200 54 L0 54 Z"
+            fill="url(#pmFill)"
+          />
+          <path
+            d="M0 44 L14 40 L28 42 L42 33 L56 36 L70 28 L84 31 L98 22 L112 26 L126 17 L140 21 L154 12 L168 16 L182 9 L200 11"
+            fill="none"
+            stroke="#b07a12"
+            strokeWidth="1.6"
+            vectorEffect="non-scaling-stroke"
+          />
+        </svg>
+      </div>
     </div>
   </div>
 );
@@ -199,12 +258,12 @@ const SCENES: Record<Product, { links: [number, number, number, number][]; nodes
   },
   gas: {
     links: [
-      [44, 40, 72, 24],
-      [44, 40, 70, 74],
+      [51, 46, 64, 30],
+      [51, 46, 62, 76],
     ],
     nodes: [
       {
-        x: 6, y: 20, w: 40,
+        x: 7, y: 30, w: 44,
         content: (
           <div className="sn-stack">
             <small>Send</small>
@@ -214,18 +273,18 @@ const SCENES: Record<Product, { links: [number, number, number, number][]; nodes
           </div>
         ),
       },
-      { x: 58, y: 14, content: <div><small>Gas balance · Base</small><b>$412.80</b></div> },
-      { x: 56, y: 64, content: <div><small>Cap per user, per day</small><b>$1.00</b></div> },
+      { x: 62, y: 22, content: <div><small>Gas balance · Base</small><b>$412.80</b></div> },
+      { x: 60, y: 68, content: <div><small>Cap per user, per day</small><b>$1.00</b></div> },
     ],
   },
   rpc: {
     links: [
-      [50, 42, 74, 18],
-      [50, 42, 76, 76],
+      [52, 48, 72, 26],
+      [52, 48, 74, 78],
     ],
     nodes: [
       {
-        x: 5, y: 16, w: 52, tone: "dark",
+        x: 5, y: 30, w: 52, tone: "dark",
         content: (
           <pre className="sn-code">
             <code>
@@ -240,8 +299,8 @@ const SCENES: Record<Product, { links: [number, number, number, number][]; nodes
           </pre>
         ),
       },
-      { x: 64, y: 8, content: <div><small>Free</small><b>20 req/s</b></div> },
-      { x: 62, y: 66, content: <div><small>Builder Club</small><b>200 req/s</b></div> },
+      { x: 64, y: 14, content: <div><small>Free</small><b>20 req/s</b></div> },
+      { x: 62, y: 70, content: <div><small>Builder Club</small><b>200 req/s</b></div> },
     ],
   },
 };
