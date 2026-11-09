@@ -499,7 +499,7 @@ export default function Page() {
       </section>
 
       {/* ── SDKs ────────────────────────────────────────────────────────── */}
-      <section className="k-section k-tinted k-notch" id="integrate">
+      <section className="k-section k-tinted" id="integrate">
         <div className="k-wrap">
           <Reveal className="k-head-row">
             <h2 className="k-h2">Ship it in an afternoon</h2>
@@ -514,7 +514,7 @@ export default function Page() {
       </section>
 
       {/* ── Live demo ───────────────────────────────────────────────────── */}
-      <section className="k-section k-demo k-notch" id="demo">
+      <section className="k-section k-demo" id="demo">
         <div className="k-wrap k-demo-grid">
           <Reveal className="k-demo-copy">
             <small className="k-eyebrow">Live demo</small>
@@ -569,7 +569,8 @@ export default function Page() {
           <Reveal className="k-close-card">
             <div className="k-close-copy">
               <h2>Ready to give your users a wallet?</h2>
-              <div className="k-actions left">
+              <p>Free up to 499 monthly active wallets. Every sign-in method, every chain.</p>
+              <div className="k-actions">
                 <a href={`${DASHBOARD_URL}/auth/register`} className="k-btn k-btn-primary">
                   Start free <Arrow />
                 </a>
@@ -578,7 +579,6 @@ export default function Page() {
                 </Link>
               </div>
             </div>
-            <div className="k-close-art" aria-hidden="true" />
           </Reveal>
         </div>
       </section>
