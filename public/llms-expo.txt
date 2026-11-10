@@ -372,6 +372,17 @@ Standalone exports usable without a client:
 
 ---
 
+## Gas sponsorship — coming soon (backend live; release not yet published)
+
+The same three client methods as the web SDK (see https://kit.decane.app/llms.txt,
+"Gas sponsorship"): `sendSponsoredTransaction({ chain, to?, value?, data?, calls?, payGasWith? })`,
+`getSponsorshipStatus(chain)`, `quoteGasInToken({ chain, token, gas? })`, and the
+`gasSponsorship: { payGasWith?, routeSendTransaction? }` config. EVM only, Base
+first, off per project until Decane switches it on. The project pays by default;
+`payGasWith: { token }` has the user pay in that token. A first send delegates
+the wallet to Simple7702Account (EIP-7702) without changing its address; the
+EntryPoint, paymaster and delegate are pinned in the package.
+
 ## Recovery
 
 A user who reinstalls the app, or opens it on a new phone, gets their wallet back

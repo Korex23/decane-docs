@@ -2294,6 +2294,282 @@ decane.on("wallet-creating", () => showProgress());`)}
     ),
   },
   {
+    slug: "gas-sponsorship",
+    group: "Gas & RPC",
+    title: "Gas sponsorship",
+    icon: "fill",
+    body: (
+      <>
+        <div className="docs-callout" data-kind="warn">
+          <div className="ico">!</div>
+          <p>
+            <strong>Coming soon.</strong> The backend is live; the SDK release with these
+            methods is not published to npm yet, and sponsorship is switched on per project by
+            Decane. Email <a href="mailto:info@decane.app">info@decane.app</a> to try it early.
+          </p>
+        </div>
+        <p>
+          A new user has a wallet but no ETH to move anything with. A sponsored send lets them
+          send anyway: your project pays the gas from its gas balance, or the user pays the fee
+          in a token such as USDC. It works on the user&rsquo;s existing Decane wallet, and the
+          address never changes. EVM only; Base first.
+        </p>
+
+        <h3 id="gas-send">Send with sponsorship</h3>
+        <p>
+          The methods are on the client: <code>decane</code> below is the object{" "}
+          <code>createDecaneConnect()</code> returns (or the Expo client). The React hooks do not
+          expose them yet.
+        </p>
+        <CodeBlock lang="ts" file="checkout.ts">
+          {hl(`// The project pays the gas (the default).
+const { transactionHash } = await decane.sendSponsoredTransaction({
+  chain: "evm:8453",
+  to: shop,
+  data: checkoutCall,
+});
+
+// Several calls, executed atomically in one operation.
+await decane.sendSponsoredTransaction({
+  chain: "evm:8453",
+  calls: [
+    { to: USDC, data: approveCall },
+    { to: shop, data: checkoutCall },
+  ],
+});
+
+// The user pays the fee in a token instead of ETH.
+await decane.sendSponsoredTransaction({
+  chain: "evm:8453",
+  to: shop,
+  data: checkoutCall,
+  payGasWith: { token: USDC },
+});`)}
+        </CodeBlock>
+        <p>
+          It resolves once the operation is on chain, with{" "}
+          <code>{"{ userOpHash, transactionHash, success }"}</code>, and throws with the
+          sponsor&rsquo;s reason when the project&rsquo;s policy refuses the send. Paying in a
+          token approves at most twice the worst-case fee, never an unlimited amount.
+        </p>
+
+        <h3 id="gas-config">Configure the default</h3>
+        <CodeBlock lang="tsx" file="app.tsx">
+          {hl(`<DecaneKit config={{
+  social: {
+    apiKey: "dck_live_…",
+    gasSponsorship: {
+      payGasWith: { token: USDC }, // default: "sponsor", the project pays
+      routeSendTransaction: false, // true: sendTransaction is sponsored too
+    },
+  },
+}}>`)}
+        </CodeBlock>
+        <p>
+          With <code>routeSendTransaction: true</code>, an ordinary{" "}
+          <code>sendTransaction</code> also goes through sponsorship and then resolves on
+          inclusion (up to 120 seconds), not on broadcast. Left false, sponsorship is only ever
+          used when you call <code>sendSponsoredTransaction</code>.
+        </p>
+
+        <h3 id="gas-methods">Methods</h3>
+        <ApiTable
+          groups={[
+            {
+              title: "The client (createDecaneConnect, and the Expo client)",
+              rows: [
+                {
+                  name: "sendSponsoredTransaction(req)",
+                  type: "Promise<SponsoredSendResult>",
+                  desc: "Send one call (to, value, data) or several (calls) with the gas paid by the project, or by the user in payGasWith.token.",
+                },
+                {
+                  name: "getSponsorshipStatus(chain)",
+                  type: "Promise<SponsorChainConfig>",
+                  desc: "Whether sponsorship is available on the chain for this project, and the reason when it is not (for example PROJECT_SUSPENDED).",
+                },
+                {
+                  name: "quoteGasInToken({ chain, token, gas? })",
+                  type: "Promise<{ token, maxAmount }>",
+                  desc: "The most a send would cost in the token, to show before the user picks pay in USDC.",
+                },
+              ],
+            },
+          ]}
+        />
+
+        <h3 id="gas-how">How it works</h3>
+        <ul>
+          <li>
+            The wallet is an EOA. Its first sponsored send delegates it to Simple7702Account
+            (EIP-7702) in the same operation, so the address and balances stay the same. A wallet
+            already delegated to another contract is refused.
+          </li>
+          <li>
+            The operation is an ERC-4337 UserOperation, signed by the enclave as EIP-712 typed
+            data, and sent through your backend&rsquo;s <code>/sponsor</code> proxy, which adds
+            your project&rsquo;s sponsor key. The key never reaches a browser or a phone.
+          </li>
+          <li>
+            The SDK uses only the EntryPoint, paymaster and 7702 delegate pinned in the package.
+            A config naming any other contract is refused before anything is signed, so a
+            breached server cannot point a wallet at its own contract.
+          </li>
+        </ul>
+
+        <h3 id="gas-limits">Limits and safety</h3>
+        <ul>
+          <li>Off for every project until Decane switches it on and sets its sponsor key.</li>
+          <li>Only the signed-in user&rsquo;s own wallet can have operations sponsored.</li>
+          <li>Each session is held to 120 proxy calls a minute.</li>
+          <li>Per-user and per-day caps and the contracts you allow are set in the sponsor policy.</li>
+          <li>A frozen wallet sponsors nothing; a suspended project stops sponsoring at once.</li>
+        </ul>
+        <p>
+          Pricing: the gas your users&rsquo; sends use, plus a small platform fee, published on
+          the pricing page before sponsorship goes live. The React Native SDK has the same
+          methods.
+        </p>
+      </>
+    ),
+  },
+  {
+    slug: "rpc",
+    group: "Gas & RPC",
+    title: "Decane RPC",
+    icon: "server",
+    body: (
+      <>
+        <div className="docs-callout" data-kind="warn">
+          <div className="ico">!</div>
+          <p>
+            <strong>Coming soon.</strong> The endpoint is deployed; chains are switched on as
+            they go live, and RPC keys come with the dashboard&rsquo;s RPC page. Email{" "}
+            <a href="mailto:info@decane.app">info@decane.app</a> to try it early.
+          </p>
+        </div>
+        <p>
+          Standard Ethereum JSON-RPC from your Decane account. Create an RPC key in a project and
+          the URL alone configures viem, ethers, wagmi, MetaMask, Hardhat or Foundry. No SDK is
+          needed.
+        </p>
+        <CodeBlock lang="bash">
+          {hl(`POST https://backend.decane.app/rpc/v1/{chainId}/{key}`)}
+        </CodeBlock>
+
+        <h3 id="rpc-clients">Use it</h3>
+        <CodeBlock lang="ts" file="client.ts">
+          {hl(`import { createPublicClient, http } from "viem";
+import { base } from "viem/chains";
+
+const client = createPublicClient({
+  chain: base,
+  transport: http("https://backend.decane.app/rpc/v1/8453/dck_rpc_…"),
+});
+
+// ethers
+const provider = new JsonRpcProvider("https://backend.decane.app/rpc/v1/8453/dck_rpc_…");`)}
+        </CodeBlock>
+        <CodeBlock lang="bash">
+          {hl(`curl https://backend.decane.app/rpc/v1/8453/dck_rpc_… \\
+  -d '{"jsonrpc":"2.0","id":1,"method":"eth_blockNumber","params":[]}'`)}
+        </CodeBlock>
+
+        <h3 id="rpc-plans">Plans and limits</h3>
+        <div className="docs-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th style={{ width: "26%" }}>Plan</th>
+                <th>Throughput</th>
+                <th>How to get it</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <strong>Free</strong>
+                </td>
+                <td>20 requests a second</td>
+                <td>Create a key</td>
+              </tr>
+              <tr>
+                <td>
+                  <strong>Builder Club</strong>
+                </td>
+                <td>200 requests a second</td>
+                <td>Apply from the dashboard; free while in early access</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <ul>
+          <li>The limit belongs to the account (the project owner), shared by all its projects and keys.</li>
+          <li>A batch holds up to 10 calls and counts one request per call.</li>
+          <li>
+            Over the limit the answer is HTTP 429 with <code>Retry-After: 1</code> and JSON-RPC
+            error <code>-32005</code>. Refused calls are not billed.
+          </li>
+          <li>
+            <code>eth_getLogs</code> covers at most 10,000 blocks per call; wider ranges are
+            refused with <code>-32602</code>.
+          </li>
+          <li>
+            Request bodies up to 1 MB (blob transactions are not served); answers over 10 MB are
+            refused with a message to narrow the call.
+          </li>
+          <li>Up to 10 live keys per project. Keys are shown once and stored hashed.</li>
+        </ul>
+
+        <h3 id="rpc-methods">Methods</h3>
+        <p>
+          The everyday reads and writes: <code>eth_call</code>, <code>eth_estimateGas</code>,{" "}
+          <code>eth_getBalance</code>, <code>eth_getCode</code>,{" "}
+          <code>eth_getTransactionCount</code>, <code>eth_getStorageAt</code>,{" "}
+          <code>eth_getLogs</code>, <code>eth_getProof</code>, blocks, receipts and transactions
+          by hash or number, <code>eth_getBlockReceipts</code>, the fee methods (
+          <code>eth_gasPrice</code>, <code>eth_maxPriorityFeePerGas</code>,{" "}
+          <code>eth_feeHistory</code>, <code>eth_blobBaseFee</code>),{" "}
+          <code>eth_createAccessList</code>, <code>eth_sendRawTransaction</code>,{" "}
+          <code>eth_chainId</code>, <code>net_version</code> and{" "}
+          <code>web3_clientVersion</code>.
+        </p>
+        <p>
+          Not served: anything that signs with a node&rsquo;s keys (<code>eth_sign</code>,{" "}
+          <code>eth_sendTransaction</code>, <code>personal_*</code>), debug and trace, filters and
+          subscriptions, and WebSockets. A batch with a method that is not served is refused
+          whole.
+        </p>
+
+        <h3 id="rpc-errors">Errors</h3>
+        <div className="docs-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th style={{ width: "14%" }}>HTTP</th>
+                <th style={{ width: "16%" }}>JSON-RPC</th>
+                <th>Meaning</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>400</td><td>-32700</td><td>The body is not JSON</td></tr>
+              <tr><td>400</td><td>-32600 / -32601 / -32602</td><td>Not a valid request, a method that is not served, or bad params (including an eth_getLogs range over 10,000 blocks)</td></tr>
+              <tr><td>401</td><td>-32003</td><td>Unknown or revoked key</td></tr>
+              <tr><td>404</td><td>-32004</td><td>The chain is not served</td></tr>
+              <tr><td>413</td><td>-32600</td><td>Body over 1 MB</td></tr>
+              <tr><td>429</td><td>-32005</td><td>Over the plan&rsquo;s requests per second</td></tr>
+              <tr><td>503</td><td>-32603 / -32005</td><td>Upstream unavailable, or busy; retry shortly</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          Usage is counted per key, chain, method and day and shown in the dashboard within
+          about a minute. Billing will be per request; the price is not set yet.
+        </p>
+      </>
+    ),
+  },
+  {
     slug: "detection",
     group: "Reference",
     title: "Wallet detection",
@@ -2815,6 +3091,18 @@ decane.on("wallet-creating", () => showProgress());`)}
 // Every id that appears in the content, mapped to the page that holds it, so a
 // #hash link written when the docs were one page still lands on the right page.
 export const ANCHORS: Record<string, string> = {
+  "gas-sponsorship": "gas-sponsorship",
+  "gas-send": "gas-sponsorship",
+  "gas-config": "gas-sponsorship",
+  "gas-methods": "gas-sponsorship",
+  "gas-how": "gas-sponsorship",
+  "gas-limits": "gas-sponsorship",
+  rpc: "rpc",
+  sendSponsoredTransaction: "gas-sponsorship",
+  "rpc-clients": "rpc",
+  "rpc-plans": "rpc",
+  "rpc-methods": "rpc",
+  "rpc-errors": "rpc",
   overview: "overview",
   install: "install",
   "quick-start": "quick-start",
@@ -2953,6 +3241,9 @@ export const SEARCH: SearchEntry[] = [
     crumb: "Hooks",
     mono: true,
   },
+  { id: "gas-sponsorship", title: "Gas sponsorship", crumb: "Gas & RPC", mono: false },
+  { id: "sendSponsoredTransaction", title: "sendSponsoredTransaction()", crumb: "Gas & RPC", mono: true },
+  { id: "rpc", title: "Decane RPC", crumb: "Gas & RPC", mono: false },
   {
     id: "detection",
     title: "Wallet detection",

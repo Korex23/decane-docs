@@ -552,6 +552,44 @@ await signInWithToken(phoneToken);
 - Use a stable id as the identity claim (`sub` = your user id), not the phone number itself: carriers recycle numbers, and an id lets a person change theirs without losing the wallet.
 - Whoever holds your issuer's signing key can sign in as any of those logins, and Decane provisions a new device from a sign-in alone. Keep the key in a secret manager and issue tokens that live minutes, not hours.
 
+### Gas sponsorship — since 2.32.0 (early access)
+
+In `decane-connect-kit` 2.32.0, published under the `next` tag
+(`npm install decane-connect-kit@next`) until it moves to `latest`.
+
+EVM only, Base (8453) first. Off for each project until Decane switches it on
+and sets the project's sponsor key. On the CLIENT (the object
+`createDecaneConnect()` returns); the React hooks do not expose it yet.
+
+```ts
+// The project pays the gas (default). One call, or several in `calls`, atomically.
+const { userOpHash, transactionHash, success } = await decane.sendSponsoredTransaction({
+  chain: 'evm:8453', to, data, value,            // or: calls: [{ to, data, value }, …]
+  payGasWith: { token: USDC },                   // optional: the user pays the fee in a token
+});
+await decane.getSponsorshipStatus('evm:8453');   // { enabled, reason? } e.g. reason 'PROJECT_SUSPENDED'
+await decane.quoteGasInToken({ chain: 'evm:8453', token: USDC, gas });  // { token, maxAmount }
+```
+
+Config: `social.gasSponsorship = { payGasWith?: 'sponsor' | { token }, routeSendTransaction?: boolean }`.
+`payGasWith` defaults to `'sponsor'`. `routeSendTransaction: true` sends ordinary
+`sendTransaction` through sponsorship too, which then resolves ON INCLUSION (up
+to 120 s) instead of on broadcast; default false.
+
+- Resolves once the operation is on chain; throws with the sponsor's reason when
+  the project's policy refuses the send.
+- The wallet stays the same EOA and address: its first sponsored send delegates
+  it to Simple7702Account (EIP-7702) in the same ERC-4337 operation. A wallet
+  already delegated to another contract is refused.
+- The SDK uses only the EntryPoint (v0.8), paymaster and 7702 delegate pinned in
+  the package and refuses a config naming anything else; the paymaster in each
+  answer must equal the pinned one.
+- Paying in a token approves at most twice the worst-case fee, never unlimited.
+- Requests go through `POST /sponsor/v1/:chainId/rpc` (and `GET …/config`) on the backend with the
+  session's token; the sponsor key never reaches the client. Only the session's
+  own wallet can be sponsored; 120 calls a minute per session; frozen wallets
+  and suspended projects are refused.
+
 ### Errors
 
 All extend `DecaneConnectError` (`{ code: string; message: string; retryable: boolean }`):
@@ -634,6 +672,41 @@ docs: https://kit.decane.app/node-docs).
 
 ---
 
+## Part 4 — Decane RPC (coming soon: endpoint deployed, chains switched on as they go live)
+
+Standard Ethereum JSON-RPC over HTTP, no SDK needed:
+`POST https://backend.decane.app/rpc/v1/{chainId}/{key}` with an RPC key
+(`dck_rpc_…`, created per project in the dashboard; shown once, stored hashed,
+at most 10 live per project). Works as the transport URL in viem, ethers,
+wagmi, MetaMask, Hardhat or Foundry.
+
+- Plans, per ACCOUNT (the project owner), shared across all its projects and
+  keys: Free 20 requests/s; Builder Club 200 requests/s (free, by application
+  from the dashboard).
+- A batch holds at most 10 calls and counts one request per call; a batch with
+  any method not served is refused whole.
+- Served: eth_call, eth_estimateGas, eth_getBalance, eth_getCode,
+  eth_getTransactionCount, eth_getStorageAt, eth_getLogs, eth_getProof,
+  eth_blockNumber, eth_getBlockByNumber/Hash, eth_getBlockReceipts,
+  eth_getBlockTransactionCountByNumber/Hash, eth_getTransactionByHash,
+  eth_getTransactionReceipt, eth_getTransactionByBlock{Number,Hash}AndIndex,
+  eth_getUncleCountByBlock{Number,Hash}, eth_gasPrice, eth_maxPriorityFeePerGas,
+  eth_feeHistory, eth_blobBaseFee, eth_createAccessList, eth_sendRawTransaction,
+  eth_chainId, net_version, web3_clientVersion, eth_syncing.
+- Not served: signing with node keys (eth_sign*, personal_*, eth_accounts,
+  eth_sendTransaction), debug/trace, txpool, filters, subscriptions, WebSockets.
+- Limits: eth_getLogs at most 10,000 blocks per call (-32602 otherwise); request
+  body at most 1 MB (blob transactions not served); answers over 10 MB refused.
+- Errors (HTTP / JSON-RPC code): 400 -32700 bad JSON; 400 -32600/-32601/-32602
+  invalid request, method not served, bad params; 401 -32003 unknown or revoked
+  key; 404 -32004 chain not served; 413 -32600 body over 1 MB; 429 -32005 over
+  the plan's rate, with `Retry-After: 1` (refused calls are not billed); 503
+  upstream unavailable or busy.
+- Usage per key, chain, method and day appears in the dashboard within about a
+  minute. Billing will be per request; no price is set yet.
+
+---
+
 ## Package
 
 - npm: https://www.npmjs.com/package/decane-connect-kit
@@ -647,3 +720,5 @@ docs: https://kit.decane.app/node-docs).
 - Full documentation: https://kit.decane.app/docs
 - Landing page: https://kit.decane.app
 - Pricing (social sign-in hosted tiers): https://kit.decane.app/pricing
+- Gas sponsorship: https://kit.decane.app/gas-sponsorship
+- Decane RPC: https://kit.decane.app/rpc
