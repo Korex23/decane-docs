@@ -11,6 +11,8 @@ const COLUMNS: Array<{
     title: "Product",
     links: [
       { label: "Live demo", href: "/demo" },
+      { label: "Gas sponsorship", href: "/gas-sponsorship" },
+      { label: "Decane RPC", href: "/rpc" },
       { label: "Pricing", href: "/pricing" },
       { label: "Recovering a wallet", href: "/recovery" },
       { label: "Dashboard", href: DASHBOARD_URL, external: true },

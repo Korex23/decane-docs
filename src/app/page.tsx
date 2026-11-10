@@ -204,7 +204,7 @@ const RpcMock = () => (
   </div>
 );
 
-const PRODUCTS: { id: Product; art: React.ReactNode; title: string; soon?: boolean; body: string }[] = [
+const PRODUCTS: { id: Product; art: React.ReactNode; title: string; soon?: boolean; body: string; href?: string }[] = [
   {
     id: "wallets",
     art: <WalletMock />,
@@ -216,6 +216,7 @@ const PRODUCTS: { id: Product; art: React.ReactNode; title: string; soon?: boole
     art: <GasMock />,
     title: "Gas sponsorship",
     soon: true,
+    href: "/gas-sponsorship",
     body: "Let users send without holding ETH. Cover the fee yourself, or let them pay it in USDC.",
   },
   {
@@ -223,6 +224,7 @@ const PRODUCTS: { id: Product; art: React.ReactNode; title: string; soon?: boole
     art: <RpcMock />,
     title: "Decane RPC",
     soon: true,
+    href: "/rpc",
     body: "Read and write the chain from one URL: 20 requests a second free, 200 in the Builder Club.",
   },
 ];
@@ -305,7 +307,7 @@ const SCENES: Record<Product, { links: [number, number, number, number][]; nodes
   },
 };
 
-const USES: { id: Product; label: string; title: string; body: string; soon?: boolean }[] = [
+const USES: { id: Product; label: string; title: string; body: string; soon?: boolean; href?: string }[] = [
   {
     id: "wallets",
     label: "Wallets",
@@ -316,6 +318,7 @@ const USES: { id: Product; label: string; title: string; body: string; soon?: bo
     id: "gas",
     label: "Gas sponsorship",
     soon: true,
+    href: "/gas-sponsorship",
     title: "Your users never need gas",
     body: "Sponsor transactions so users just send, or let them pay the fee in USDC. Caps per day and per user, and only the contracts you allow.",
   },
@@ -323,6 +326,7 @@ const USES: { id: Product; label: string; title: string; body: string; soon?: bo
     id: "rpc",
     label: "RPC",
     soon: true,
+    href: "/rpc",
     title: "Node access on the same account",
     body: "One URL for viem, ethers, wagmi or MetaMask. Free gives 20 requests a second; the Builder Club gives 200, free, by application.",
   },
@@ -339,20 +343,25 @@ function Uses({ active, setActive }: { active: Product; setActive: (p: Product) 
         <div className="k-uses">
           <div className="k-uses-list" role="tablist" aria-label="Products">
             {USES.map((u) => (
-              <button
-                key={u.id}
-                type="button"
-                role="tab"
-                aria-selected={u.id === active}
-                className={u.id === active ? "on" : ""}
-                onClick={() => setActive(u.id)}
-              >
-                <small>
-                  {u.label} {u.soon && <Soon />}
-                </small>
-                <span className="k-uses-title">{u.title}</span>
-                <span className="k-uses-body">{u.body}</span>
-              </button>
+              <div key={u.id} className={`k-uses-item${u.id === active ? " on" : ""}`}>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={u.id === active}
+                  onClick={() => setActive(u.id)}
+                >
+                  <small>
+                    {u.label} {u.soon && <Soon />}
+                  </small>
+                  <span className="k-uses-title">{u.title}</span>
+                  <span className="k-uses-body">{u.body}</span>
+                </button>
+                {u.href && u.id === active && (
+                  <Link href={u.href} className="k-uses-more">
+                    Learn more <Arrow />
+                  </Link>
+                )}
+              </div>
             ))}
           </div>
           <div className="k-scene" key={active} aria-hidden="true">
@@ -459,9 +468,15 @@ export default function Page() {
                     {p.title} {p.soon && <Soon />}
                   </h3>
                   <p>{p.body}</p>
-                  <button type="button" className="k-link" onClick={() => explore(p.id)}>
-                    Explore <Arrow />
-                  </button>
+                  {p.href ? (
+                    <Link href={p.href} className="k-link">
+                      Explore <Arrow />
+                    </Link>
+                  ) : (
+                    <button type="button" className="k-link" onClick={() => explore(p.id)}>
+                      Explore <Arrow />
+                    </button>
+                  )}
                 </div>
               </Item>
             ))}

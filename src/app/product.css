@@ -1,0 +1,425 @@
+/* =========================================================================
+   PRODUCT PAGES (gas-sponsorship, rpc). Built on landing.css: the hero is
+   split (copy left, a product surface right), then cards, steps, code, plans
+   and questions in the same rhythm as the landing.
+   ========================================================================= */
+
+.p-hero {
+  padding-bottom: 72px;
+}
+.p-hero-grid {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: clamp(32px, 5vw, 80px);
+  align-items: center;
+}
+.p-hero-copy h1 {
+  margin: 18px 0 0;
+  font-size: clamp(40px, 4.4vw, 62px);
+  font-weight: 600;
+  line-height: 1.04;
+  letter-spacing: -0.025em;
+}
+.p-hero-copy p {
+  margin: 22px 0 0;
+  max-width: 540px;
+  font-size: 18px;
+  line-height: 1.5;
+  color: var(--k-body);
+}
+.p-hero-copy .k-actions {
+  margin-top: 36px;
+}
+.p-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--k-accent);
+}
+.p-hero-art {
+  display: grid;
+  place-items: center;
+  min-height: 380px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0.14));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+.site[data-theme="dark"] .p-hero-art {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
+}
+.p-sheet {
+  position: relative;
+  width: min(340px, 82%);
+  font-size: 13px;
+  line-height: 1.3;
+  color: #1b1a17;
+  font-feature-settings: "tnum";
+}
+.p-sheet .pm-body {
+  gap: 10px;
+  padding: 14px;
+}
+.pm-toast.static {
+  position: relative;
+  left: auto;
+  bottom: auto;
+  transform: none;
+  margin: 14px auto 0;
+  width: max-content;
+  animation: none;
+}
+.p-methods-mini {
+  display: grid;
+  gap: 6px;
+  padding-top: 4px;
+}
+.p-methods-mini span {
+  display: grid;
+  grid-template-columns: 110px 1fr 32px;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: #56544c;
+}
+.p-methods-mini code {
+  font-size: 11px;
+  background: none;
+  padding: 0;
+  color: #1b1a17;
+}
+.p-methods-mini i {
+  height: 6px;
+  border-radius: 99px;
+  background: #e2cf9f;
+}
+.p-methods-mini em {
+  font-style: normal;
+  text-align: right;
+}
+
+.p-body {
+  margin-top: 48px;
+  display: grid;
+  gap: 32px;
+}
+
+/* cards */
+.p-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+.p-card {
+  padding: 28px;
+  border-radius: 16px;
+  background: var(--k-tint);
+  border: 1px solid color-mix(in srgb, var(--k-line) 70%, transparent);
+}
+.k-tinted .p-card {
+  background: var(--k-card);
+}
+.p-card small {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--k-accent);
+}
+.lp .p-card h3 {
+  margin: 0 0 8px;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.p-card p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--k-body);
+}
+
+/* steps */
+.p-steps {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+.p-step {
+  padding: 24px;
+  border-radius: 16px;
+  background: var(--k-card);
+  border: 1px solid color-mix(in srgb, var(--k-line) 70%, transparent);
+}
+.p-step-n {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  margin-bottom: 18px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--k-accent-strong);
+  background: color-mix(in srgb, #e0a83a 18%, transparent);
+}
+.lp .p-step h3 {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+.p-step p {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--k-body);
+}
+
+/* code */
+.p-split {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+.p-notes {
+  display: grid;
+  gap: 20px;
+}
+.p-code {
+  border-radius: 14px;
+  overflow: hidden;
+  background: #16140f;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 24px 48px -32px rgba(0, 0, 0, 0.6);
+  min-width: 0;
+}
+.p-code-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 11px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+.p-code-head span {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+}
+.p-code-head small {
+  margin-left: 8px;
+  font-size: 12px;
+  color: rgba(242, 241, 236, 0.55);
+  font-family: var(--font-mono, ui-monospace, monospace);
+}
+.p-code pre {
+  margin: 0;
+  padding: 18px 20px;
+  overflow-x: auto;
+  font-size: 13px;
+  line-height: 1.65;
+  color: #e9e6dc;
+}
+.p-code code {
+  background: none;
+  padding: 0;
+  font-family: var(--font-mono, ui-monospace, monospace);
+}
+.p-ticks {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--k-ink);
+}
+.p-ticks.wide {
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+.p-ticks li {
+  position: relative;
+  padding-left: 26px;
+}
+.p-ticks li::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 7px;
+  width: 10px;
+  height: 5px;
+  border-left: 2px solid var(--k-accent);
+  border-bottom: 2px solid var(--k-accent);
+  transform: rotate(-45deg);
+}
+.p-ticks code {
+  font-size: 13px;
+}
+
+/* library tabs */
+.p-tabs {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 12px;
+  background: var(--k-tint);
+  border: 1px solid color-mix(in srgb, var(--k-line) 70%, transparent);
+  justify-self: start;
+}
+.p-tabs button {
+  padding: 7px 16px;
+  border: 0;
+  border-radius: 9px;
+  background: none;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--k-body);
+  cursor: pointer;
+}
+.p-tabs button.on {
+  background: var(--k-card);
+  color: var(--k-ink);
+  box-shadow: 0 1px 3px rgba(27, 26, 23, 0.12);
+}
+
+/* plans */
+.p-plans {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.p-plan {
+  padding: 32px;
+  border-radius: 18px;
+  border: 1px solid var(--k-line);
+  background: var(--k-card);
+}
+.p-plan.club {
+  border-color: color-mix(in srgb, #e0a83a 55%, transparent);
+  background:
+    radial-gradient(80% 120% at 100% 0%, color-mix(in srgb, #e0a83a 14%, transparent), transparent 60%),
+    var(--k-card);
+}
+.p-plan small {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--k-accent);
+}
+.p-plan b {
+  display: block;
+  margin: 12px 0 10px;
+  font-size: 56px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--k-ink);
+}
+.p-plan b span {
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--k-body);
+}
+.p-plan p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--k-body);
+}
+
+/* methods */
+.p-methods {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.p-methods code {
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  background: var(--k-card);
+  border: 1px solid color-mix(in srgb, var(--k-line) 80%, transparent);
+  color: var(--k-ink);
+}
+
+/* questions */
+.p-faq {
+  max-width: 860px;
+  border-top: 1px solid var(--k-line);
+}
+.p-faq details {
+  border-bottom: 1px solid var(--k-line);
+}
+.p-faq summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 22px 0;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--k-ink);
+  cursor: pointer;
+  list-style: none;
+}
+.p-faq summary::-webkit-details-marker {
+  display: none;
+}
+.p-faq summary::after {
+  content: "+";
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--k-accent);
+  transition: transform 0.2s ease;
+}
+.p-faq details[open] summary::after {
+  transform: rotate(45deg);
+}
+.p-faq p {
+  margin: 0 0 22px;
+  max-width: 720px;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--k-body);
+}
+
+@media (max-width: 1000px) {
+  .p-hero-grid,
+  .p-split,
+  .p-plans {
+    grid-template-columns: 1fr;
+  }
+  .p-steps {
+    grid-template-columns: 1fr 1fr;
+  }
+  .p-hero-art {
+    min-height: 320px;
+  }
+}
+@media (max-width: 560px) {
+  .p-steps {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* The hero here is shorter than the landing's: fade the gradient within it. */
+.p-hero .k-hero-bg {
+  height: 100%;
+  -webkit-mask-image: linear-gradient(180deg, #000 55%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 55%, transparent 100%);
+}
