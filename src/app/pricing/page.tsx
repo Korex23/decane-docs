@@ -1,10 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { SiteNav } from "@/components/SiteNav";
-import { SiteFooter } from "@/components/SiteFooter";
 import { Reveal, Stagger, Item } from "@/components/motion";
-import { useTheme, DASHBOARD_URL } from "@/lib/theme";
+import { DASHBOARD_URL } from "@/lib/theme";
+import { PageShell, Tab, Arrow, Faq } from "@/components/ProductPage";
 
 // Tier structure follows Privy's pricing model (privy.io/pricing) at a flat
 // 15% discount on every dollar figure: Free (0-499 MAU) / Scale, priced in
@@ -205,30 +204,23 @@ function Check() {
 }
 
 export default function PricingPage() {
-  const [theme, toggleTheme] = useTheme();
   const [pos, setPos] = useState(() => mauToPos(1200));
   const mau = posToMau(pos);
   const idx = TIERS.reduce((a, t, i) => (mau >= t.min ? i : a), 0);
   const plan = TIERS[idx];
 
   return (
-    <div className="site" data-theme={theme}>
-      <SiteNav theme={theme} onToggleTheme={toggleTheme} />
-
-      <header className="hero page-head">
-        <Reveal className="container hero-inner">
-          <div className="eyebrow">Pricing</div>
-          <h1>How many wallets are active each month?</h1>
-          <p className="lede" style={{ maxWidth: "54ch" }}>
-            That one number picks your plan. Everything else, the three-share
-            wallet, the attested enclave, every sign-in method and every chain,
-            is the same on all of them.
-          </p>
-        </Reveal>
-      </header>
-
-      <section style={{ padding: "16px 0 80px" }}>
-        <div className="container">
+    <PageShell
+      eyebrow="Pricing"
+      title="How many wallets are active each month?"
+      lede="That one number picks your plan. Everything else, the three-share wallet, the attested enclave, every sign-in method and every chain, is the same on all of them."
+      close={{
+        title: "Start free, scale when it counts",
+        text: "Free up to 499 monthly active wallets. Every sign-in method, every chain.",
+      }}
+    >
+      <section className="k-section" style={{ paddingTop: 24 }}>
+        <div className="k-wrap">
           <Stagger className="calc" delay={0.12}>
             <Item className="calc-card">
               <div className="calc-top">
@@ -293,8 +285,8 @@ export default function PricingPage() {
                 ))}
               </ul>
               <div className="actions">
-                <a href={plan.cta.href} className="btn btn-primary btn-lg">
-                  {plan.cta.label}
+                <a href={plan.cta.href} className="k-btn k-btn-primary">
+                  {plan.cta.label} <Arrow />
                 </a>
                 <span>{plan.note}</span>
               </div>
@@ -306,73 +298,63 @@ export default function PricingPage() {
         </div>
       </section>
 
-      <section style={{ padding: "0 0 96px" }}>
-        <Reveal className="container">
-          <div className="compare-head">
-            <h2 className="md">All plans, side by side</h2>
-            <span>Your plan is highlighted.</span>
-          </div>
-          <div className="compare-panel">
-            <table className="compare">
-              <thead>
-                <tr>
-                  <th></th>
-                  {TIERS.map((t, i) => (
-                    <th key={t.key} className={i === idx ? "on" : ""}>
-                      {t.name}
-                      <small>
-                        {t.price}
-                        {t.period ? " / mo" : ""}
-                      </small>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {ROWS.map((r) => (
-                  <tr key={r.label}>
-                    <th>{r.label}</th>
-                    {r.v.map((v, i) => (
-                      <td
-                        key={i}
-                        className={`${v === "—" ? "no" : ""}${i === idx ? " on" : ""}`}
-                      >
-                        {v === "—" ? "Not included" : v}
-                      </td>
+      <section className="k-section k-tinted">
+        <Tab />
+        <div className="k-wrap">
+          <Reveal>
+            <div className="pg-head-row">
+              <h2 className="k-h2 k-h2-narrow">All plans, side by side</h2>
+              <span>Your plan is highlighted.</span>
+            </div>
+            <div className="compare-panel">
+              <table className="compare">
+                <thead>
+                  <tr>
+                    <th></th>
+                    {TIERS.map((t, i) => (
+                      <th key={t.key} className={i === idx ? "on" : ""}>
+                        {t.name}
+                        <small>
+                          {t.price}
+                          {t.period ? " / mo" : ""}
+                        </small>
+                      </th>
                     ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </Reveal>
+                </thead>
+                <tbody>
+                  {ROWS.map((r) => (
+                    <tr key={r.label}>
+                      <th>{r.label}</th>
+                      {r.v.map((v, i) => (
+                        <td
+                          key={i}
+                          className={`${v === "—" ? "no" : ""}${i === idx ? " on" : ""}`}
+                        >
+                          {v === "—" ? "Not included" : v}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Reveal>
+        </div>
       </section>
 
-      <section style={{ padding: "0 0 112px" }}>
-        <Reveal className="container faq-grid">
-          <div>
-            <div className="eyebrow">Questions</div>
-            <h2 className="md">Before you pick a plan</h2>
-            <p>
+      <section className="k-section">
+        <div className="k-wrap pg-faq">
+          <Reveal>
+            <h2 className="k-h2 k-h2-narrow">Before you pick a plan</h2>
+            <p className="k-lead">
               Anything not covered here, write to{" "}
-              <a href="mailto:info@decane.app" className="ulink">
-                info@decane.app
-              </a>
-              .
+              <a href="mailto:info@decane.app">info@decane.app</a>.
             </p>
-          </div>
-          <dl>
-            {FAQS.map((f) => (
-              <div key={f.q} className="faq-card">
-                <dt>{f.q}</dt>
-                <dd>{f.a}</dd>
-              </div>
-            ))}
-          </dl>
-        </Reveal>
+          </Reveal>
+          <Faq items={FAQS} />
+        </div>
       </section>
-
-      <SiteFooter />
-    </div>
+    </PageShell>
   );
 }

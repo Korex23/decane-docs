@@ -423,3 +423,160 @@
   -webkit-mask-image: linear-gradient(180deg, #000 55%, transparent 100%);
   mask-image: linear-gradient(180deg, #000 55%, transparent 100%);
 }
+
+/* =========================================================================
+   OTHER MARKETING PAGES (pricing, changelog, recovery, legal) in the
+   landing's look: a centred gold page hero, then k-sections.
+   ========================================================================= */
+
+.pg-hero {
+  padding-bottom: 56px;
+  text-align: center;
+}
+.pg-hero .k-hero-bg {
+  height: 100%;
+  -webkit-mask-image: linear-gradient(180deg, #000 50%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 50%, transparent 100%);
+}
+.pg-hero-copy {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.lp .pg-hero-copy h1 {
+  margin: 18px auto 0;
+  max-width: 900px;
+  font-size: clamp(40px, 4.8vw, 68px);
+  font-weight: 600;
+  line-height: 1.03;
+  letter-spacing: -0.03em;
+}
+.pg-hero-copy.narrow h1 {
+  max-width: 760px;
+}
+.pg-hero-copy p {
+  margin: 22px auto 0;
+  max-width: 600px;
+  font-size: 18px;
+  line-height: 1.55;
+  color: var(--k-body);
+}
+.pg-hero-copy .k-actions {
+  margin-top: 32px;
+}
+
+/* ── pricing in the landing's language ─────────────────────────────────── */
+.lp .calc {
+  gap: 20px;
+}
+.lp .calc-card,
+.lp .plan-card {
+  padding: clamp(28px, 3vw, 40px);
+  border-radius: 20px;
+  box-shadow: none;
+  background: var(--k-card);
+  border: 1px solid var(--k-line);
+}
+.lp .calc-top .n,
+.lp .calc-ticks,
+.lp .band small,
+.lp .plan-card .band-tag,
+.lp .compare thead th small {
+  font-family: inherit;
+  font-feature-settings: 'tnum';
+}
+.lp .calc-top .n {
+  font-size: 44px;
+  letter-spacing: -0.035em;
+}
+.lp input[type='range'] {
+  background: color-mix(in srgb, var(--k-line) 100%, transparent);
+}
+.lp input[type='range']::-webkit-slider-thumb {
+  background: var(--k-btn);
+  box-shadow: 0 0 0 1px var(--k-btn), 0 4px 12px rgba(0, 0, 0, 0.18);
+}
+.lp input[type='range']::-moz-range-thumb {
+  background: var(--k-btn);
+  box-shadow: 0 0 0 1px var(--k-btn);
+}
+.lp .band {
+  height: 68px;
+  border-radius: 12px;
+  background: var(--k-tint);
+  border-color: transparent;
+}
+.lp .band.active {
+  background: color-mix(in srgb, #e0a83a 16%, var(--k-card));
+  border-color: color-mix(in srgb, #e0a83a 60%, transparent);
+}
+.lp .plan-card {
+  border-color: color-mix(in srgb, #e0a83a 55%, transparent);
+  background:
+    radial-gradient(80% 120% at 100% 0%, color-mix(in srgb, #e0a83a 16%, transparent), transparent 60%),
+    var(--k-card);
+}
+.lp .plan-card::before {
+  display: none;
+}
+.lp .plan-card .yours,
+.lp .plan-card li svg {
+  color: var(--k-accent);
+}
+.lp .plan-card .yours::before {
+  background: var(--k-accent);
+}
+.lp .plan-card .name {
+  font-weight: 600;
+}
+.lp .plan-card .price b {
+  font-weight: 600;
+  font-size: 64px;
+}
+.lp .footnote {
+  margin-top: 16px;
+  font-size: 13px;
+  color: var(--k-body);
+  opacity: 0.75;
+}
+.lp .compare-panel {
+  background: var(--k-card);
+  border: 1px solid var(--k-line);
+  border-radius: 20px;
+  box-shadow: none;
+}
+.lp .compare thead th.on {
+  color: var(--k-accent-strong);
+  background: color-mix(in srgb, #e0a83a 14%, transparent);
+}
+.lp .compare td.on {
+  background: color-mix(in srgb, #e0a83a 8%, transparent);
+}
+.pg-head-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-bottom: 40px;
+}
+.pg-head-row > span {
+  font-size: 14px;
+  color: var(--k-body);
+}
+.pg-faq {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  gap: clamp(32px, 6vw, 96px);
+  align-items: start;
+}
+.pg-faq .k-lead a {
+  color: var(--k-accent);
+}
+@media (max-width: 900px) {
+  .pg-faq {
+    grid-template-columns: 1fr;
+  }
+}

@@ -108,6 +108,80 @@ export function ProductPage({
   );
 }
 
+/**
+ * The frame for every other marketing page (pricing, changelog, recovery,
+ * legal): the landing's nav, a centred gold page hero, the page's sections,
+ * an optional dark close, and the footer.
+ */
+export function PageShell({
+  eyebrow,
+  title,
+  lede,
+  actions,
+  children,
+  close,
+  narrow,
+}: {
+  eyebrow: string;
+  title: React.ReactNode;
+  lede?: React.ReactNode;
+  actions?: React.ReactNode;
+  children: React.ReactNode;
+  close?: { title: string; text: string } | null;
+  narrow?: boolean;
+}) {
+  const [theme, toggleTheme] = useTheme();
+  return (
+    <div className="site lp" data-theme={theme}>
+      <SiteNav theme={theme} onToggleTheme={toggleTheme} />
+
+      <header className="k-hero pg-hero">
+        <div className="k-hero-bg" aria-hidden="true" />
+        <Stagger className={`k-wrap pg-hero-copy${narrow ? " narrow" : ""}`} inView={false} delay={0.1} start={0.05}>
+          <Item>
+            <span className="p-eyebrow">{eyebrow}</span>
+          </Item>
+          <Item>
+            <h1>{title}</h1>
+          </Item>
+          {lede && (
+            <Item>
+              <p>{lede}</p>
+            </Item>
+          )}
+          {actions && <Item className="k-actions">{actions}</Item>}
+        </Stagger>
+      </header>
+
+      {children}
+
+      {close && (
+        <section className="k-close">
+          <Tab />
+          <div className="k-wrap">
+            <Reveal className="k-close-card">
+              <div className="k-close-copy">
+                <h2>{close.title}</h2>
+                <p>{close.text}</p>
+                <div className="k-actions">
+                  <a href={`${DASHBOARD_URL}/auth/register`} className="k-btn k-btn-primary">
+                    Start free <Arrow />
+                  </a>
+                  <Link href="/docs" className="k-btn k-btn-light">
+                    Read the docs
+                  </Link>
+                </div>
+              </div>
+            </Reveal>
+          </div>
+        </section>
+      )}
+
+      <SiteFooter />
+    </div>
+  );
+}
+
 /** A section with a big heading and an optional line under it. */
 export function PSection({
   id,
