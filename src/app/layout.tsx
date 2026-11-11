@@ -29,7 +29,6 @@ export const metadata: Metadata = {
     "MPC wallet",
   ],
   authors: [{ name: "decane" }],
-  icons: { icon: "/icon.svg" },
   openGraph: {
     type: "website",
     url: SITE_URL,
