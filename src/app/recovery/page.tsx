@@ -1,9 +1,7 @@
 "use client";
 
-import { SiteNav } from "@/components/SiteNav";
-import { SiteFooter } from "@/components/SiteFooter";
 import { Reveal, Stagger, Item } from "@/components/motion";
-import { useTheme } from "@/lib/theme";
+import { PageShell, Tab, Arrow, Faq } from "@/components/ProductPage";
 
 // End-user facing recovery guide. Written for the person who owns a wallet,
 // not the developer integrating the SDK — plain language, no API names.
@@ -93,189 +91,129 @@ const line = {
   strokeLinejoin: "round",
 } as const;
 
+const ICONS = [
+  <svg key="d" width="20" height="20" viewBox="0 0 24 24" {...line}>
+    <rect x="6" y="2.5" width="12" height="19" rx="2.5" />
+    <path d="M11 18h2" />
+  </svg>,
+  <svg key="s" width="20" height="20" viewBox="0 0 24 24" {...line}>
+    <rect x="3" y="4" width="18" height="6" rx="1.5" />
+    <rect x="3" y="14" width="18" height="6" rx="1.5" />
+    <path d="M7 7h.01M7 17h.01" />
+  </svg>,
+  <svg key="r" width="20" height="20" viewBox="0 0 24 24" {...line}>
+    <rect x="4" y="10" width="16" height="11" rx="2" />
+    <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+  </svg>,
+];
+
+const PIECES = [
+  { title: "Your device", body: "Issued each session. Some apps guard it with a passkey or password." },
+  { title: "Our server", body: "Encrypted at rest. Never a full key, never signs on its own." },
+  { title: "The sealed piece", body: "Opened by the enclave only after you sign in. Your recovery file is a copy of it." },
+];
+
 export default function RecoveryGuidePage() {
-  const [theme, toggleTheme] = useTheme();
-
   return (
-    <div className="site" data-theme={theme}>
-      <SiteNav theme={theme} onToggleTheme={toggleTheme} />
-
-      <header className="hero page-head">
-        <Reveal className="container hero-inner">
-          <div className="eyebrow">For wallet owners</div>
-          <h1>Lost your phone? Your wallet isn&rsquo;t lost.</h1>
-          <p className="lede">
-            Three pieces protect your wallet; any two open it. Sign in on the
-            new device and it&rsquo;s back.
-          </p>
-          <div className="hero-actions" style={{ marginTop: 32 }}>
-            <a href="#new-device" className="btn btn-primary btn-lg">
-              I have a new device
-            </a>
-            <a href="#recovery-file" className="btn btn-secondary btn-lg">
-              I have a recovery file
-            </a>
-            <a href="#compromised" className="btn btn-secondary btn-lg">
-              Someone signed in as me
-            </a>
-          </div>
-        </Reveal>
-      </header>
-
-      <section style={{ padding: "24px 0 0" }}>
-        <div className="container">
-          <Reveal className="panel protect">
-            <div className="protect-head">
-              <div>
-                <div className="eyebrow">How it&rsquo;s protected</div>
-                <h2>Three pieces. Any two open the wallet.</h2>
-              </div>
-              <span className="status-pill">No seed phrase, ever</span>
-            </div>
-            <Stagger className="pieces" delay={0.1}>
-              <Item className="piece">
-                <span className="icon-box">
-                  <svg width="18" height="18" viewBox="0 0 24 24" {...line}>
-                    <rect x="6" y="2.5" width="12" height="19" rx="2.5" />
-                    <path d="M11 18h2" />
-                  </svg>
-                </span>
-                <h3>Your device</h3>
-                <p>
-                  Issued each session. Some apps guard it with a passkey or
-                  password.
-                </p>
-              </Item>
-              <Item className="piece">
-                <span className="icon-box">
-                  <svg width="18" height="18" viewBox="0 0 24 24" {...line}>
-                    <rect x="3" y="4" width="18" height="6" rx="1.5" />
-                    <rect x="3" y="14" width="18" height="6" rx="1.5" />
-                    <path d="M7 7h.01M7 17h.01" />
-                  </svg>
-                </span>
-                <h3>Our server</h3>
-                <p>
-                  Encrypted at rest. Never a full key, never signs on its own.
-                </p>
-              </Item>
-              <Item className="piece">
-                <span className="icon-box">
-                  <svg width="18" height="18" viewBox="0 0 24 24" {...line}>
-                    <rect x="4" y="10" width="16" height="11" rx="2" />
-                    <path d="M8 10V7a4 4 0 0 1 8 0v3" />
-                  </svg>
-                </span>
-                <h3>The sealed piece</h3>
-                <p>
-                  Opened by the enclave only after you sign in. Your recovery
-                  file is a copy of it.
-                </p>
-              </Item>
-            </Stagger>
+    <PageShell
+      eyebrow="For wallet owners"
+      title={<>Lost your phone? Your wallet isn&rsquo;t lost.</>}
+      lede="Three pieces protect your wallet; any two open it. Sign in on the new device and it’s back."
+      narrow
+      actions={
+        <>
+          <a href="#new-device" className="k-btn k-btn-primary">
+            I have a new device
+          </a>
+          <a href="#recovery-file" className="k-btn k-btn-light">
+            I have a recovery file
+          </a>
+          <a href="#compromised" className="k-btn k-btn-light">
+            Someone signed in as me
+          </a>
+        </>
+      }
+    >
+      <section className="k-section" style={{ paddingTop: 32 }}>
+        <div className="k-wrap">
+          <Reveal className="pg-head-row">
+            <h2 className="k-h2 k-h2-narrow">Three pieces. Any two open the wallet.</h2>
+            <span className="k-soon">No seed phrase, ever</span>
           </Reveal>
+          <Stagger className="p-cards" delay={0.08}>
+            {PIECES.map((piece, i) => (
+              <Item key={piece.title} className="p-card">
+                <span className="pg-icon">{ICONS[i]}</span>
+                <h3>{piece.title}</h3>
+                <p>{piece.body}</p>
+              </Item>
+            ))}
+          </Stagger>
         </div>
       </section>
 
-      <section className="section">
-        <div className="container scenarios">
-          {SCENARIOS.map((s) => (
-            <Reveal key={s.id} as="section" className="scenario">
-              <div id={s.id} style={{ scrollMarginTop: 88 }}>
-                <span className={`tag ${s.tone}`}>{s.who}</span>
-                <h2>{s.title}</h2>
-                <p className="lede-sm">{s.lede}</p>
-              </div>
-              <ol className="steps">
-                {s.steps.map((text, i) => (
-                  <li key={i}>
-                    <span className="n">{i + 1}</span>
-                    <span>{text}</span>
-                  </li>
-                ))}
-              </ol>
-            </Reveal>
-          ))}
+      <section className="k-section k-tinted">
+        <Tab />
+        <div className="k-wrap">
+          <Reveal>
+            <h2 className="k-h2 k-h2-narrow">What to do, step by step</h2>
+          </Reveal>
+          <div className="pg-scenarios">
+            {SCENARIOS.map((s) => (
+              <Reveal key={s.id} className="pg-scenario">
+                <div id={s.id} className="pg-scenario-head">
+                  <span className={`pg-tag ${s.tone}`}>{s.who}</span>
+                  <h3>{s.title}</h3>
+                  <p>{s.lede}</p>
+                </div>
+                <ol className="pg-steps">
+                  {s.steps.map((text, i) => (
+                    <li key={i}>
+                      <span className="p-step-n">{String(i + 1).padStart(2, "0")}</span>
+                      <span>{text}</span>
+                    </li>
+                  ))}
+                </ol>
+              </Reveal>
+            ))}
+          </div>
         </div>
       </section>
 
-      <section className="section">
-        <div className="container">
-          <Reveal className="panel glow-tr tool">
-            <div className="text">
-              <div className="eyebrow">Works without us</div>
-              <h2>The offline recovery tool</h2>
-              <p>
-                Have a <strong>full recovery file</strong>? This page turns it
-                back into your keys, in your browser, with no network. Save it
-                next to your file and it keeps working without us.
+      <section className="k-section">
+        <div className="k-wrap">
+          <Reveal className="pg-tool">
+            <div>
+              <span className="p-eyebrow">Works without us</span>
+              <h2 className="k-h2 k-h2-narrow">The offline recovery tool</h2>
+              <p className="k-lead">
+                Have a <strong>full recovery file</strong>? This page turns it back into your keys, in your browser, with no
+                network. Save it next to your file and it keeps working without us.
               </p>
-              <div className="callout-warn">
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M12 9v4M12 17h.01" />
-                  <path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z" />
-                </svg>
-                <p>
-                  Download the page, go offline, then open it. Nothing is ever
-                  sent anywhere.
-                </p>
-              </div>
+              <p className="pg-warn">Download the page, go offline, then open it. Nothing is ever sent anywhere.</p>
             </div>
-            <div className="tool-actions">
-              <a
-                href="/offline-recovery.html"
-                target="_blank"
-                rel="noreferrer"
-                className="btn btn-primary btn-lg"
-              >
-                Open the recovery tool
+            <div className="pg-tool-actions">
+              <a href="/offline-recovery.html" target="_blank" rel="noreferrer" className="k-btn k-btn-primary">
+                Open the recovery tool <Arrow />
               </a>
-              <a
-                href="/offline-recovery.html"
-                download="decane-offline-recovery.html"
-                className="btn btn-secondary btn-lg"
-              >
+              <a href="/offline-recovery.html" download="decane-offline-recovery.html" className="k-btn k-btn-light">
                 Download for offline use
               </a>
-              <span className="fine">
-                offline-recovery.html · 419 KB · no dependencies
-              </span>
+              <span>offline-recovery.html · 419 KB · no dependencies</span>
             </div>
           </Reveal>
         </div>
       </section>
 
-      <section className="section pad-b">
-        <Reveal className="container faq-grid">
-          <div>
-            <div className="eyebrow">Questions</div>
-            <h2 className="md">Common questions</h2>
-            <p>
-              Still unsure? Your app&rsquo;s support can freeze the wallet while
-              you sort it out.
-            </p>
-          </div>
-          <dl>
-            {FAQS.map((f) => (
-              <div key={f.q} className="faq-card">
-                <dt>{f.q}</dt>
-                <dd>{f.a}</dd>
-              </div>
-            ))}
-          </dl>
-        </Reveal>
+      <section className="k-section" style={{ paddingTop: 0 }}>
+        <div className="k-wrap pg-faq">
+          <Reveal>
+            <h2 className="k-h2 k-h2-narrow">Common questions</h2>
+            <p className="k-lead">Still unsure? Your app&rsquo;s support can freeze the wallet while you sort it out.</p>
+          </Reveal>
+          <Faq items={FAQS} />
+        </div>
       </section>
-
-      <SiteFooter />
-    </div>
+    </PageShell>
   );
 }

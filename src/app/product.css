@@ -580,3 +580,177 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ── recovery ──────────────────────────────────────────────────────────── */
+.pg-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-bottom: 20px;
+  border-radius: 12px;
+  color: var(--k-accent-strong);
+  background: color-mix(in srgb, #e0a83a 16%, transparent);
+}
+.pg-scenarios {
+  margin-top: 48px;
+  display: grid;
+  gap: 16px;
+}
+.pg-scenario {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: clamp(24px, 4vw, 64px);
+  padding: clamp(24px, 3vw, 40px);
+  border-radius: 20px;
+  background: var(--k-card);
+  border: 1px solid color-mix(in srgb, var(--k-line) 70%, transparent);
+}
+.pg-scenario-head {
+  scroll-margin-top: 96px;
+}
+.lp .pg-scenario-head h3 {
+  margin: 14px 0 8px;
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.pg-scenario-head p {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--k-body);
+}
+.pg-tag {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--k-accent-strong);
+  background: color-mix(in srgb, #e0a83a 16%, transparent);
+}
+.pg-tag.warn {
+  color: #b4532e;
+  background: color-mix(in srgb, #b4532e 13%, transparent);
+}
+.pg-tag.neutral {
+  color: var(--k-body);
+  background: color-mix(in srgb, var(--k-line) 70%, transparent);
+}
+.pg-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+.pg-steps li {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  font-size: 15.5px;
+  line-height: 1.55;
+  color: var(--k-ink);
+}
+.pg-steps .p-step-n {
+  flex: none;
+  margin: 0;
+}
+.pg-tool {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+  gap: clamp(28px, 5vw, 72px);
+  align-items: center;
+  padding: clamp(28px, 4vw, 56px);
+  border-radius: 24px;
+  border: 1px solid color-mix(in srgb, #e0a83a 55%, transparent);
+  background:
+    radial-gradient(80% 120% at 100% 0%, color-mix(in srgb, #e0a83a 16%, transparent), transparent 60%),
+    var(--k-card);
+}
+.lp .pg-tool h2 {
+  margin-top: 14px;
+}
+.pg-warn {
+  margin: 20px 0 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-size: 14px;
+  color: var(--k-ink);
+  background: color-mix(in srgb, #b4532e 9%, transparent);
+  border: 1px solid color-mix(in srgb, #b4532e 28%, transparent);
+}
+.pg-tool-actions {
+  display: grid;
+  gap: 12px;
+}
+.pg-tool-actions .k-btn {
+  justify-content: center;
+}
+.pg-tool-actions span {
+  font-size: 12.5px;
+  color: var(--k-body);
+  text-align: center;
+}
+@media (max-width: 900px) {
+  .pg-scenario,
+  .pg-tool {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── legal (terms, privacy) ────────────────────────────────────────────── */
+.pg-updated {
+  display: block;
+  margin-top: 14px;
+  font-size: 13px;
+  color: var(--k-body);
+  opacity: 0.8;
+}
+.pg-summary {
+  padding: clamp(24px, 3vw, 40px);
+  border-radius: 20px;
+  background: var(--k-tint);
+  border: 1px solid color-mix(in srgb, var(--k-line) 70%, transparent);
+}
+.pg-summary .p-ticks {
+  margin-top: 18px;
+}
+.pg-fine {
+  margin: 20px 0 0;
+  font-size: 13px;
+  color: var(--k-body);
+}
+.lp .pg-legal .legal-section h2 {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--k-ink);
+}
+.lp .pg-legal .legal-section h2 .n {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--k-accent-strong);
+  background: color-mix(in srgb, #e0a83a 16%, transparent);
+  border: 0;
+}
+.lp .pg-legal .legal-toc a::before {
+  font-family: inherit;
+}
+.lp .pg-legal .legal-toc a:hover {
+  background: var(--k-tint);
+}
+.lp .pg-legal .legal-section p,
+.lp .pg-legal .legal-section li {
+  color: var(--k-body);
+  font-size: 16px;
+  line-height: 1.65;
+}
