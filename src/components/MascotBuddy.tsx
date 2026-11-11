@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { animate, motion, useMotionValue, useReducedMotion, useSpring } from 'framer-motion';
+import { animate, motion, useMotionValue, useReducedMotion, useSpring, useTransform } from 'framer-motion';
 
 // The same mascot as decane.app's. The Decane mascot zig-zags down the page: it perches on the right edge for
 // one section and the left edge for the next. Scroll into a new section and it
@@ -11,7 +11,7 @@ import { animate, motion, useMotionValue, useReducedMotion, useSpring } from 'fr
 // where the margins are too thin to perch in, and with reduced motion, it sits
 // still in the corner.
 
-const MAX_LOOK = 2.2; // how far the pupils travel, in SVG units
+const MAX_LOOK = 3.6; // how far the pupils travel, in SVG units
 const SIZE = 56;
 
 /** The page's top-level sections: big blocks that are not inside another one. */
@@ -62,6 +62,10 @@ export default function MascotBuddy() {
   const lookY = useMotionValue(0);
   const eyeX = useSpring(lookX, { stiffness: 220, damping: 20 });
   const eyeY = useSpring(lookY, { stiffness: 220, damping: 20 });
+  // the face follows the eyes a little, and the head tilts toward the cursor
+  const faceX = useTransform(eyeX, (v) => v * 0.45);
+  const faceY = useTransform(eyeY, (v) => v * 0.35);
+  const tilt = useTransform(eyeX, (v) => v * 2.2);
 
   const jumpTo = useCallback(
     async (index: number, n: number) => {
@@ -167,7 +171,7 @@ export default function MascotBuddy() {
       const dx = e.clientX - (r.left + r.width / 2);
       const dy = e.clientY - (r.top + r.height / 2);
       const d = Math.hypot(dx, dy) || 1;
-      const k = Math.min(1, d / 260);
+      const k = Math.min(1, d / 90);
       lookX.set((dx / d) * MAX_LOOK * k);
       lookY.set((dy / d) * MAX_LOOK * 0.8 * k);
     };
@@ -199,6 +203,7 @@ export default function MascotBuddy() {
         d="M16.6 20.9c8.9-12.6 30.5-8.7 34.9-.3 3.5 3.5 3.7 10.2 3.7 10.2s3.6 7.1 2.2 10.6C55.8 56.8 13.9 57 11.3 41.4c-1.4-4.3 2.1-10 2.1-10s-.4-4.1 3.2-10.5z"
         fill="#FFD700"
       />
+      <motion.g style={{ x: faceX, y: faceY }}>
       <ellipse cx="49" cy="39.3" rx="2.4" ry="1.9" transform="rotate(-22 49 39.3)" fill="#FFB800" opacity={air ? 0.8 : 0.45} />
       <ellipse cx="19" cy="39.3" rx="2.4" ry="1.9" transform="rotate(16 19 39.3)" fill="#FFB800" opacity={air ? 0.7 : 0.35} />
       <motion.g
@@ -216,6 +221,7 @@ export default function MascotBuddy() {
       ) : (
         <path d="M26 41.7s2.1 4.7 8.8 4.7c6.2 0 8.5-4.7 8.5-4.7" stroke="#1A1A1A" strokeWidth="2" strokeLinecap="round" fill="none" />
       )}
+      </motion.g>
     </svg>
   );
 
@@ -260,7 +266,7 @@ export default function MascotBuddy() {
         {/* idle breathing while perched */}
         <motion.span
           className="dn-buddy-body"
-          style={{ transformOrigin: '50% 100%' }}
+          style={{ transformOrigin: '50% 100%', rotate: tilt }}
           animate={air ? { scaleY: 1, y: 0 } : { scaleY: [1, 1.04, 1], y: [0, -1.5, 0] }}
           transition={air ? { duration: 0.1 } : { duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
         >
