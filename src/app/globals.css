@@ -459,7 +459,7 @@ input::placeholder {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  /* The Decane wordmark is Viga, as on decane.io. */
+  /* The Decane wordmark is Viga, as on decane.app. */
   font-family: "Viga", var(--f-sans);
   font-weight: 400;
   letter-spacing: 0;

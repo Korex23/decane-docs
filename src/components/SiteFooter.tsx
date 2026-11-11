@@ -1,116 +1,78 @@
 import Link from "next/link";
 import { DecaneLogo } from "./DecaneLogo";
 import { CookieNotice } from "./CookieNotice";
-import { DASHBOARD_URL } from "@/lib/theme";
+import { MAIN_SITE, DISCORD_URL } from "@/lib/site";
+import "./chrome.css";
 
-const COLUMNS: Array<{
-  title: string;
-  links: Array<{ label: string; href: string; external?: boolean }>;
-}> = [
+// The footer, the same as decane.app's: link columns on the left, the
+// wordmark, a line and the year on the right.
+
+type FooterLink = { label: string; href: string };
+
+const COLUMNS: Array<{ title: string; links: FooterLink[] }> = [
   {
-    title: "Product",
+    title: "Products",
     links: [
-      { label: "Live demo", href: "/demo" },
+      { label: "Decane Wallet", href: `${MAIN_SITE}/#wallet` },
+      { label: "Connect Kit", href: "/" },
       { label: "Gas sponsorship", href: "/gas-sponsorship" },
       { label: "Decane RPC", href: "/rpc" },
-      { label: "Pricing", href: "/pricing" },
-      { label: "Recovering a wallet", href: "/recovery" },
-      { label: "Dashboard", href: DASHBOARD_URL, external: true },
+    ],
+  },
+  {
+    title: "Developers",
+    links: [
+      { label: "Docs", href: "/docs" },
+      { label: "Server SDKs", href: "/node-docs" },
       { label: "Changelog", href: "/changelog" },
-    ],
-  },
-  {
-    title: "Docs",
-    links: [
-      { label: "Web & React Native", href: "/docs" },
-      { label: "Node", href: "/node-docs" },
-      { label: "Python", href: "/python-docs" },
-      { label: "Rust", href: "/rust-docs" },
-      { label: "Swift", href: "/swift-docs" },
-      { label: "Kotlin", href: "/kotlin-docs" },
-    ],
-  },
-  {
-    title: "For agents",
-    links: [
-      { label: "llms.txt", href: "/llms.txt", external: true },
-      { label: "llms-expo.txt", href: "/llms-expo.txt", external: true },
-      { label: "llms-node.txt", href: "/llms-node.txt", external: true },
-      { label: "llms-python.txt", href: "/llms-python.txt", external: true },
-      { label: "llms-rust.txt", href: "/llms-rust.txt", external: true },
-      { label: "llms-swift.txt", href: "/llms-swift.txt", external: true },
-      { label: "llms-kotlin.txt", href: "/llms-kotlin.txt", external: true },
-      {
-        label: "llms-version.json",
-        href: "/llms-version.json",
-        external: true,
-      },
+      { label: "llms.txt", href: "/llms.txt" },
     ],
   },
   {
     title: "Company",
     links: [
-      { label: "Terms of Service", href: "/terms" },
-      { label: "Privacy Policy", href: "/privacy" },
-      {
-        label: "info@decane.app",
-        href: "mailto:info@decane.app",
-        external: true,
-      },
+      { label: "Pricing", href: "/pricing" },
+      { label: "Community", href: DISCORD_URL },
+      { label: "Recovering a wallet", href: "/recovery" },
+      { label: "Terms", href: "/terms" },
+      { label: "Privacy", href: "/privacy" },
     ],
   },
 ];
 
+function FooterAnchor({ l }: { l: FooterLink }) {
+  if (l.href.startsWith("/") && !l.href.startsWith("/llms")) return <Link href={l.href}>{l.label}</Link>;
+  const newTab = l.href.startsWith("/llms") || l.href.startsWith("https://discord");
+  return (
+    <a href={l.href} {...(newTab ? { target: "_blank", rel: "noreferrer" } : {})}>
+      {l.label}
+    </a>
+  );
+}
+
 export function SiteFooter() {
   return (
-    <footer className="site-footer">
-      <div className="container">
-        <div className="site-footer-grid">
-          <div className="site-footer-brand">
-            <Link href="/" className="brand">
-              <DecaneLogo size={24} />
-              Decane
-            </Link>
-            <p>
-              Non-custodial wallets behind the sign-in your users already have.
-              The key only ever comes together inside a sealed signer.
-            </p>
-          </div>
-          {COLUMNS.map((col) => (
-            <nav
-              key={col.title}
-              className="site-footer-col"
-              aria-label={col.title}
-            >
-              <h4>{col.title}</h4>
-              <ul>
-                {col.links.map((l) => (
-                  <li key={l.label}>
-                    {l.external ? (
-                      <a
-                        href={l.href}
-                        {...(l.href.startsWith("http") ||
-                        l.href.startsWith("/llms")
-                          ? { target: "_blank", rel: "noreferrer" }
-                          : {})}
-                      >
-                        {l.label}
-                      </a>
-                    ) : (
-                      <Link href={l.href}>{l.label}</Link>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </nav>
-          ))}
-        </div>
-        <div className="site-footer-bottom">
-          <span>
-            MIT-licensed connector SDK. The hosted wallet service is priced per
-            project.
-          </span>
-          <span className="mono">kit.decane.app</span>
+    <footer className="dn-footer">
+      <div className="dn-wrap dn-footer-grid">
+        {COLUMNS.map((col) => (
+          <nav key={col.title} className="dn-footer-col" aria-label={col.title}>
+            <p>{col.title}</p>
+            <ul>
+              {col.links.map((l) => (
+                <li key={l.label}>
+                  <FooterAnchor l={l} />
+                </li>
+              ))}
+            </ul>
+          </nav>
+        ))}
+        <div className="dn-footer-brand">
+          <a href={MAIN_SITE} className="brand">
+            <DecaneLogo size={36} />
+            Decane
+          </a>
+          <p>No one holds a whole key. Not even us.</p>
+          <small>© Decane {new Date().getFullYear()}</small>
         </div>
       </div>
       <CookieNotice />
