@@ -37,9 +37,10 @@
   --k-close-card: #1c1a14;
 }
 
+/* 1280px of content, the same column as decane.app and the site nav. */
 .k-wrap {
   width: 100%;
-  max-width: 1376px;
+  max-width: 1360px;
   margin: 0 auto;
   padding: 0 40px;
 }

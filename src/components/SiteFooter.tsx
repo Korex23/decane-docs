@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { DecaneLogo } from "./DecaneLogo";
 import { CookieNotice } from "./CookieNotice";
+import MascotBuddy from "./MascotBuddy";
 import { MAIN_SITE, DISCORD_URL } from "@/lib/site";
 import "./chrome.css";
 
@@ -76,6 +77,7 @@ export function SiteFooter() {
         </div>
       </div>
       <CookieNotice />
+      <MascotBuddy />
     </footer>
   );
 }
