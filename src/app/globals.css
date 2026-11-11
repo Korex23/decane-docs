@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Viga&family=Geist+Mono:wght@400;500;600&display=swap");
 
 /* ── Reset ───────────────────────────────────────────────────────────────── */
 *,
@@ -458,14 +458,19 @@ input::placeholder {
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  font-size: 16px;
+  gap: 8px;
+  /* The Decane wordmark is Viga, as on decane.io. */
+  font-family: "Viga", var(--f-sans);
+  font-weight: 400;
+  letter-spacing: 0;
+  font-size: 22px;
+  line-height: 1;
   color: var(--text);
   white-space: nowrap;
 }
 .brand-section {
+  font-family: var(--f-sans);
+  font-size: 16px;
   color: var(--muted);
   font-weight: 500;
   margin-left: 2px;

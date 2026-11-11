@@ -123,7 +123,7 @@ export function SiteNav({
     <nav className={`site-nav${scrolled ? " is-scrolled" : ""}`}>
       <div className="container site-nav-inner">
         <Link href="/" className="brand" onClick={() => setOpen(false)}>
-          <DecaneLogo size={26} />
+          <DecaneLogo size={24} />
           Decane
         </Link>
 

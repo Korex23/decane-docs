@@ -193,7 +193,7 @@ export function DocsShell({
         <header className="docs-head">
           <div className="docs-topbar">
             <Link href="/docs" className="brand">
-              <DecaneLogo size={26} />
+              <DecaneLogo size={24} />
               Decane<span className="brand-section">Docs</span>
             </Link>
             <button
