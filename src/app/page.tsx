@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { SiteNav } from "@/components/SiteNav";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -332,10 +332,41 @@ const USES: { id: Product; label: string; title: string; body: string; soon?: bo
   },
 ];
 
+// Each product holds the stage for this long, then the next one takes over.
+// The fill on the active item's edge is the timer: it pauses while the section
+// is hovered, focused or off screen, and with reduced motion it never runs.
+const USE_STEP_MS = 6000;
+
 function Uses({ active, setActive }: { active: Product; setActive: (p: Product) => void }) {
   const scene = SCENES[active];
+  const ref = useRef<HTMLElement>(null);
+  const [inView, setInView] = useState(false);
+  const [held, setHeld] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([e]) => setInView(e.isIntersecting), { threshold: 0.35 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  const next = () => {
+    const i = USES.findIndex((u) => u.id === active);
+    setActive(USES[(i + 1) % USES.length].id);
+  };
+  const running = inView && !held;
+
   return (
-    <section className="k-section" id="products">
+    <section
+      className="k-section"
+      id="products"
+      ref={ref}
+      onMouseEnter={() => setHeld(true)}
+      onMouseLeave={() => setHeld(false)}
+      onFocus={(e) => (e.target as HTMLElement).matches(":focus-visible") && setHeld(true)}
+      onBlur={() => setHeld(false)}
+    >
       <div className="k-wrap">
         <Reveal>
           <h2 className="k-h2 k-h2-narrow">Everything your app needs onchain</h2>
@@ -344,6 +375,15 @@ function Uses({ active, setActive }: { active: Product; setActive: (p: Product) 
           <div className="k-uses-list" role="tablist" aria-label="Products">
             {USES.map((u) => (
               <div key={u.id} className={`k-uses-item${u.id === active ? " on" : ""}`}>
+                {u.id === active && (
+                  <span
+                    key={active}
+                    className="k-uses-timer"
+                    aria-hidden="true"
+                    style={{ animationDuration: `${USE_STEP_MS}ms`, animationPlayState: running ? "running" : "paused" }}
+                    onAnimationEnd={next}
+                  />
+                )}
                 <button
                   type="button"
                   role="tab"

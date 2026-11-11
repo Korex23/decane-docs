@@ -667,11 +667,32 @@
   gap: 28px;
 }
 .k-uses-item {
+  position: relative;
   padding: 4px 0 4px 24px;
   border-left: 2px solid var(--k-line);
 }
-.k-uses-item.on {
-  border-image: linear-gradient(180deg, #e0a83a, #b4532e) 1;
+/* The active item's edge fills with gold as its turn runs out. */
+.k-uses-timer {
+  position: absolute;
+  left: -2px;
+  top: 0;
+  width: 2px;
+  height: 0;
+  background: linear-gradient(180deg, #e0a83a, #b4532e);
+  animation-name: k-uses-fill;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+@keyframes k-uses-fill {
+  to {
+    height: 100%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .k-uses-timer {
+    animation: none;
+    height: 100%;
+  }
 }
 .k-uses-list button {
   display: grid;
