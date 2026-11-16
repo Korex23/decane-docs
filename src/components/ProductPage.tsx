@@ -17,7 +17,7 @@ export const Arrow = () => (
   </svg>
 );
 
-export const Soon = () => <span className="k-soon">Coming soon</span>;
+export const Soon = ({ children = "Coming soon" }: { children?: React.ReactNode }) => <span className="k-soon">{children}</span>;
 
 /** The rounded, angled tab a section rises into the one above with. */
 export const Tab = () => (
@@ -31,6 +31,8 @@ export const Tab = () => (
 
 export function ProductPage({
   eyebrow,
+  badge,
+  secondary,
   title,
   lede,
   art,
@@ -39,6 +41,10 @@ export function ProductPage({
   closeText,
 }: {
   eyebrow: string;
+  /** A small badge beside the eyebrow, e.g. "Early access". None when the product is live. */
+  badge?: string;
+  /** The hero's second button. */
+  secondary: { label: string; href: string };
   title: React.ReactNode;
   lede: string;
   art: React.ReactNode;
@@ -57,7 +63,7 @@ export function ProductPage({
           <Stagger className="p-hero-copy" inView={false} delay={0.1} start={0.05}>
             <Item>
               <span className="p-eyebrow">
-                {eyebrow} <Soon />
+                {eyebrow} {badge && <Soon>{badge}</Soon>}
               </span>
             </Item>
             <Item>
@@ -70,8 +76,8 @@ export function ProductPage({
               <a href={`${DASHBOARD_URL}/auth/register`} className="k-btn k-btn-primary">
                 Get an API key <Arrow />
               </a>
-              <a href="mailto:info@decane.app" className="k-btn k-btn-light">
-                Ask for early access
+              <a href={secondary.href} className="k-btn k-btn-light">
+                {secondary.label}
               </a>
             </Item>
           </Stagger>

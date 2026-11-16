@@ -2303,9 +2303,10 @@ decane.on("wallet-creating", () => showProgress());`)}
         <div className="docs-callout" data-kind="warn">
           <div className="ico">!</div>
           <p>
-            <strong>Coming soon.</strong> The backend is live; the SDK release with these
-            methods is not published to npm yet, and sponsorship is switched on per project by
-            Decane. Email <a href="mailto:info@decane.app">info@decane.app</a> to try it early.
+            <strong>Early access.</strong> In <code>decane-connect-kit</code> 2.32.0 and{" "}
+            <code>decane-connect-kit-expo</code> 0.7.0, published under the <code>next</code> tag
+            (<code>npm install decane-connect-kit@next</code>). Sponsorship is switched on per project
+            by Decane: email <a href="mailto:info@decane.app">info@decane.app</a> to turn it on for yours.
           </p>
         </div>
         <p>
@@ -2443,9 +2444,8 @@ await decane.sendSponsoredTransaction({
         <div className="docs-callout" data-kind="warn">
           <div className="ico">!</div>
           <p>
-            <strong>Coming soon.</strong> The endpoint is deployed; chains are switched on as
-            they go live, and RPC keys come with the dashboard&rsquo;s RPC page. Email{" "}
-            <a href="mailto:info@decane.app">info@decane.app</a> to try it early.
+            <strong>Live on Base.</strong> Create an RPC key on your project&rsquo;s RPC page in
+            the dashboard. More chains are switched on as they go live.
           </p>
         </div>
         <p>

@@ -13,8 +13,8 @@ npx expo install decane-connect-kit-expo \
 
 ```yaml
 package: decane-connect-kit-expo
-version: 0.6.1
-document-revision: 2026-09-27
+version: 0.7.0
+document-revision: 2026-11-16
 canonical: https://kit.decane.app/llms-expo.txt
 web-sibling: https://kit.decane.app/llms.txt
 swift-sibling: https://kit.decane.app/llms-swift.txt       # DecaneKit (native iOS / macOS, same wallet)
@@ -372,7 +372,11 @@ Standalone exports usable without a client:
 
 ---
 
-## Gas sponsorship — coming soon (backend live; release not yet published)
+## Gas sponsorship — since 0.7.0 (early access)
+
+In `decane-connect-kit-expo` 0.7.0, published under the `next` tag until it moves
+to `latest`.
+
 
 The same three client methods as the web SDK (see https://kit.decane.app/llms.txt,
 "Gas sponsorship"): `sendSponsoredTransaction({ chain, to?, value?, data?, calls?, payGasWith? })`,

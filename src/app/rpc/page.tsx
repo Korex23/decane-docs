@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { ProductPage, PSection, Cards, Code, Faq } from "@/components/ProductPage";
+import { DASHBOARD_URL } from "@/lib/theme";
 
-// Decane RPC (backend PR #7, not deployed). Limits and methods mirror
+// Decane RPC, live on Base. Limits and methods mirror
 // backend/src/services/rpcPolicy.ts; the per-request price is not set, so no
 // number is given (product-briefs/RPC.md).
 
@@ -102,11 +103,12 @@ export default function RpcPage() {
   return (
     <ProductPage
       eyebrow="Decane RPC"
+      secondary={{ label: "Create an RPC key", href: DASHBOARD_URL }}
       title="Node access on the same account"
       lede="Read and write the chain from one URL that works anywhere an Ethereum RPC does: viem, ethers, wagmi, MetaMask, Hardhat or Foundry. Managed in the same dashboard as your wallets and gas."
       art={<Usage />}
       closeTitle="One dashboard for wallets, gas and RPC"
-      closeText="Decane RPC is coming soon. Start with wallets today and add RPC to the same account when it ships."
+      closeText="Decane RPC is live on Base. Create a key on your project's RPC page in the dashboard and use the URL it gives you."
     >
       <PSection title="Paste one URL and go" lead="Create a key in your project, and the URL alone configures your client. No SDK required.">
         <div className="p-tabs" role="tablist" aria-label="Client library">
@@ -165,7 +167,7 @@ export default function RpcPage() {
             { q: "Is there WebSocket support?", a: "Not yet. Decane RPC is HTTP JSON-RPC for now; WebSockets are planned." },
             { q: "What will it cost?", a: "Free and the Builder Club cost nothing today. Usage billing will be a simple price per request, not compute units; the price will be on the pricing page before it applies." },
             { q: "How do I join the Builder Club?", a: "Apply from the RPC page in your dashboard with what you are building. Accounts that keep reaching the Free limit are invited by email." },
-            { q: "When can I use it?", a: "It is in final review. Email info@decane.app to be told the day it ships, or to try it early." },
+            { q: "When can I use it?", a: "Now, on Base. Create a key on your project's RPC page in the dashboard; the URL it shows is all your client needs." },
           ]}
         />
       </PSection>

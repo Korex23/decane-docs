@@ -4,7 +4,8 @@ import { ChainTypeIcon } from "@/components/ChainIcon";
 import { CheckIcon } from "@/components/Icons";
 import { ProductPage, PSection, Cards, Steps, Code, Faq } from "@/components/ProductPage";
 
-// Gas sponsorship (Connect Kit PR #6, not released). Only what the code does
+// Gas sponsorship: web SDK 2.32.0 and Expo 0.7.0, early access (switched on
+// per project by Decane). Only what the code does
 // is said here: no fee percentage until it is published (product-briefs/).
 
 const SEND = `// The project pays the gas. The user just confirms.
@@ -77,11 +78,13 @@ export default function GasPage() {
   return (
     <ProductPage
       eyebrow="Gas sponsorship"
+      badge="Early access"
+      secondary={{ label: "Switch it on for your project", href: "mailto:info@decane.app?subject=Gas%20sponsorship" }}
       title="Your users never need gas"
       lede="A new user has a wallet but no ETH to move anything with. Sponsor the transaction and they just send: your project covers the fee, or they pay it in USDC. Same wallet, same address."
       art={<Sheet />}
       closeTitle="Remove the last crypto step from your app"
-      closeText="Gas sponsorship is coming to Connect Kit. Start with wallets today; turn sponsorship on when it ships."
+      closeText="Gas sponsorship is in early access: install the SDK from the next tag and email us to switch it on for your project."
     >
       <PSection title="Two ways to pay for gas" lead="You choose per app, and can override it per send.">
         <Cards
@@ -155,7 +158,7 @@ export default function GasPage() {
             { q: "Does the wallet address change?", a: "No. The first sponsored send upgrades the existing wallet in place with EIP-7702, so balances, history and the address stay the same." },
             { q: "Which SDKs?", a: "The web SDK and the React Native (Expo) SDK, with the same calls in both." },
             { q: "What does it cost?", a: "The gas your users' sends use, plus a small platform fee. The fee will be on the pricing page before sponsorship goes live." },
-            { q: "When can I use it?", a: "It is in final review. Email info@decane.app to be told the day it ships, or to try it early." },
+            { q: "When can I use it?", a: "Now, in early access. Install decane-connect-kit@next (2.32.0) or decane-connect-kit-expo@next (0.7.0), then email info@decane.app and we switch sponsorship on for your project." },
           ]}
         />
       </PSection>

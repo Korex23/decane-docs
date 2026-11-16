@@ -16,7 +16,7 @@ import "./landing.css";
 // gradient hero with the three products under it, the stack it works with,
 // the numbers, what each product does, how the key is protected and how to
 // check that, the SDKs, a live demo and a close. Gas sponsorship and RPC are
-// marked coming soon until they ship (product-briefs/).
+// gas sponsorship marked early access while it is switched on per project.
 
 const line = {
   fill: "none",
@@ -68,7 +68,7 @@ const Tab = () => (
   </div>
 );
 
-const Soon = () => <span className="k-soon">Coming soon</span>;
+const Soon = () => <span className="k-soon">Early access</span>;
 
 type Product = "wallets" | "gas" | "rpc";
 
@@ -223,7 +223,6 @@ const PRODUCTS: { id: Product; art: React.ReactNode; title: string; soon?: boole
     id: "rpc",
     art: <RpcMock />,
     title: "Decane RPC",
-    soon: true,
     href: "/rpc",
     body: "Read and write the chain from one URL: 20 requests a second free, 200 in the Builder Club.",
   },
@@ -325,7 +324,6 @@ const USES: { id: Product; label: string; title: string; body: string; soon?: bo
   {
     id: "rpc",
     label: "RPC",
-    soon: true,
     href: "/rpc",
     title: "Node access on the same account",
     body: "One URL for viem, ethers, wagmi or MetaMask. Free gives 20 requests a second; the Builder Club gives 200, free, by application.",

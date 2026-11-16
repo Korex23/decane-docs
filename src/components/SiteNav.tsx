@@ -98,7 +98,6 @@ export const PRODUCTS = [
     name: "Decane RPC",
     line: "Node access from one URL, next to your wallets.",
     href: "/rpc",
-    soon: true,
     icon: "M4 5h16v5H4zM4 14h16v5H4zM8 7.5h.01M8 16.5h.01",
   },
 ] as const;
@@ -207,7 +206,7 @@ export function SiteNav({
                       <span>
                         <b>
                           {p.name}
-                          {"soon" in p && p.soon && <em>Soon</em>}
+                          {"soon" in p && p.soon && <em>Early access</em>}
                         </b>
                         <small>{p.line}</small>
                       </span>
