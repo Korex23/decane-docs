@@ -675,10 +675,14 @@ docs: https://kit.decane.app/node-docs).
 ## Part 4 — Decane RPC (live on Base; more chains as they go live)
 
 Standard Ethereum JSON-RPC over HTTP, no SDK needed:
-`POST https://backend.decane.app/rpc/v1/{chainId}/{key}` with an RPC key
-(`dck_rpc_…`, created per project in the dashboard; shown once, stored hashed,
-at most 10 live per project). Works as the transport URL in viem, ethers,
-wagmi, MetaMask, Hardhat or Foundry.
+`POST https://backend.decane.app/rpc/v1/{chainId}/{key}` with an RPC-only key
+(`dck_rpc_…`: a secret key whose only scope is `rpc`, see Part 5). Works as the
+transport URL in viem, ethers, wagmi, MetaMask, Hardhat or Foundry.
+
+From a server, any key with the `rpc` scope (including one that does
+everything) calls `POST https://backend.decane.app/rpc/v1/{chainId}` with
+`Authorization: Bearer <key>`. A key with any server scope is refused in the
+URL form (403, -32003): URLs end up in frontend code, logs and browser history.
 
 - Plans, per ACCOUNT (the project owner), shared across all its projects and
   keys: Free 20 requests/s; Builder Club 200 requests/s (free, by application
@@ -704,6 +708,37 @@ wagmi, MetaMask, Hardhat or Foundry.
   upstream unavailable or busy.
 - Usage per key, chain, method and day appears in the dashboard within about a
   minute. Billing will be per request; no price is set yet.
+
+---
+
+## Part 5 — Secret keys and scopes
+
+A project has ONE kind of secret key; each key carries scopes saying what it
+may do. Make them on the project's API keys page in the dashboard (shown once,
+stored hashed, at most 20 live per project). One key per job is suggested; one
+key for everything is allowed.
+
+| Scope | Allows |
+|---|---|
+| `users:read` | `GET /v1/app/users`, `/v1/app/users/emails`, `GET /v1/app/users/:id/metadata` and `/preferences` |
+| `users:write` | `PATCH`/`PUT` metadata and preferences, `POST /v1/app/users/:id/unsubscribe` |
+| `users:create` | `POST /v1/app/users` |
+| `wallets:create` | `POST /v1/app/users/:id/wallet`, and `POST /v1/app/users` unless `createWallet: false` |
+| `rpc` | Decane RPC (Part 4) |
+
+- Presets: Server API (the four server scopes), RPC only (`rpc`), Everything
+  (all five), or any custom set.
+- Prefix: a key with any server scope is `dck_sk_…` and is a secret (never in
+  frontend code). An RPC-only key is `dck_rpc_…`, safe in an RPC URL because it
+  can do nothing else; it can never gain a server scope (make a new key).
+- Scopes can be changed on an existing key; the change applies at once.
+- A request a key's scopes do not cover answers 403 `INSUFFICIENT_SCOPE` with
+  `error.missingScopes`, naming what to add.
+- Keys made before scopes existed keep exactly what they could do: `dck_sk_`
+  keys have the four server scopes, `dck_rpc_` keys have `rpc`.
+- The publishable `dck_live_` key (browser, origin-locked) and the
+  organization token `dck_org_` (provisioning, Part on Connect) are separate
+  credentials and are not scoped keys.
 
 ---
 

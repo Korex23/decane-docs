@@ -293,6 +293,7 @@ decane.updatePreferences(token, patch: DecaneRecordPatch): Promise<DecaneRecord>
 decane.setPreferences(token, record: DecaneRecord): Promise<DecaneRecord>  // PUT   /me/preferences — replace
 decane.getMetadata(token): Promise<DecaneRecord>                          // GET   /me/metadata — read-only on this side
 
+// The project secret needs the users:read scope to read and users:write to write (see llms.txt Part 5); a key without it gets 403 INSUFFICIENT_SCOPE. createUser needs users:create (+ wallets:create unless createWallet: false); createUserWallet needs wallets:create.
 // By user id, with `projectSecret` (dck_sk_…, minted on the project's page in the dashboard):
 decane.getUserMetadata(userId)                  // GET   /v1/app/users/:id/metadata
 decane.updateUserMetadata(userId, patch)        // PATCH — merge

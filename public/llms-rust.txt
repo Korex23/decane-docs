@@ -195,6 +195,7 @@ decane.update_preferences(token, patch).await?           // PATCH — merge
 decane.set_preferences(token, record).await?             // PUT   — replace
 decane.get_metadata(token).await?                        // GET   /me/metadata (read-only here)
 
+// The project secret needs the users:read scope to read and users:write to write (see llms.txt Part 5); a key without it answers INSUFFICIENT_SCOPE (403). create_user needs users:create (+ wallets:create unless create_wallet is false); create_user_wallet needs wallets:create.
 // By user id, with project_secret (dck_sk_…):
 decane.get_user_metadata(user_id) / update_user_metadata(user_id, patch) / set_user_metadata(user_id, record)
 decane.get_user_preferences(user_id) / update_user_preferences(user_id, patch) / set_user_preferences(user_id, record)

@@ -3,6 +3,7 @@
   "package": "decane-connect-kit",
   "version": "2.32.0",
   "documentRevision": "2026-11-16",
+  "$keys": "2026-11-16: one kind of project secret key with scopes (users:read, users:write, users:create, wallets:create, rpc); llms.txt Part 5. RPC from a server: POST /rpc/v1/{chainId} with Authorization: Bearer.",
   "llmsTxt": "https://kit.decane.app/llms.txt",
   "npmRegistry": "https://registry.npmjs.org/decane-connect-kit/latest",
   "docs": "https://kit.decane.app/docs",
