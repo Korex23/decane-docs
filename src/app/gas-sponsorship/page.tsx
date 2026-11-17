@@ -79,25 +79,47 @@ export default function GasPage() {
     <ProductPage
       eyebrow="Gas sponsorship"
       badge="Early access"
-      secondary={{ label: "Switch it on for your project", href: "mailto:info@decane.app?subject=Gas%20sponsorship" }}
-      title="Your users never need gas"
-      lede="A new user has a wallet but no ETH to move anything with. Sponsor the transaction and they just send: your project covers the fee, or they pay it in USDC. Same wallet, same address."
+      secondary={{ label: "Turn it on in the dashboard", href: "https://dashboard.decane.app" }}
+      title="Your users never need gas. You earn on every send."
+      lede="Users send without holding ETH: your project covers the fee, or they pay it in USDC with your markup on top. That markup goes straight to your wallet, on-chain, with every transaction."
       art={<Sheet />}
-      closeTitle="Remove the last crypto step from your app"
-      closeText="Gas sponsorship is in early access: install the SDK, set a payout wallet and turn it on from your project's Gas sponsorship page."
+      closeTitle="Remove the last crypto step, and make money on it"
+      closeText="Install the SDK, set your payout wallet and markup, and turn it on from your project's Gas sponsorship page. Every token-paid send earns you the markup."
     >
+      <PSection title="Earn on every send" lead="When a user pays the gas in USDC, you add your markup, and it is paid to you on-chain in the same transaction.">
+        <Cards
+          items={[
+            {
+              tag: "You set it",
+              title: "A markup from 0 to 50%",
+              body: "Per token, on your project's Gas sponsorship page. Change it any time; it applies to the next send.",
+            },
+            {
+              tag: "Example",
+              title: "$0.20 on every $1 of gas",
+              body: "With a 20% markup, a send that uses $1.00 of gas pays you $0.20. The user sees one fee, in USDC, and never touches ETH.",
+            },
+            {
+              tag: "Paid on-chain",
+              title: "Straight to your wallet",
+              body: "The user's payment goes to your payout wallet with each transaction. No invoices, no withdrawals, and your earnings for the last 30 days in the dashboard.",
+            },
+          ]}
+        />
+      </PSection>
+
       <PSection title="Two ways to pay for gas" lead="You choose per app, and can override it per send.">
         <Cards
           items={[
             {
-              tag: "Default",
-              title: "Your project pays",
-              body: "Sends are sponsored from your project's gas balance. The user signs and it lands; they never see a fee or hold ETH.",
+              tag: "Earns you money",
+              title: "The user pays, in USDC",
+              body: "The fee, with your markup, comes out of the user's USDC instead of ETH. The token approval is capped at twice the worst case, never unlimited.",
             },
             {
-              tag: "Pay in USDC",
-              title: "The user pays, in a token",
-              body: "The fee comes out of the user's USDC instead of ETH. The token approval is capped at twice the worst case, never unlimited.",
+              tag: "Free for users",
+              title: "Your project pays",
+              body: "Sends are sponsored from your project's prepaid gas tank. The user signs and it lands; they never see a fee or hold ETH.",
             },
           ]}
         />
@@ -120,7 +142,8 @@ export default function GasPage() {
       <PSection title="How it works" tinted>
         <Steps
           items={[
-            { title: "Turn it on", body: "On your project's Gas sponsorship page: set the payout wallet that receives users' token payments, then switch it on." },
+            { title: "Set where you get paid", body: "On your project's Gas sponsorship page, set the payout wallet that receives users' token payments, and your markup on each token." },
+            { title: "Turn it on", body: "One switch, once the payout wallet is set. Turn it off any time; sends stop at once." },
             { title: "Fund it", body: "Top up the project's gas tank in USDC or USDT from the dashboard. Sponsored sends are paid from it; an empty tank stops sponsoring, and nothing is billed afterwards." },
             { title: "Set the limits", body: "Caps per transaction, per user per day and per project per day, enforced before anything is signed." },
             { title: "Users send", body: "The wallet builds the operation, the enclave signs it, and it lands on chain with the fee paid." },
@@ -154,12 +177,12 @@ export default function GasPage() {
       <PSection title="Questions">
         <Faq
           items={[
+            { q: "Can I earn on gas?", a: "Yes. When a user pays the gas in a token, the payment goes to your payout wallet, and the markup you set on that token (up to 50%) is yours to keep. It is paid on-chain with each transaction." },
             { q: "Which networks?", a: "Base first. More EVM chains follow; the dashboard will list each one as it goes live." },
             { q: "Does the wallet address change?", a: "No. The first sponsored send upgrades the existing wallet in place with EIP-7702, so balances, history and the address stay the same." },
             { q: "Which SDKs?", a: "The web SDK and the React Native (Expo) SDK, with the same calls in both." },
-            { q: "What does it cost?", a: "The gas your users' sends use, plus a small platform fee. The fee will be on the pricing page before sponsorship goes live." },
+            { q: "What does it cost?", a: "When your project pays, the gas your users' sends use plus a small platform fee, from a gas tank you top up in USDC. When users pay in a token, they cover the gas, the fee and your markup, so it costs you nothing and earns you the markup." },
             { q: "When can I use it?", a: "Now, in early access. Install decane-connect-kit 2.32.0 or decane-connect-kit-expo 0.7.0 or later, set a payout wallet and turn it on from your project's Gas sponsorship page in the dashboard." },
-            { q: "Can I earn on gas?", a: "Yes. When a user pays the gas in a token, the payment goes to your payout wallet, and the markup you set on that token (up to 50%) is yours to keep." },
           ]}
         />
       </PSection>

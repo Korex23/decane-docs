@@ -215,9 +215,8 @@ const PRODUCTS: { id: Product; art: React.ReactNode; title: string; soon?: boole
     id: "gas",
     art: <GasMock />,
     title: "Gas sponsorship",
-    soon: true,
     href: "/gas-sponsorship",
-    body: "Let users send without holding ETH. Cover the fee yourself, or let them pay it in USDC.",
+    body: "Let users send without holding ETH, and earn on it: they pay the fee in USDC with your markup on top, paid to your wallet on every send.",
   },
   {
     id: "rpc",
@@ -316,10 +315,9 @@ const USES: { id: Product; label: string; title: string; body: string; soon?: bo
   {
     id: "gas",
     label: "Gas sponsorship",
-    soon: true,
     href: "/gas-sponsorship",
-    title: "Your users never need gas",
-    body: "Sponsor transactions so users just send, or let them pay the fee in USDC. Caps per day and per user, and only the contracts you allow.",
+    title: "Your users never need gas. You earn on every send.",
+    body: "Users pay the fee in USDC with your markup on top, up to 50%, paid to your wallet on-chain with each transaction. Or cover it yourself from a prepaid gas tank. Caps per send, per user and per day.",
   },
   {
     id: "rpc",

@@ -89,9 +89,8 @@ export const PRODUCTS = [
   },
   {
     name: "Gas sponsorship",
-    line: "Your users send without ever holding gas.",
+    line: "Users send without gas. You earn on every send.",
     href: "/gas-sponsorship",
-    soon: true,
     icon: "M12 3c3 4 6 7 6 11a6 6 0 0 1-12 0c0-4 3-7 6-11z",
   },
   {
@@ -206,7 +205,6 @@ export function SiteNav({
                       <span>
                         <b>
                           {p.name}
-                          {"soon" in p && p.soon && <em>Early access</em>}
                         </b>
                         <small>{p.line}</small>
                       </span>
