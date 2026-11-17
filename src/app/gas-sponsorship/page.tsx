@@ -57,8 +57,8 @@ const Sheet = () => (
           <div>
             <dt>Network fee</dt>
             <dd>
-              <span className="pm-free">Free</span>
-              <small>Paid by Northgate</small>
+              <b>0.12 USDC</b>
+              <small>No ETH needed</small>
             </dd>
           </div>
         </dl>
@@ -69,7 +69,7 @@ const Sheet = () => (
       <i>
         <CheckIcon size={10} />
       </i>
-      Sent · no ETH needed
+      Sent · Northgate earned 0.02 USDC
     </div>
   </div>
 );
