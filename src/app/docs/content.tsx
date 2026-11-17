@@ -2304,9 +2304,9 @@ decane.on("wallet-creating", () => showProgress());`)}
           <div className="ico">!</div>
           <p>
             <strong>Early access.</strong> In <code>decane-connect-kit</code> 2.32.0 and{" "}
-            <code>decane-connect-kit-expo</code> 0.7.0, published under the <code>next</code> tag
-            (<code>npm install decane-connect-kit@next</code>). Sponsorship is switched on per project
-            by Decane: email <a href="mailto:info@decane.app">info@decane.app</a> to turn it on for yours.
+            <code>decane-connect-kit-expo</code> 0.7.0 and later. Turn it on yourself on your
+            project&rsquo;s <strong>Gas sponsorship</strong> page in the dashboard: set a payout
+            wallet, switch it on, and top up the gas tank.
           </p>
         </div>
         <p>
@@ -2408,8 +2408,9 @@ await decane.sendSponsoredTransaction({
           </li>
           <li>
             The operation is an ERC-4337 UserOperation, signed by the enclave as EIP-712 typed
-            data, and sent through your backend&rsquo;s <code>/sponsor</code> proxy, which adds
-            your project&rsquo;s sponsor key. The key never reaches a browser or a phone.
+            data, and sent through Decane&rsquo;s <code>/sponsor</code> proxy, which speaks to the
+            sponsor platform for your project. No key or credential for it reaches a browser or a
+            phone.
           </li>
           <li>
             The SDK uses only the EntryPoint, paymaster and 7702 delegate pinned in the package.
@@ -2420,10 +2421,12 @@ await decane.sendSponsoredTransaction({
 
         <h3 id="gas-limits">Limits and safety</h3>
         <ul>
-          <li>Off for every project until Decane switches it on and sets its sponsor key.</li>
+          <li>Off for every project until its owner switches it on, which needs a payout wallet first.</li>
+          <li>Paid from a prepaid gas tank, topped up in a stablecoin from the dashboard; an empty tank stops sponsoring, and nothing is billed afterwards.</li>
           <li>Only the signed-in user&rsquo;s own wallet can have operations sponsored.</li>
           <li>Each session is held to 120 proxy calls a minute.</li>
-          <li>Per-user and per-day caps and the contracts you allow are set in the sponsor policy.</li>
+          <li>Caps per transaction, per user per day and per project per day are set on the Gas sponsorship page.</li>
+          <li>When a user pays the gas in a token, the payment goes to your payout wallet, and your markup on it (up to 50%, set per token) is yours.</li>
           <li>A frozen wallet sponsors nothing; a suspended project stops sponsoring at once.</li>
         </ul>
         <p>
@@ -2444,8 +2447,9 @@ await decane.sendSponsoredTransaction({
         <div className="docs-callout" data-kind="warn">
           <div className="ico">!</div>
           <p>
-            <strong>Live on Base.</strong> Create an RPC key on your project&rsquo;s RPC page in
-            the dashboard. More chains are switched on as they go live.
+            <strong>Live on Base.</strong> Create an RPC key (the &ldquo;RPC only&rdquo; preset) on
+            your project&rsquo;s API keys page in the dashboard. More chains are switched on as they
+            go live.
           </p>
         </div>
         <p>

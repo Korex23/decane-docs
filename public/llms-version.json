@@ -11,7 +11,7 @@
     {
       "version": "2.32.0",
       "date": "2026-11-16",
-      "summary": "Gas sponsorship (early access, published under the `next` tag): sendSponsoredTransaction, getSponsorshipStatus and quoteGasInToken on the client, with the gasSponsorship config. The project pays the gas by default, or the user pays it in a token such as USDC. EVM only, Base first, and switched on per project by Decane. The EntryPoint, paymaster and 7702 delegate are pinned in the package."
+      "summary": "Gas sponsorship (early access): sendSponsoredTransaction, getSponsorshipStatus and quoteGasInToken on the client, with the gasSponsorship config. The project pays the gas by default, or the user pays it in a token such as USDC. EVM only, Base first, and turned on per project from the dashboard (payout wallet, switch, prepaid gas tank, caps). The EntryPoint, paymaster and 7702 delegate are pinned in the package."
     },
     {
       "version": "2.31.0",
@@ -118,7 +118,7 @@
       {
         "version": "0.7.0",
         "date": "2026-11-16",
-        "summary": "Gas sponsorship (early access, published under the `next` tag): the same sendSponsoredTransaction, getSponsorshipStatus and quoteGasInToken as the web SDK, project-paid by default."
+        "summary": "Gas sponsorship (early access): the same sendSponsoredTransaction, getSponsorshipStatus and quoteGasInToken as the web SDK, project-paid by default."
       },
       {
         "version": "0.6.2",

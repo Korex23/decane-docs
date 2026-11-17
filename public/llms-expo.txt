@@ -374,8 +374,8 @@ Standalone exports usable without a client:
 
 ## Gas sponsorship — since 0.7.0 (early access)
 
-In `decane-connect-kit-expo` 0.7.0, published under the `next` tag until it moves
-to `latest`.
+In `decane-connect-kit-expo` 0.7.0 and later. Turned on per project from the
+dashboard's Gas sponsorship page (see https://kit.decane.app/llms.txt).
 
 
 The same three client methods as the web SDK (see https://kit.decane.app/llms.txt,

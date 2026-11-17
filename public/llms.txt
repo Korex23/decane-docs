@@ -554,11 +554,17 @@ await signInWithToken(phoneToken);
 
 ### Gas sponsorship — since 2.32.0 (early access)
 
-In `decane-connect-kit` 2.32.0, published under the `next` tag
-(`npm install decane-connect-kit@next`) until it moves to `latest`.
+In `decane-connect-kit` 2.32.0 and later (`npm install decane-connect-kit`).
 
-EVM only, Base (8453) first. Off for each project until Decane switches it on
-and sets the project's sponsor key. On the CLIENT (the object
+EVM only, Base (8453) first. Self-serve from the dashboard, project page "Gas
+sponsorship" (owner only): set a payout wallet (required before it can be
+turned on), switch it on, set caps (per transaction, per user per day, per
+project per day), and top up the prepaid gas tank in a stablecoin ($10 to
+$10,000; USDC on Base, Ethereum, Arbitrum, Polygon or Solana, or USDT on Tron).
+Sponsored sends are paid from the tank; an empty tank stops sponsoring and
+nothing is billed afterwards. When a user pays the gas in a token, the payment
+goes to the payout wallet and the owner's markup on that token (0 to 50%) is
+the project's to keep. On the CLIENT (the object
 `createDecaneConnect()` returns); the React hooks do not expose it yet.
 
 ```ts
@@ -586,7 +592,7 @@ to 120 s) instead of on broadcast; default false.
   answer must equal the pinned one.
 - Paying in a token approves at most twice the worst-case fee, never unlimited.
 - Requests go through `POST /sponsor/v1/:chainId/rpc` (and `GET …/config`) on the backend with the
-  session's token; the sponsor key never reaches the client. Only the session's
+  session's token; no sponsor credential ever reaches the client. Only the session's
   own wallet can be sponsored; 120 calls a minute per session; frozen wallets
   and suspended projects are refused.
 
