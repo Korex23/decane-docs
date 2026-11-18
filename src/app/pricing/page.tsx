@@ -155,6 +155,10 @@ const FAQS: Array<{ q: string; a: string }> = [
     a: "Existing wallets keep working. New wallet creation pauses until you move to the next band. The project owner is emailed before that happens, not after.",
   },
   {
+    q: "What about users who only sign in, without a wallet?",
+    a: "With wallet: 'on-demand' your users sign in with every method and get no wallet until you call createWallet(). They are counted apart from wallets and cost less: free up to 10,000 a month, then $25 a month with 10,000 included and $0.02 for each user above that, added to your wallet plan. A user who gets a wallet counts as a wallet instead.",
+  },
+  {
     q: "Why two price bands under Scale?",
     a: "Usage between 500 and 9,999 monthly active wallets varies a lot. Two bands let the price track actual usage more closely than one flat rate for the whole range.",
   },

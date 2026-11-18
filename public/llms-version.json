@@ -2,7 +2,7 @@
   "$comment": "Freshness manifest for https://kit.decane.app/llms.txt — fetch this (small) document to check whether a cached copy of llms.txt is stale, instead of re-reading the full spec.",
   "package": "decane-connect-kit",
   "version": "2.32.0",
-  "documentRevision": "2026-11-16",
+  "documentRevision": "2026-11-18",
   "$keys": "2026-11-16: one kind of project secret key with scopes (users:read, users:write, users:create, wallets:create, rpc); llms.txt Part 5. RPC from a server: POST /rpc/v1/{chainId} with Authorization: Bearer.",
   "llmsTxt": "https://kit.decane.app/llms.txt",
   "npmRegistry": "https://registry.npmjs.org/decane-connect-kit/latest",
@@ -287,5 +287,6 @@
         "summary": "First release of the Android SDK (minSdk 28) on the shared Rust wallet core, published to GitHub Packages. The identity tier: email, phone, Google-token, KingsChat-token and custom-token sign-in; wallet creation and enrolment; provisioning, including wallets a server created with createUser; signing for EVM (messages, transactions, EIP-712, EIP-7702), Solana and Tron; session resume and refresh; events. Not yet: the device tier, passkeys, browser sign-in, recovery files (each answers a clear error). Per-signature assertions, rotate and export wait on an enclave change for Android origins."
       }
     ]
-  }
+  },
+  "$authOnly": "Next release (web 2.33.0, Expo 0.8.0): wallet: 'on-demand' signs users in with every method and no wallet; createWallet(), hasWallet(), isSignedIn(), NoWalletError. Users without a wallet are billed apart: free up to 10,000 a month, then $25 with 10,000 included and $0.02 each above."
 }
