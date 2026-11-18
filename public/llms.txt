@@ -380,10 +380,12 @@ it lapses with the token still valid, `unlock()` reopens it without a sign-in
 With `resumeSessionAcrossTabs` a new tab resumes the live session instead of
 reading as signed out. `disconnect()` stops the renewal.
 
-### Sign-in only, no wallet — `wallet: 'on-demand'` (next release)
+### Sign-in only, no wallet — `wallet: 'on-demand'` (since 2.33.0, `next` tag)
 
 Every sign-in method (email, phone, Google, X, KingsChat, custom JWT) without
-creating a wallet, Clerk-style. Set `wallet: 'on-demand'` in the client config
+creating a wallet, Clerk-style. In `decane-connect-kit` 2.33.0, published under
+the `next` tag (`npm install decane-connect-kit@next`) until it moves to
+`latest`. Set `wallet: 'on-demand'` in the client config
 (or `config.social` for `<DecaneKit>`): sign-in gives a session
 (`getAccessToken()`, profile, renewals) and calls no enclave.
 - `isSignedIn()`, `hasWallet()`; `ConnectResult.hasWallet`; `getAddresses()`

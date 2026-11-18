@@ -372,7 +372,7 @@ Standalone exports usable without a client:
 
 ---
 
-## Sign-in only, no wallet — `wallet: 'on-demand'` (next release)
+## Sign-in only, no wallet — `wallet: 'on-demand'` (since 0.8.0, `next` tag)
 
 The same as the web SDK (see https://kit.decane.app/llms.txt, "Sign-in only"):
 every sign-in method gives a session with no wallet and no enclave call;
