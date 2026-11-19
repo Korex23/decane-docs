@@ -338,6 +338,34 @@ interface DecaneCreatedUser {
   created: boolean;                       // this call made the user row
   wallet: "created" | "exists" | "none";  // "none" only with createWallet: false and no wallet yet
 }
+
+// Payments (1.6.0+): checkout (pay-in) + withdrawals (pay-out), Dextopus-settled.
+// Needs a key with the `payments` scope and payments turned on for the project.
+// Amounts are base units of the asset. Decane adds a partner-fee markup per payment.
+decane.createCheckout({ amount, settlementChainId?, orderRef?, successUrl?, metadata?, expiresIn? })
+  // POST /v1/app/checkout → DecanePayment. A payment request settling to the
+  // project's address; `url` is the hosted checkout page, `depositAddress` is
+  // filled once the payer picks a pay-token. You learn it settled by the webhook.
+decane.createWithdrawal({ originChainId, originAsset, amount, destChainId, destAsset, destAddress, refundTo, orderRef?, metadata?, expiresIn? })
+  // POST /v1/app/withdrawals → DecanePayment. Cross-chain pay-out: the holder
+  // sends `amount` of what they have to `depositAddress`, settles to the dest.
+decane.getPayment(id)          // GET /v1/app/payments/:id → DecanePayment
+decane.listPayments(limit?)    // GET /v1/app/payments → DecanePayment[] (default 50, max 200)
+decane.paymentOptions()        // GET /v1/app/payments/options → { chainId, asset, label }[]
+decane.createDepositAddress(userRef, settlementChainId?) // POST /v1/app/deposit-addresses → reusable per-user address
+
+interface DecanePayment {
+  id: string; kind: "checkout" | "withdrawal";
+  status: "open" | "pending" | "paid" | "expired" | "failed";
+  amount: string; settlement: { chainId: number; asset: string; address: string };
+  orderRef: string | null; expiresAt: string;
+  depositAddress: string | null; payChainId: number | null; payAsset: string | null;
+  amountIn: string | null; settledAmount: string | null;
+  originTx: string | null; settlementTx: string | null; metadata: unknown;
+  createdAt: string; url: string | null; // url: hosted checkout page (checkouts)
+}
+// Webhook events (to the project's webhook_url): payment.created | payment.completed
+// | payment.failed | payment.expired, each with `data` carrying the DecanePayment-shaped body and `kind`.
 ```
 
 Idempotent on the identifier: a second `createUser` returns the same user with

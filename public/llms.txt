@@ -777,10 +777,11 @@ key for everything is allowed.
 | `users:write` | `PATCH`/`PUT` metadata and preferences, `POST /v1/app/users/:id/unsubscribe` |
 | `users:create` | `POST /v1/app/users` |
 | `wallets:create` | `POST /v1/app/users/:id/wallet`, and `POST /v1/app/users` unless `createWallet: false` |
+| `payments` | Decane Payments: `POST /v1/app/checkout`, `/v1/app/withdrawals`, `/v1/app/deposit-addresses`, `GET /v1/app/payments[/:id]` and `/payments/options` |
 | `rpc` | Decane RPC (Part 4) |
 
-- Presets: Server API (the four server scopes), RPC only (`rpc`), Everything
-  (all five), or any custom set.
+- Presets: Server API (the server scopes), RPC only (`rpc`), Everything (all),
+  or any custom set.
 - Prefix: a key with any server scope is `dck_sk_…` and is a secret (never in
   frontend code). An RPC-only key is `dck_rpc_…`, safe in an RPC URL because it
   can do nothing else; it can never gain a server scope (make a new key).
@@ -792,6 +793,33 @@ key for everything is allowed.
 - The publishable `dck_live_` key (browser, origin-locked) and the
   organization token `dck_org_` (provisioning, Part on Connect) are separate
   credentials and are not scoped keys.
+
+---
+
+## Decane Payments — accept crypto payments (checkout) and cross-chain withdrawals
+
+Take crypto payments without running a bridge. Settlement is powered by Decane's
+deposit router; Decane holds the keys, meters and relays webhooks, and adds a
+small partner-fee markup. Turn it on per project in the dashboard (set a
+settlement chain/asset/address, flip it on) — self-serve. Works with or without
+Decane wallets.
+
+- **Checkout (pay-in):** your server calls `POST /v1/app/checkout` (a key with
+  the `payments` scope) for an exact amount; you get a `url` (the hosted
+  checkout page) and, once the payer picks a pay-token, a `depositAddress`. The
+  payer sends any token on any chain, or — if they hold a Decane wallet —
+  approves in the checkout modal and the embedded wallet signs. You learn it
+  settled from the `payment.completed` webhook.
+- **Withdrawal (pay-out):** `POST /v1/app/withdrawals` — the holder sends what
+  they have and it settles to any chain/asset/address you name (cross-chain
+  send). A Decane-wallet user can do it from the modal.
+- **Static address:** `POST /v1/app/deposit-addresses` — a reusable per-user
+  deposit address that always settles to your target (for crediting balances).
+
+Server reference (shapes, every call, webhook events): the `decane-node`
+docs/llms-node.txt (1.6.0+). The payer-facing surface is public and keyed by the
+unguessable session id: `GET /checkout/:id`, `POST /checkout/:id/quote`,
+`GET /checkout/:id/status`, `POST /checkout/:id/submit`.
 
 ---
 
