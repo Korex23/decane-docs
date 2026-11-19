@@ -819,7 +819,16 @@ Decane wallets.
 Server reference (shapes, every call, webhook events): the `decane-node`
 docs/llms-node.txt (1.6.0+). The payer-facing surface is public and keyed by the
 unguessable session id: `GET /checkout/:id`, `POST /checkout/:id/quote`,
-`GET /checkout/:id/status`, `POST /checkout/:id/submit`.
+`GET /checkout/:id/pay-options`, `GET /checkout/:id/status`,
+`POST /checkout/:id/submit`.
+
+Client side (decane-connect-kit, next web release): `createCheckoutClient(sessionId,
+{ apiBase? })` wraps that public surface (get, payOptions, quote, status, submit);
+`<DecaneCheckout sessionId evm={{ provider, account }} renderQr? onPaid? />` embeds
+the flow, with a one-tap "Approve" for a connected EVM wallet;
+`payCheckoutWithEvmWallet(provider, { from, depositAddress, amountIn, payAsset })`
+sends the ERC-20/native transfer yourself. Or redirect to the checkout's `url`
+(the hosted page on wallet.decane.app).
 
 ---
 
