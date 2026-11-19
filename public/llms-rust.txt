@@ -217,6 +217,19 @@ decane.create_user(UserIdentifier::phone("+2348012345678"), CreateUserOptions { 
 decane.create_user(UserIdentifier::custom("auth0|123", "prov-1"), CreateUserOptions { create_wallet: Some(false), ..Default::default() }).await?;
 UserIdentifier::kingschat("<user id>"); UserIdentifier::x("<numeric id>");
 decane.create_user_wallet(&user_id).await?;               // POST /v1/app/users/:id/wallet
+
+// Payments (1.2.0+): checkout (pay-in) + withdrawals (pay-out). Needs the `payments`
+// scope and payments turned on for the project. Amounts are base units.
+decane.create_checkout("10000000", CheckoutOptions { order_ref: Some("o1".into()), ..Default::default() }).await?;  // POST /v1/app/checkout -> Payment (.url hosted page)
+decane.create_withdrawal(WithdrawalRequest { origin_chain_id, origin_asset, amount, dest_chain_id, dest_asset, dest_address, refund_to, order_ref: None, metadata: None, expires_in: None }).await?;  // POST /v1/app/withdrawals -> Payment
+decane.get_payment(&id).await?;                 // GET /v1/app/payments/:id -> Payment
+decane.list_payments(Some(50)).await?;          // GET /v1/app/payments -> Vec<Payment>
+decane.payment_options().await?;                // GET /v1/app/payments/options -> Vec<PayOption>
+decane.create_deposit_address("user-9", None).await?;  // POST /v1/app/deposit-addresses -> DepositAddress
+// Payment fields are snake_case (serde maps camelCase JSON): id, kind, status, amount,
+// settlement{chain_id,asset,address}, order_ref, expires_at, deposit_address, pay_chain_id,
+// pay_asset, amount_in, settled_amount, origin_tx, settlement_tx, metadata, created_at, url.
+// Webhooks: payment.created|completed|failed|expired.
 ```
 
 Decane keys the user exactly as the matching sign-in will, so the person's

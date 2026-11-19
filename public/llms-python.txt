@@ -237,6 +237,18 @@ decane.create_user(UserIdentifier("custom", "auth0|123", provider_id="prov-1"), 
 decane.create_user(UserIdentifier("kingschat", "<kingschat user id>"))
 decane.create_user(UserIdentifier("x", "<numeric X id>"))
 decane.create_user_wallet(user_id)                                            # POST /v1/app/users/:id/wallet
+
+# Payments (1.2.0+): checkout (pay-in) + withdrawals (pay-out). Needs the `payments`
+# scope and payments turned on for the project. Amounts are base units. Async client mirrors all.
+decane.create_checkout(amount, settlement_chain_id=None, order_ref=None, success_url=None, metadata=None, expires_in=None)  # POST /v1/app/checkout -> Payment (.url is the hosted page)
+decane.create_withdrawal(origin_chain_id=, origin_asset=, amount=, dest_chain_id=, dest_asset=, dest_address=, refund_to=, order_ref=None, metadata=None, expires_in=None)  # POST /v1/app/withdrawals -> Payment
+decane.get_payment(id)                   # GET /v1/app/payments/:id -> Payment
+decane.list_payments(limit=None)         # GET /v1/app/payments -> list[Payment]
+decane.payment_options()                 # GET /v1/app/payments/options -> list[PayOption]
+decane.create_deposit_address(user_ref, settlement_chain_id=None)  # POST /v1/app/deposit-addresses -> DepositAddress
+# Payment: id, kind ("checkout"|"withdrawal"), status ("open"|"pending"|"paid"|"expired"|"failed"), amount,
+# settlement{chain_id,asset,address}, order_ref, expires_at, deposit_address, pay_chain_id, pay_asset, amount_in,
+# settled_amount, origin_tx, settlement_tx, metadata, created_at, url. Webhooks: payment.created|completed|failed|expired.
 ```
 
 Decane keys the user exactly as the matching sign-in will, so the person's
