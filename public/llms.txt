@@ -828,7 +828,9 @@ Client side (decane-connect-kit, next web release): `createCheckoutClient(sessio
 the flow, with a one-tap "Approve" for a connected EVM wallet;
 `payCheckoutWithEvmWallet(provider, { from, depositAddress, amountIn, payAsset })`
 sends the ERC-20/native transfer yourself. Or redirect to the checkout's `url`
-(the hosted page on wallet.decane.app).
+(the hosted page, `https://checkout.decane.app/<id>`). Payer views include
+`settlementAsset` and `payAssetInfo` ({ decimals, symbol }) for known assets, and
+`formatCheckoutAmount(raw, asset)` turns base units into "10 USDC".
 
 ---
 
