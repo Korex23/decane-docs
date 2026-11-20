@@ -4,11 +4,16 @@
   "version": "2.32.0",
   "documentRevision": "2026-11-20",
   "$keys": "2026-11-16: one kind of project secret key with scopes (users:read, users:write, users:create, wallets:create, payments, rpc); llms.txt Part 5. RPC from a server: POST /rpc/v1/{chainId} with Authorization: Bearer.",
-  "$payments": "2026-11-19: Decane Payments — checkout (pay-in) and withdrawals (cross-chain pay-out) over the deposit router. Server surface in decane-node 1.6.0 (createCheckout/createWithdrawal/getPayment/listPayments/paymentOptions/createDepositAddress, payments scope); public payer surface GET/POST /checkout/:id[/quote|/status|/submit]; webhook events payment.created|completed|failed|expired. Server SDKs: decane-node 1.6.0, decane (Python) 1.2.0, decane (Rust) 1.2.0. Web: createCheckoutClient, <DecaneCheckout>, payCheckoutWithEvmWallet in the next decane-connect-kit release; hosted page at checkout.decane.app/:id. Payer views carry settlementAsset/payAssetInfo (decimals, symbol); pay options carry decimals and symbol.",
+  "$payments": "2026-11-19: Decane Payments — checkout (pay-in) and withdrawals (cross-chain pay-out) over the deposit router. Server surface in decane-node 1.7.0 (createCheckout/createWithdrawal/getPayment/listPayments/paymentOptions/createDepositAddress, payments scope); public payer surface GET/POST /checkout/:id[/quote|/status|/submit]; webhook events payment.created|completed|failed|expired. Server SDKs: decane-node 1.7.0, decane (Python) 1.2.0, decane (Rust) 1.2.0. Web: createCheckoutClient, <DecaneCheckout>, payCheckoutWithEvmWallet in decane-connect-kit 2.34.0; hosted page at checkout.decane.app/:id. Payer views carry settlementAsset/payAssetInfo (decimals, symbol); pay options carry decimals and symbol.",
   "llmsTxt": "https://kit.decane.app/llms.txt",
   "npmRegistry": "https://registry.npmjs.org/decane-connect-kit/latest",
   "docs": "https://kit.decane.app/docs",
   "changelog": [
+    {
+      "version": "2.34.0",
+      "date": "2026-11-20",
+      "summary": "Decane Payments, client side: createCheckoutClient(sessionId) for the public checkout surface, <DecaneCheckout> to embed a checkout (pick a token, exact amount, address, countdown, poll to paid) with an optional one-tap Approve for a connected EVM wallet, payCheckoutWithEvmWallet to send the ERC-20/native transfer yourself, and formatCheckoutAmount. No other API changes."
+    },
     {
       "version": "2.32.0",
       "date": "2026-11-16",
@@ -155,11 +160,16 @@
   },
   "node": {
     "package": "decane-node",
-    "version": "1.6.0",
+    "version": "1.7.0",
     "llmsTxt": "https://kit.decane.app/llms-node.txt",
     "npmRegistry": "https://registry.npmjs.org/decane-node/latest",
     "docs": "https://kit.decane.app/node-docs",
     "changelog": [
+      {
+        "version": "1.7.0",
+        "date": "2026-11-20",
+        "summary": "Decane Payments: createCheckout, createWithdrawal, getPayment, listPayments, paymentOptions and createDepositAddress on the project secret (payments scope). A checkout settles to the project's configured address and carries a hosted url (checkout.decane.app/<id>); a withdrawal settles anywhere, cross-chain. Webhooks payment.created|completed|failed|expired."
+      },
       {
         "version": "1.6.0",
         "date": "2026-09-29",

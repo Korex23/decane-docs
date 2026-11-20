@@ -817,12 +817,12 @@ Decane wallets.
   deposit address that always settles to your target (for crediting balances).
 
 Server reference (shapes, every call, webhook events): the `decane-node`
-docs/llms-node.txt (1.6.0+). The payer-facing surface is public and keyed by the
+docs/llms-node.txt (1.7.0+). The payer-facing surface is public and keyed by the
 unguessable session id: `GET /checkout/:id`, `POST /checkout/:id/quote`,
 `GET /checkout/:id/pay-options`, `GET /checkout/:id/status`,
 `POST /checkout/:id/submit`.
 
-Client side (decane-connect-kit, next web release): `createCheckoutClient(sessionId,
+Client side (decane-connect-kit 2.34.0+): `createCheckoutClient(sessionId,
 { apiBase? })` wraps that public surface (get, payOptions, quote, status, submit);
 `<DecaneCheckout sessionId evm={{ provider, account }} renderQr? onPaid? />` embeds
 the flow, with a one-tap "Approve" for a connected EVM wallet;

@@ -15,7 +15,7 @@ client options. Dual ESM + CJS build. Single runtime dependency: `jose`.
 
 ```yaml
 package: decane-node
-version: 1.6.0
+version: 1.7.0
 document-revision: 2026-09-26
 canonical: https://kit.decane.app/llms-node.txt
 version-manifest: https://kit.decane.app/llms-version.json   # under the "node" key
@@ -339,7 +339,7 @@ interface DecaneCreatedUser {
   wallet: "created" | "exists" | "none";  // "none" only with createWallet: false and no wallet yet
 }
 
-// Payments (1.6.0+): checkout (pay-in) + withdrawals (pay-out), Dextopus-settled.
+// Payments (1.7.0+): checkout (pay-in) + withdrawals (pay-out), Dextopus-settled.
 // Needs a key with the `payments` scope and payments turned on for the project.
 // Amounts are base units of the asset. Decane adds a partner-fee markup per payment.
 decane.createCheckout({ amount, settlementChainId?, orderRef?, successUrl?, metadata?, expiresIn? })
