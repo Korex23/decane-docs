@@ -15,7 +15,7 @@ client options. Dual ESM + CJS build. Single runtime dependency: `jose`.
 
 ```yaml
 package: decane-node
-version: 1.7.0
+version: 1.8.0
 document-revision: 2026-09-26
 canonical: https://kit.decane.app/llms-node.txt
 version-manifest: https://kit.decane.app/llms-version.json   # under the "node" key
@@ -338,6 +338,14 @@ interface DecaneCreatedUser {
   created: boolean;                       // this call made the user row
   wallet: "created" | "exists" | "none";  // "none" only with createWallet: false and no wallet yet
 }
+
+// Look up one user (1.8.0+), needs users:read. How a server learns a signed-in
+// user's email: decane_email on a Google redirect is plain text the browser can
+// edit, and the token carries no email. Verify the token, then:
+decane.getUserById(claims.userId)  // GET /v1/app/users/:id → DecaneAppUser; NOT_FOUND if not this project's
+// DecaneAppUser: { userId, authMethod, identifier (masked), email, emailVerified,
+//   emailUnsubscribed, evmAddress, solanaAddress, tronAddress, createdAt, lastSeenAt }
+// Trust email only when emailVerified (proved by a code or Google's verified claim).
 
 // Payments (1.7.0+): checkout (pay-in) + withdrawals (pay-out), Dextopus-settled.
 // Needs a key with the `payments` scope and payments turned on for the project.
