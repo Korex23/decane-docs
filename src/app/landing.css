@@ -188,7 +188,9 @@
   position: relative;
   margin-top: calc(-1 * var(--nav-h));
   padding: calc(var(--nav-h) + clamp(56px, 9vh, 104px)) 0 24px;
-  overflow: hidden;
+  /* clip, not hidden: it crops the drifting background the same way, but is
+     not a scroll container, so the product row inside can pin. */
+  overflow: clip;
 }
 .k-hero-bg {
   position: absolute;
@@ -259,12 +261,39 @@
   justify-content: flex-start;
 }
 
-/* the three product cards */
-.k-cards {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
+/* the products: one row, pinned and scrolled sideways on desktop */
+.k-track-sec {
+  position: relative;
+  z-index: 1;
   margin-top: 76px;
+}
+.k-track-pin {
+  /* Lines the first card up with the page column. */
+  --k-edge: max(40px, calc((100vw - 1360px) / 2 + 40px));
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  padding: 8px 0 24px;
+}
+.k-track-pin::-webkit-scrollbar {
+  display: none;
+}
+.k-track {
+  display: flex;
+  gap: 16px;
+  width: max-content;
+  padding: 0 var(--k-edge);
+  will-change: transform;
+}
+.k-track .k-card {
+  flex: 0 0 min(420px, 82vw);
+  scroll-snap-align: center;
+}
+.k-track-sec.is-pinned .k-track-pin {
+  position: sticky;
+  top: calc(var(--nav-h) + 16px);
+  overflow: hidden;
+  scroll-snap-type: none;
 }
 .k-card-art {
   position: relative;
@@ -1136,7 +1165,9 @@
 
 /* ── small screens ──────────────────────────────────────────────────────── */
 @media (max-width: 1000px) {
-  .k-cards,
+  .k-track-pin {
+    --k-edge: 20px;
+  }
   .k-uses,
   .k-demo-grid {
     grid-template-columns: 1fr;

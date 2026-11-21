@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { motion, useMotionValue, useReducedMotion } from "framer-motion";
 import Link from "next/link";
 import { SiteNav } from "@/components/SiteNav";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -70,7 +71,7 @@ const Tab = () => (
 
 const Soon = () => <span className="k-soon">Early access</span>;
 
-type Product = "wallets" | "gas" | "rpc";
+type Product = "wallets" | "payments" | "gas" | "rpc";
 
 // ─── Product previews ────────────────────────────────────────────────────────
 
@@ -157,6 +158,48 @@ const GasMock = () => (
   </div>
 );
 
+const PayMock = () => (
+  <div className="pm" aria-hidden="true">
+    <div className="pm-win">
+      <div className="pm-head">
+        <span className="pm-app">N</span>
+        <span>Pay Northgate</span>
+        <i className="pm-x">
+          <Close />
+        </i>
+      </div>
+      <div className="pm-body">
+        <div className="pm-amount">
+          <span className="pm-token">$</span>
+          <b>25.00</b> USDC
+        </div>
+        <dl className="pm-list">
+          <div>
+            <dt>Pay with</dt>
+            <dd>
+              <ChainTypeIcon type="solana" size={12} /> SOL on Solana
+            </dd>
+          </div>
+          <div>
+            <dt>Send exactly</dt>
+            <dd>
+              <b>0.1384 SOL</b>
+              <small>Expires in 9:41</small>
+            </dd>
+          </div>
+          <div>
+            <dt>Settles as</dt>
+            <dd>
+              <ChainTypeIcon type="evm" size={12} /> USDC on Base
+            </dd>
+          </div>
+        </dl>
+        <span className="pm-btn primary">Paid</span>
+      </div>
+    </div>
+  </div>
+);
+
 const RpcMock = () => (
   <div className="pm" aria-hidden="true">
     <div className="pm-win">
@@ -212,6 +255,13 @@ const PRODUCTS: { id: Product; art: React.ReactNode; title: string; soon?: boole
     body: "Give every user a wallet the moment they sign in, on Ethereum, Solana and Tron. Only they can move it.",
   },
   {
+    id: "payments",
+    art: <PayMock />,
+    title: "Crypto payments",
+    href: "/payments",
+    body: "Take payments in any token on any chain, settled as USDC to your address. Send a checkout link; users with a Decane wallet just approve.",
+  },
+  {
     id: "gas",
     art: <GasMock />,
     title: "Gas sponsorship",
@@ -254,6 +304,27 @@ const SCENES: Record<Product, { links: [number, number, number, number][]; nodes
       { x: 60, y: 12, content: <><ChainTypeIcon type="evm" size={22} /><div><small>Ethereum · Base</small><b>0x7a3f…c21e</b></div></> },
       { x: 62, y: 45, content: <><ChainTypeIcon type="solana" size={22} /><div><small>Solana</small><b>9xQe…4kPz</b></div></> },
       { x: 50, y: 74, content: <><ChainTypeIcon type="tron" size={22} /><div><small>Tron</small><b>TQr8…Vb3d</b></div></> },
+    ],
+  },
+  payments: {
+    links: [
+      [51, 46, 64, 26],
+      [51, 46, 62, 74],
+    ],
+    nodes: [
+      {
+        x: 7, y: 30, w: 44,
+        content: (
+          <div className="sn-stack">
+            <small>Checkout · Northgate</small>
+            <b className="sn-big">25.00 USDC</b>
+            <span className="sn-row"><span>Paid with</span><span>SOL on Solana</span></span>
+            <span className="sn-btn">Paid</span>
+          </div>
+        ),
+      },
+      { x: 62, y: 18, content: <><ChainTypeIcon type="evm" size={22} /><div><small>Settled to you · Base</small><b>25.00 USDC</b></div></> },
+      { x: 60, y: 66, content: <div><small>Webhook</small><b>payment.completed</b></div> },
     ],
   },
   gas: {
@@ -313,6 +384,13 @@ const USES: { id: Product; label: string; title: string; body: string; soon?: bo
     body: "Google, email, phone, X, KingsChat or your own login. No extension, no seed phrase; a new phone is just another sign-in.",
   },
   {
+    id: "payments",
+    label: "Payments",
+    href: "/payments",
+    title: "Get paid in crypto, settled in USDC",
+    body: "Create a checkout from your server and send the link. Customers pay in any token Dextopus routes, on any chain; you receive USDC at your address and a signed webhook. Cross-chain withdrawals too.",
+  },
+  {
     id: "gas",
     label: "Gas sponsorship",
     href: "/gas-sponsorship",
@@ -332,6 +410,106 @@ const USES: { id: Product; label: string; title: string; body: string; soon?: bo
 // The fill on the active item's edge is the timer: it pauses while the section
 // is hovered, focused or off screen, and with reduced motion it never runs.
 const USE_STEP_MS = 6000;
+
+// ─── The products, in one row: pinned while the page scrolls them sideways ──
+//
+// On a desktop the section holds the screen while scrolling down slides the
+// row across, for exactly as long as the row is wider than the screen (no pin
+// when all four fit). Phones, tablets and reduced motion get a plain row you
+// swipe, snapping card by card.
+
+function ProductTrack({ explore }: { explore: (p: Product) => void }) {
+  const section = useRef<HTMLElement>(null);
+  const viewport = useRef<HTMLDivElement>(null);
+  const track = useRef<HTMLDivElement>(null);
+  const reduce = useReducedMotion();
+  const [desktop, setDesktop] = useState(false);
+  const [distance, setDistance] = useState(0);
+  const [rowHeight, setRowHeight] = useState(0);
+  const x = useMotionValue(0);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1001px)");
+    const measure = () => {
+      setDesktop(mq.matches);
+      const v = viewport.current;
+      const tr = track.current;
+      setDistance(v && tr ? Math.max(0, tr.scrollWidth - v.clientWidth) : 0);
+      setRowHeight(v ? v.offsetHeight : 0);
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    mq.addEventListener("change", measure);
+    return () => {
+      window.removeEventListener("resize", measure);
+      mq.removeEventListener("change", measure);
+    };
+  }, []);
+
+  const pinned = desktop && !reduce && distance > 0;
+
+  // While the row is stuck under the nav, every pixel scrolled down moves it a
+  // pixel left, until its last card is in view; then the page carries on.
+  useEffect(() => {
+    if (!pinned) {
+      x.set(0);
+      return;
+    }
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const sec = section.current;
+      const pin = viewport.current;
+      if (!sec || !pin) return;
+      const stickTop = parseFloat(getComputedStyle(pin).top) || 0;
+      const travelled = stickTop - sec.getBoundingClientRect().top;
+      x.set(-Math.min(distance, Math.max(0, travelled)));
+    };
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, [pinned, distance, x]);
+
+  return (
+    <section
+      ref={section}
+      className={`k-track-sec${pinned ? " is-pinned" : ""}`}
+      style={pinned && rowHeight ? { height: rowHeight + distance } : undefined}
+      aria-label="Products"
+    >
+      <div ref={viewport} className="k-track-pin">
+        <motion.div ref={track} className="k-track" style={pinned ? { x } : undefined}>
+          {PRODUCTS.map((p) => (
+            <div key={p.id} className="k-card">
+              <div className="k-card-art">{p.art}</div>
+              <div className="k-card-body">
+                <h3>
+                  {p.title} {p.soon && <Soon />}
+                </h3>
+                <p>{p.body}</p>
+                {p.href ? (
+                  <Link href={p.href} className="k-link">
+                    Explore <Arrow />
+                  </Link>
+                ) : (
+                  <button type="button" className="k-link" onClick={() => explore(p.id)}>
+                    Explore <Arrow />
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+        </motion.div>
+      </div>
+    </section>
+  );
+}
 
 function Uses({ active, setActive }: { active: Product; setActive: (p: Product) => void }) {
   const scene = SCENES[active];
@@ -468,7 +646,7 @@ export default function Page() {
     <div className="site lp" data-theme={theme}>
       <SiteNav theme={theme} onToggleTheme={toggleTheme} />
 
-      {/* ── Hero and the three products ─────────────────────────────────── */}
+      {/* ── Hero; the products follow in a pinned row ─────────────────────────────────── */}
       <header className="k-hero">
         <div className="k-hero-bg" aria-hidden="true" />
         <div className="k-wrap">
@@ -481,8 +659,8 @@ export default function Page() {
             <Item>
               <p>
                 Your users sign in with Google, email or phone and get a wallet they own on every
-                chain you support. Add gas sponsorship and RPC from the same dashboard, and ship the
-                onchain part of your product in an afternoon.
+                chain you support. Add crypto payments, gas sponsorship and RPC from the same
+                dashboard, and ship the onchain part of your product in an afternoon.
               </p>
             </Item>
             <Item className="k-actions">
@@ -495,29 +673,8 @@ export default function Page() {
             </Item>
           </Stagger>
 
-          <Stagger className="k-cards" delay={0.1} start={0.3} inView={false}>
-            {PRODUCTS.map((p) => (
-              <Item key={p.id} className="k-card">
-                <div className="k-card-art">{p.art}</div>
-                <div className="k-card-body">
-                  <h3>
-                    {p.title} {p.soon && <Soon />}
-                  </h3>
-                  <p>{p.body}</p>
-                  {p.href ? (
-                    <Link href={p.href} className="k-link">
-                      Explore <Arrow />
-                    </Link>
-                  ) : (
-                    <button type="button" className="k-link" onClick={() => explore(p.id)}>
-                      Explore <Arrow />
-                    </button>
-                  )}
-                </div>
-              </Item>
-            ))}
-          </Stagger>
         </div>
+        <ProductTrack explore={explore} />
       </header>
 
       {/* ── The stack ───────────────────────────────────────────────────── */}
