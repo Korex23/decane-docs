@@ -372,7 +372,7 @@ decane.createDepositAddress(userRef, settlementChainId?) // POST /v1/app/deposit
 
 interface DecanePayment {
   id: string; kind: "checkout" | "withdrawal";
-  status: "open" | "pending" | "paid" | "expired" | "failed";
+  status: "open" | "pending" | "paid" | "partial" | "expired" | "failed"; // partial: settled clearly short
   amount: string; settlement: { chainId: number; asset: string; address: string };
   orderRef: string | null; expiresAt: string;
   depositAddress: string | null; payChainId: number | null; payAsset: string | null;
@@ -381,7 +381,7 @@ interface DecanePayment {
   createdAt: string; url: string | null; // url: hosted checkout page (checkouts)
 }
 // Webhook events (to the project's webhook_url): payment.created | payment.completed
-// | payment.failed | payment.expired, each with `data` carrying the DecanePayment-shaped body and `kind`.
+// | payment.partial | payment.failed | payment.expired (checkouts accept any amount: judged by what settled; settledAmount is base units), each with `data` carrying the DecanePayment-shaped body and `kind`.
 ```
 
 Idempotent on the identifier: a second `createUser` returns the same user with

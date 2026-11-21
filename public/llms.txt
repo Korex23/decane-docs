@@ -809,7 +809,8 @@ page. Works with or without Decane wallets.
   (USDC) and Tron (USDT). At least one is required before Payments can be on.
 - Turn Payments on. Give the server key the `payments` scope ("Accept payments").
 - Payment events go to the project's existing webhook (same URL and secret as
-  sign-ins): `payment.completed`, `payment.failed`, `payment.expired`. Sent once,
+  sign-ins): `payment.completed`, `payment.partial`, `payment.failed`,
+  `payment.expired`. Sent once,
   never retried: reconcile with `getPayment` / `listPayments`.
 
 **Checkout (pay-in):** your server calls `POST /v1/app/checkout` with an exact
@@ -820,10 +821,17 @@ address, then the other EVM chains, then Solana, then Tron.
   it (fetched live, cached 10 minutes; the curated stablecoins stand in if
   Dextopus is unreachable). Only networks of a family the merchant has an
   address on are offered.
-- The payer is NEVER asked for a refund address. A strict quote: an
-  underpayment is refunded in full and an overpayment's excess refunded, to the
-  MERCHANT's own address on the payer's network family. The merchant handles it.
-- Fulfil on `payment.completed`, matched by `data.id` or `data.orderRef`.
+- The payer is NEVER asked for a refund address. Checkouts are NON-strict
+  quotes: whatever the payer sends is converted and settled to the merchant.
+  The outcome is judged by what settled: at or above the amount (0.5%
+  tolerance) is `paid` (an overpayment's extra is the merchant's); clearly
+  less is `partial`. Only a deposit that cannot settle at all is refunded, to
+  the MERCHANT's own address on the payer's network family.
+- A quoted checkout keeps watching past its countdown: a late payment still
+  settles.
+- Fulfil on `payment.completed`, matched by `data.id` or `data.orderRef`. A
+  short payment raises `payment.partial` instead (with `data.settledAmount`, in
+  base units like `amount`): decide whether to fulfil.
 
 **Withdrawal (pay-out):** `POST /v1/app/withdrawals` — send `amount` of what you
 hold (origin chain/asset) and it settles to any chain/asset/address you name.
@@ -836,9 +844,9 @@ Server reference: the `decane-node` docs (llms-node.txt, 1.7.0+). Python and
 Rust ports follow.
 
 **Payer-facing surface (public, keyed by the unguessable session id, no key):**
-- `GET /checkout/:id` → the payment plus `merchant: { name }` (the project's
-  name, nothing else about it), `settlementAsset` and `payAssetInfo`
-  ({ decimals, symbol }).
+- `GET /checkout/:id` → the payment (status adds `partial`; `orderRef`;
+  `settledAmount`) plus `merchant: { name }` (the project's name, nothing else
+  about it), `settlementAsset` and `payAssetInfo` ({ decimals, symbol }).
 - `GET /checkout/:id/pay-options` → `{ payOptions: [{ chainId, chainName, asset,
   symbol, name, decimals, logoUrl, label }] }`, already filtered to the
   merchant's networks.
