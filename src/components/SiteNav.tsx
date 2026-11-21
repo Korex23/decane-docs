@@ -88,6 +88,12 @@ export const PRODUCTS = [
     icon: "M7 11V8a5 5 0 0 1 10 0v3M5 11h14v10H5zM12 15v2",
   },
   {
+    name: "Payments",
+    line: "Get paid in any token, settled in USDC.",
+    href: "/payments",
+    icon: "M3 7h18v10H3zM3 11h18M7 15h3",
+  },
+  {
     name: "Gas sponsorship",
     line: "Users send without gas. You earn on every send.",
     href: "/gas-sponsorship",

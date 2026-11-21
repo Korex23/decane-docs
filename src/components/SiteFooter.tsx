@@ -16,6 +16,7 @@ const COLUMNS: Array<{ title: string; links: FooterLink[] }> = [
     links: [
       { label: "Decane Wallet", href: `${MAIN_SITE}/#wallet` },
       { label: "Connect Kit", href: "/" },
+      { label: "Payments", href: "/payments" },
       { label: "Gas sponsorship", href: "/gas-sponsorship" },
       { label: "Decane RPC", href: "/rpc" },
     ],
