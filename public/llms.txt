@@ -817,8 +817,10 @@ page. Works with or without Decane wallets.
 `amount` (base units of the settlement asset). You get an `id` and a hosted
 `url`. Without `settlementChainId` it settles on Base when there is an EVM
 address, then the other EVM chains, then Solana, then Tron.
-- The payer picks the network they pay from, then ANY token Dextopus lists on
-  it (fetched live, cached 10 minutes; the curated stablecoins stand in if
+- The payer picks the network they pay from, then its native coin, USDC or
+  USDT (Dextopus lists more tokens than its quotes accept, so only these are
+  offered; one it still refuses is hidden for a day). The list comes from
+  Dextopus (fetched live, cached 10 minutes; the curated stablecoins stand in if
   Dextopus is unreachable). Only networks of a family the merchant has an
   address on are offered.
 - The payer is NEVER asked for a refund address. Checkouts are NON-strict

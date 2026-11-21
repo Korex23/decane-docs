@@ -753,7 +753,7 @@ if (user.emailVerified) sendReceipt(user.email!);`)}
           Take crypto payments from your server (1.7.0+). A{" "}
           <strong>checkout</strong> is a payment request for an exact amount that
           settles to the address you set on your project&rsquo;s Payments page. Your
-          customer pays in any token Dextopus routes, on any network you can be
+          customer pays in the native coin, USDC or USDT on any network you can be
           refunded on, and your server is told when it settled. A{" "}
           <strong>withdrawal</strong> is the reverse: send what you hold and it
           settles to any chain, asset and address.

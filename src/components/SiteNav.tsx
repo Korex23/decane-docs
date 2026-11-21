@@ -89,7 +89,7 @@ export const PRODUCTS = [
   },
   {
     name: "Payments",
-    line: "Get paid in any token, settled in USDC.",
+    line: "Get paid in crypto, settled in USDC.",
     href: "/payments",
     icon: "M3 7h18v10H3zM3 11h18M7 15h3",
   },

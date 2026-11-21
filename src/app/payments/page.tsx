@@ -82,19 +82,19 @@ export default function PaymentsPage() {
       eyebrow="Payments"
       badge="Early access"
       secondary={{ label: "Turn it on in the dashboard", href: "https://dashboard.decane.app" }}
-      title="Get paid in any token. Receive USDC."
+      title="Get paid in crypto, on any major network. Receive USDC."
       lede="Create a checkout from your server and send your customer the link. They pay in whatever they hold, on the network they hold it on; the payment settles as USDC to your address, and your server gets a signed webhook."
       art={<Sheet />}
       closeTitle="Take crypto payments without running a bridge"
       closeText="Set your settlement address in the dashboard, turn Payments on, and create your first checkout with one server call."
     >
-      <PSection title="One checkout, any token" lead="Your customer chooses how to pay. You always receive the same thing.">
+      <PSection title="One checkout, many networks" lead="Your customer chooses how to pay. You always receive the same thing.">
         <Cards
           items={[
             {
               tag: "For the payer",
-              title: "Any token Dextopus routes",
-              body: "They pick the network they pay from, then the token: stablecoins, native coins and more, with the exact amount, a QR code and a countdown.",
+              title: "Coins and stablecoins on 7 networks",
+              body: "They pick the network they pay from (Ethereum, Base, Arbitrum, Optimism, Polygon, BNB Chain, Avalanche, plus Solana and Tron where you have an address), then its native coin, USDC or USDT. A slightly wrong amount still reaches you."
             },
             {
               tag: "For you",

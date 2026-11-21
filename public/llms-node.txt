@@ -355,7 +355,7 @@ decane.createCheckout({ amount, settlementChainId?, orderRef?, successUrl?, meta
   // project's address (settlementChainId omitted: Base, then the other EVM chains
   // the project's EVM address covers, then Solana, then Tron); `url` is the hosted checkout page, `depositAddress` is
   // filled once the payer picks a pay-token. You learn it settled by the webhook.
-  // The payer picks a network, then any token Dextopus lists on it (only networks
+  // The payer picks a network, then its native coin, USDC or USDT (only networks
   // of a family the project has an address on). They give no refund address: a
   // payment that cannot settle is refunded to the PROJECT's address on the payer's
   // network family. Set addresses on the dashboard's Payments page (one EVM

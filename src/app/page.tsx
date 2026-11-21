@@ -259,7 +259,7 @@ const PRODUCTS: { id: Product; art: React.ReactNode; title: string; soon?: boole
     art: <PayMock />,
     title: "Crypto payments",
     href: "/payments",
-    body: "Take payments in any token on any chain, settled as USDC to your address. Send a checkout link; users with a Decane wallet just approve.",
+    body: "Take payments in native coins and stablecoins across major networks, settled as USDC to your address. Send a checkout link; users with a Decane wallet just approve.",
   },
   {
     id: "gas",
@@ -388,7 +388,7 @@ const USES: { id: Product; label: string; title: string; body: string; soon?: bo
     label: "Payments",
     href: "/payments",
     title: "Get paid in crypto, settled in USDC",
-    body: "Create a checkout from your server and send the link. Customers pay in any token Dextopus routes, on any chain; you receive USDC at your address and a signed webhook. Cross-chain withdrawals too.",
+    body: "Create a checkout from your server and send the link. Customers pay in the native coin, USDC or USDT on the network they hold it on; you receive USDC at your address and a signed webhook. Cross-chain withdrawals too.",
   },
   {
     id: "gas",
