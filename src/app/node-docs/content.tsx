@@ -708,6 +708,124 @@ const claims = await verifyAccessToken({
     ),
   },
   {
+    slug: "users",
+    group: "Users",
+    title: "Look up a user",
+    icon: "user",
+    body: (
+      <>
+        <p>
+          <code>getUserById(userId)</code> (1.8.0+) returns one user of your
+          project: how they signed in, their addresses, and their email with{" "}
+          <code>emailVerified</code>. It needs a project secret with the{" "}
+          <code>users:read</code> scope.
+        </p>
+        <p>
+          This is how your server learns a signed-in user&rsquo;s email. After a
+          Google redirect, <code>decane_email</code> arrives in the URL as plain
+          text the browser can change, and the Decane token is signed but carries
+          no email. Verify the token, then look the user up by its id:
+        </p>
+        <CodeBlock lang="ts" file="me.ts">
+          {hl(`const claims = await decane.verifyAccessToken(token);
+const user = await decane.getUserById(claims.userId);
+
+if (user.emailVerified) sendReceipt(user.email!);`)}
+        </CodeBlock>
+        <p>
+          <code>emailVerified</code> is <code>true</code> when the person proved
+          the address (an email code, or Google&rsquo;s verified claim) and{" "}
+          <code>false</code> for an address your own server supplied through{" "}
+          <code>createUser</code>. A user of another project, or an unknown id,
+          answers <code>NOT_FOUND</code>.
+        </p>
+      </>
+    ),
+  },
+  {
+    slug: "payments",
+    group: "Payments",
+    title: "Payments: checkout and withdrawals",
+    icon: "layers",
+    body: (
+      <>
+        <p>
+          Take crypto payments from your server (1.7.0+). A{" "}
+          <strong>checkout</strong> is a payment request for an exact amount that
+          settles to the address you set on your project&rsquo;s Payments page. Your
+          customer pays in any token Dextopus routes, on any network you can be
+          refunded on, and your server is told when it settled. A{" "}
+          <strong>withdrawal</strong> is the reverse: send what you hold and it
+          settles to any chain, asset and address.
+        </p>
+        <p>
+          Before the first call: set at least one settlement address on the
+          Payments page (one EVM address covers Base, Ethereum, Arbitrum and
+          Polygon; Solana and Tron are optional), turn Payments on, and give your
+          secret key the <code>payments</code> scope (&ldquo;Accept payments&rdquo;
+          in the dashboard).
+        </p>
+        <CodeBlock lang="ts" file="checkout.ts">
+          {hl(`const decane = new DecaneClient({ projectSecret: process.env.DECANE_PROJECT_SECRET });
+
+// 25 USDC (6 decimals). Amounts are always base units.
+const checkout = await decane.createCheckout({
+  amount: "25000000",
+  orderRef: "order_42",
+  successUrl: "https://shop.example/thanks",
+  expiresIn: 600, // seconds, 60 to 3600
+});
+
+checkout.url; // the hosted checkout page: send your customer here`)}
+        </CodeBlock>
+        <h3>What the customer sees</h3>
+        <p>
+          The hosted page names your project, then asks which network they pay
+          from and which token. It shows the exact amount, the deposit address, a
+          QR code and the countdown, follows the payment on its own and returns
+          them to your <code>successUrl</code>. They are never asked for a refund
+          address: a payment that cannot settle (too little, too much, too late)
+          is refunded to <em>your</em> address on their network, and you sort it
+          out with them. A network is only offered where you have an address.
+        </p>
+        <p>
+          With no <code>settlementChainId</code>, a checkout settles on Base when
+          you have an EVM address, then the other EVM chains, then Solana, then
+          Tron.
+        </p>
+        <h3>Knowing it was paid</h3>
+        <p>
+          Decane posts <code>payment.completed</code> (or{" "}
+          <code>payment.failed</code> / <code>payment.expired</code>) to your
+          project&rsquo;s webhook, signed like every Decane webhook. Each is sent
+          once: if your endpoint was down, reconcile with{" "}
+          <code>getPayment</code> or <code>listPayments</code>.
+        </p>
+        <CodeBlock lang="ts" file="webhook.ts">
+          {hl(`// after verifying x-decane-signature over \`\${timestamp}.\${rawBody}\`
+if (event.event === "payment.completed") {
+  fulfil(event.data.orderRef ?? event.data.id);
+}`)}
+        </CodeBlock>
+        <h3>Every call</h3>
+        <CodeBlock lang="ts">
+          {hl(`decane.createCheckout({ amount, settlementChainId?, orderRef?, successUrl?, metadata?, expiresIn? })
+decane.createWithdrawal({ originChainId, originAsset, amount, destChainId, destAsset, destAddress, refundTo })
+decane.getPayment(id)          // one payment
+decane.listPayments(limit?)    // newest first
+decane.paymentOptions()        // what your checkouts can be paid with
+decane.createDepositAddress(userRef, settlementChainId?) // a reusable address per user`)}
+        </CodeBlock>
+        <p>
+          Errors: <code>PAYMENT_ERROR</code> (bad input, an expired checkout,
+          payments off) and <code>PAYMENT_PROVIDER</code> (the deposit router). A
+          key without the <code>payments</code> scope answers{" "}
+          <code>INSUFFICIENT_SCOPE</code>.
+        </p>
+      </>
+    ),
+  },
+  {
     slug: "claims",
     group: "Reference",
     title: "Token claims",
@@ -1256,6 +1374,8 @@ export const SEARCH: SearchEntry[] = [
     crumb: "API",
     mono: false,
   },
+  { id: "users", title: "Look up a user (getUserById)", crumb: "Users", mono: false },
+  { id: "payments", title: "Payments: checkout and withdrawals", crumb: "Payments", mono: false },
   { id: "claims", title: "Token claims", crumb: "Reference", mono: false },
   { id: "errors", title: "Error handling", crumb: "Reference", mono: false },
   { id: "config", title: "Configuration", crumb: "Reference", mono: false },

@@ -2294,6 +2294,72 @@ decane.on("wallet-creating", () => showProgress());`)}
     ),
   },
   {
+    slug: "payments",
+    group: "Payments",
+    title: "Payments: the checkout",
+    icon: "layers",
+    body: (
+      <>
+        <div className="docs-callout" data-kind="warn">
+          <div className="ico">!</div>
+          <p>
+            <strong>Early access.</strong> In <code>decane-connect-kit</code> 2.34.0 and later.
+            Checkouts are created on your server with <code>decane-node</code> 1.7.0+ (see the{" "}
+            <a href="/node-docs/payments">server docs</a>); this page is the customer side.
+          </p>
+        </div>
+        <p id="payments-flow">
+          A checkout is a payment request for an exact amount that settles to your project&rsquo;s
+          address. Your server creates it and gets back an id and a hosted <code>url</code>. On the
+          client you either send the customer to that URL, or embed the same flow with{" "}
+          <code>&lt;DecaneCheckout&gt;</code>. The customer picks the network they pay from, then
+          a token (anything Dextopus routes on that network), and sends the exact amount shown
+          before the countdown ends. They are never asked for a refund address: a payment that
+          cannot settle is refunded to <em>your</em> address on their network.
+        </p>
+        <h3 id="payments-component">Embed it</h3>
+        <CodeBlock lang="tsx" file="Checkout.tsx">
+          {hl(`import { DecaneCheckout } from "decane-connect-kit";
+
+<DecaneCheckout
+  sessionId={checkoutId}            // from your server's createCheckout
+  onPaid={(view) => showReceipt(view)}
+  // optional: a connected EVM wallet gets a one-tap "Approve"
+  evm={{ provider, account }}
+  // optional: render a QR for the deposit address
+  renderQr={(address) => <MyQr value={address} />}
+/>`)}
+        </CodeBlock>
+        <h3 id="payments-headless">Headless</h3>
+        <CodeBlock lang="ts">
+          {hl(`import { createCheckoutClient, formatCheckoutAmount, payCheckoutWithEvmWallet } from "decane-connect-kit";
+
+const checkout = createCheckoutClient(checkoutId);
+const view = await checkout.get();               // amount, status, expiry
+const options = await checkout.payOptions();     // { chainId, chainName, asset, symbol, decimals, logoUrl, label }[]
+const quoted = await checkout.quote({ payChainId: 8453, payAsset: USDC_BASE });
+
+formatCheckoutAmount(quoted.amountIn, quoted.payAssetInfo); // "25.075 USDC"
+
+// Pay it from a connected EVM wallet yourself (EVM only):
+const hash = await payCheckoutWithEvmWallet(provider, {
+  from: account,
+  depositAddress: quoted.depositAddress!,
+  amountIn: quoted.amountIn!,
+  payAsset: quoted.payAsset!,
+});
+await checkout.submit(hash);                     // settles faster than polling
+await checkout.status();                         // "pending" → "paid"`)}
+        </CodeBlock>
+        <p>
+          <code>payCheckoutWithEvmWallet</code> sends an ERC-20 <code>transfer</code> (or a value
+          send for the native coin) to the deposit address. It moves real funds; try it with a
+          small payment in your app first.
+        </p>
+      </>
+    ),
+  },
+  {
     slug: "gas-sponsorship",
     group: "Gas & RPC",
     title: "Gas sponsorship",
@@ -3095,6 +3161,12 @@ const provider = new JsonRpcProvider("https://backend.decane.app/rpc/v1/8453/dck
 // Every id that appears in the content, mapped to the page that holds it, so a
 // #hash link written when the docs were one page still lands on the right page.
 export const ANCHORS: Record<string, string> = {
+  payments: "payments",
+  "payments-flow": "payments",
+  "payments-component": "payments",
+  "payments-headless": "payments",
+  DecaneCheckout: "payments",
+  createCheckoutClient: "payments",
   "gas-sponsorship": "gas-sponsorship",
   "gas-send": "gas-sponsorship",
   "gas-config": "gas-sponsorship",
@@ -3245,6 +3317,9 @@ export const SEARCH: SearchEntry[] = [
     crumb: "Hooks",
     mono: true,
   },
+  { id: "payments", title: "Payments: the checkout", crumb: "Payments", mono: false },
+  { id: "DecaneCheckout", title: "<DecaneCheckout>", crumb: "Payments", mono: true },
+  { id: "createCheckoutClient", title: "createCheckoutClient()", crumb: "Payments", mono: true },
   { id: "gas-sponsorship", title: "Gas sponsorship", crumb: "Gas & RPC", mono: false },
   { id: "sendSponsoredTransaction", title: "sendSponsoredTransaction()", crumb: "Gas & RPC", mono: true },
   { id: "rpc", title: "Decane RPC", crumb: "Gas & RPC", mono: false },

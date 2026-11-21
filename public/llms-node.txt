@@ -355,12 +355,19 @@ decane.createCheckout({ amount, settlementChainId?, orderRef?, successUrl?, meta
   // project's address (settlementChainId omitted: Base, then the other EVM chains
   // the project's EVM address covers, then Solana, then Tron); `url` is the hosted checkout page, `depositAddress` is
   // filled once the payer picks a pay-token. You learn it settled by the webhook.
+  // The payer picks a network, then any token Dextopus lists on it (only networks
+  // of a family the project has an address on). They give no refund address: a
+  // payment that cannot settle is refunded to the PROJECT's address on the payer's
+  // network family. Set addresses on the dashboard's Payments page (one EVM
+  // address covers every EVM chain; Solana and Tron optional; at least one).
 decane.createWithdrawal({ originChainId, originAsset, amount, destChainId, destAsset, destAddress, refundTo, orderRef?, metadata?, expiresIn? })
   // POST /v1/app/withdrawals → DecanePayment. Cross-chain pay-out: the holder
   // sends `amount` of what they have to `depositAddress`, settles to the dest.
+  // refundTo here is the sender's own origin-chain address.
 decane.getPayment(id)          // GET /v1/app/payments/:id → DecanePayment
 decane.listPayments(limit?)    // GET /v1/app/payments → DecanePayment[] (default 50, max 200)
-decane.paymentOptions()        // GET /v1/app/payments/options → { chainId, asset, label }[]
+decane.paymentOptions()        // GET /v1/app/payments/options → { chainId, chainName, asset, symbol, name, decimals, logoUrl, label }[]
+                               // the live Dextopus list, filtered to the project's networks (the TS type lists the original three fields)
 decane.createDepositAddress(userRef, settlementChainId?) // POST /v1/app/deposit-addresses → reusable per-user address
 
 interface DecanePayment {

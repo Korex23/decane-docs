@@ -798,39 +798,65 @@ key for everything is allowed.
 
 ## Decane Payments — accept crypto payments (checkout) and cross-chain withdrawals
 
-Take crypto payments without running a bridge. Settlement is powered by Decane's
-deposit router; Decane holds the keys, meters and relays webhooks, and adds a
-small partner-fee markup. Turn it on per project in the dashboard (set a
-settlement chain/asset/address, flip it on) — self-serve. Works with or without
-Decane wallets.
+Take crypto payments without running a bridge. Settlement runs through
+Dextopus's deposit router; Decane holds the provider keys, relays webhooks and
+adds its fee to the quote. Self-serve per project in the dashboard's Payments
+page. Works with or without Decane wallets.
 
-- **Checkout (pay-in):** your server calls `POST /v1/app/checkout` (a key with
-  the `payments` scope) for an exact amount; you get a `url` (the hosted
-  checkout page) and, once the payer picks a pay-token, a `depositAddress`. The
-  payer sends any token on any chain, or — if they hold a Decane wallet —
-  approves in the checkout modal and the embedded wallet signs. You learn it
-  settled from the `payment.completed` webhook.
-- **Withdrawal (pay-out):** `POST /v1/app/withdrawals` — the holder sends what
-  they have and it settles to any chain/asset/address you name (cross-chain
-  send). A Decane-wallet user can do it from the modal.
-- **Static address:** `POST /v1/app/deposit-addresses` — a reusable per-user
-  deposit address that always settles to your target (for crediting balances).
+**Merchant setup (dashboard → Payments):**
+- Settlement addresses, one per network family: ONE EVM address (saved for
+  Base, Ethereum, Arbitrum and Polygon, settling as USDC), plus optional Solana
+  (USDC) and Tron (USDT). At least one is required before Payments can be on.
+- Turn Payments on. Give the server key the `payments` scope ("Accept payments").
+- Payment events go to the project's existing webhook (same URL and secret as
+  sign-ins): `payment.completed`, `payment.failed`, `payment.expired`. Sent once,
+  never retried: reconcile with `getPayment` / `listPayments`.
 
-Server reference (shapes, every call, webhook events): the `decane-node`
-docs/llms-node.txt (1.7.0+). The payer-facing surface is public and keyed by the
-unguessable session id: `GET /checkout/:id`, `POST /checkout/:id/quote`,
-`GET /checkout/:id/pay-options`, `GET /checkout/:id/status`,
-`POST /checkout/:id/submit`.
+**Checkout (pay-in):** your server calls `POST /v1/app/checkout` with an exact
+`amount` (base units of the settlement asset). You get an `id` and a hosted
+`url`. Without `settlementChainId` it settles on Base when there is an EVM
+address, then the other EVM chains, then Solana, then Tron.
+- The payer picks the network they pay from, then ANY token Dextopus lists on
+  it (fetched live, cached 10 minutes; the curated stablecoins stand in if
+  Dextopus is unreachable). Only networks of a family the merchant has an
+  address on are offered.
+- The payer is NEVER asked for a refund address. A strict quote: an
+  underpayment is refunded in full and an overpayment's excess refunded, to the
+  MERCHANT's own address on the payer's network family. The merchant handles it.
+- Fulfil on `payment.completed`, matched by `data.id` or `data.orderRef`.
 
-Client side (decane-connect-kit 2.34.0+): `createCheckoutClient(sessionId,
-{ apiBase? })` wraps that public surface (get, payOptions, quote, status, submit);
-`<DecaneCheckout sessionId evm={{ provider, account }} renderQr? onPaid? />` embeds
-the flow, with a one-tap "Approve" for a connected EVM wallet;
+**Withdrawal (pay-out):** `POST /v1/app/withdrawals` — send `amount` of what you
+hold (origin chain/asset) and it settles to any chain/asset/address you name.
+`refundTo` here is the sender's own origin-chain address.
+
+**Static address:** `POST /v1/app/deposit-addresses` — a reusable per-user
+deposit address that always settles to your target (for crediting balances).
+
+Server reference: the `decane-node` docs (llms-node.txt, 1.7.0+). Python and
+Rust ports follow.
+
+**Payer-facing surface (public, keyed by the unguessable session id, no key):**
+- `GET /checkout/:id` → the payment plus `merchant: { name }` (the project's
+  name, nothing else about it), `settlementAsset` and `payAssetInfo`
+  ({ decimals, symbol }).
+- `GET /checkout/:id/pay-options` → `{ payOptions: [{ chainId, chainName, asset,
+  symbol, name, decimals, logoUrl, label }] }`, already filtered to the
+  merchant's networks.
+- `POST /checkout/:id/quote` `{ payChainId, payAsset }` → the deposit address and
+  exact `amountIn`. (`refundTo`, sent by older clients, is ignored.)
+- `GET /checkout/:id/status`, `POST /checkout/:id/submit` `{ txHash }`.
+
+**Client side (decane-connect-kit 2.34.0+):** `createCheckoutClient(sessionId,
+{ apiBase? })` wraps that surface (get, payOptions, quote, status, submit).
+`<DecaneCheckout sessionId evm={{ provider, account }} renderQr? onPaid? />`
+embeds the flow, with a one-tap "Approve" for a connected EVM wallet.
 `payCheckoutWithEvmWallet(provider, { from, depositAddress, amountIn, payAsset })`
-sends the ERC-20/native transfer yourself. Or redirect to the checkout's `url`
-(the hosted page, `https://checkout.decane.app/<id>`). Payer views include
-`settlementAsset` and `payAssetInfo` ({ decimals, symbol }) for known assets, and
-`formatCheckoutAmount(raw, asset)` turns base units into "10 USDC".
+sends the ERC-20/native transfer yourself (it moves real funds; try it small).
+`formatCheckoutAmount(raw, asset)` turns base units into "10 USDC". Or redirect
+to the checkout's `url`: the hosted page (currently
+`https://decane-checkout.vercel.app/<id>`, moving to `checkout.decane.app`).
+In 2.34.0 the component still shows a refund-address box; it is harmless (the
+backend ignores it) and goes in the next release.
 
 ---
 
