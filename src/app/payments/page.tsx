@@ -93,8 +93,8 @@ export default function PaymentsPage() {
           items={[
             {
               tag: "For the payer",
-              title: "Coins and stablecoins on 7 networks",
-              body: "They pick the network they pay from (Ethereum, Base, Arbitrum, Optimism, Polygon, BNB Chain, Avalanche, plus Solana and Tron where you have an address), then its native coin, USDC or USDT. A slightly wrong amount still reaches you."
+              title: "Coins and stablecoins on 70+ networks",
+              body: "They search for the network they pay from (every EVM network Dextopus routes, from Ethereum, Base and Arbitrum to Linea, Monad and HyperEVM, plus Solana and Tron where you have an address), then pick its native coin, USDC or USDT. A slightly wrong amount still reaches you."
             },
             {
               tag: "For you",
@@ -128,7 +128,7 @@ export default function PaymentsPage() {
       <PSection title="How it works" tinted>
         <Steps
           items={[
-            { title: "Set where you get paid", body: "On your project's Payments page: one EVM address (used on Base, Ethereum, Arbitrum and Polygon), plus optional Solana and Tron addresses. At least one is required." },
+            { title: "Set where you get paid", body: "On your project's Payments page: one EVM address (used on every EVM network), plus optional Solana and Tron addresses. At least one is required." },
             { title: "Turn it on", body: "One switch once an address is set. Give your server key the Accept payments scope." },
             { title: "Create a checkout", body: "Your server calls createCheckout with the amount. You get a checkout id and a hosted payment link." },
             { title: "Your customer pays", body: "They choose a network and a token, and send the exact amount shown before the countdown ends. The page follows the payment on its own." },
@@ -178,7 +178,7 @@ export default function PaymentsPage() {
       <PSection title="Questions">
         <Faq
           items={[
-            { q: "Which networks can customers pay from?", a: "The networks Dextopus routes where you have an address: Ethereum, Base, Arbitrum, Optimism, Polygon, BNB Chain and Avalanche with your EVM address, plus Solana and Tron if you set those. Bitcoin is next." },
+            { q: "Which networks can customers pay from?", a: "Every network Dextopus routes where you have an address: over 70 EVM networks (Ethereum, Base, Arbitrum, Optimism, Polygon, BNB Chain, Avalanche, Linea and more) with your one EVM address, plus Solana and Tron if you set those. New EVM networks appear as Dextopus adds them. Bitcoin is next." },
             { q: "What do I receive?", a: "USDC (or USDT on Tron) at the address you set, on Base by default when you have an EVM address. You can name another settlement network per checkout." },
             { q: "Do my customers need a Decane wallet?", a: "No. Anyone can pay from any wallet or exchange using the link. Customers with a Decane wallet can approve in one tap in the embedded checkout." },
             { q: "What happens if someone sends the wrong amount?", a: "The quote is strict: an underpayment is refunded in full and an overpayment has the excess refunded, both to your address on the payer's network, so you can sort it out with them." },

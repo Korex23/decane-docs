@@ -822,7 +822,10 @@ address, then the other EVM chains, then Solana, then Tron.
   offered; one it still refuses is hidden for a day). The list comes from
   Dextopus (fetched live, cached 10 minutes; the curated stablecoins stand in if
   Dextopus is unreachable). Only networks of a family the merchant has an
-  address on are offered.
+  address on are offered. Every EVM network Dextopus routes is offered
+  (70+, detected from its token list; Eclipse is excluded as Solana VM) with
+  the merchant's one EVM address; the page shows six popular networks and a
+  search for the rest.
 - The payer is NEVER asked for a refund address. Checkouts are NON-strict
   quotes: whatever the payer sends is converted and settled to the merchant.
   The outcome is judged by what settled: at or above the amount (0.5%
