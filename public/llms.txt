@@ -25,8 +25,8 @@ need it for a single product.
 ## Version and freshness
 
 ```yaml
-version: 2.32.0
-document-revision: 2026-11-16
+version: 2.35.0
+document-revision: 2026-11-27
 canonical: https://kit.decane.app/llms.txt
 version-manifest: https://kit.decane.app/llms-version.json
 ```
@@ -44,6 +44,15 @@ active (see "Sessions"). Since 2.27 an app can choose the **identity tier**
 in is the whole ceremony (see "Protection tiers"). Wallet creation now waits
 for the enclave to enrol the wallet and throws `WalletEnrolmentError` instead
 of leaving a wallet that only ever worked on one device.
+
+**Upgrade required — 2026-11-26.** Decane moved its signing enclave to a new
+CVM. Every existing wallet was carried over and keeps its addresses, but only
+**`decane-connect-kit` 2.35.0+** (and `decane-connect-kit-expo` **0.9.0+**)
+can reach the new enclave: earlier versions refuse it and cannot open wallet
+sessions. Pin `2.35.0` or later. Users sign in once more after the upgrade;
+nothing else changes for them. From 2.35.0 the enclave is named by a signed
+manifest (see "Which enclave, and how it is checked"), so a future enclave
+move is a newly signed manifest, not another required upgrade.
 
 `version` is the npm package version whose API surface this document describes.
 
@@ -236,7 +245,7 @@ interface DecaneConnectConfig {
   rpId?: string;                      // WebAuthn RP ID, defaults to window.location.hostname
   rpName?: string;                    // WebAuthn RP display name
   rpcUrls?: Record<string, string>;   // override built-in public RPCs per chain
-  teeUrl?: string;                    // tests/self-hosted only; default is the enclave the signed manifest names (2.33.0), and an override is still attested against that manifest
+  teeUrl?: string;                    // tests/self-hosted only; default is the enclave the signed manifest names (2.35.0), and an override is still attested against that manifest
   // Require a fresh passkey assertion for EVERY signature (TEE-verified,
   // single-use 60s challenge) instead of letting an unlocked session sign
   // freely until expiry. Does NOT shorten the session — see "Signing
@@ -380,12 +389,10 @@ it lapses with the token still valid, `unlock()` reopens it without a sign-in
 With `resumeSessionAcrossTabs` a new tab resumes the live session instead of
 reading as signed out. `disconnect()` stops the renewal.
 
-### Sign-in only, no wallet — `wallet: 'on-demand'` (since 2.33.0, `next` tag)
+### Sign-in only, no wallet — `wallet: 'on-demand'` (since 2.33.0)
 
 Every sign-in method (email, phone, Google, X, KingsChat, custom JWT) without
-creating a wallet, Clerk-style. In `decane-connect-kit` 2.33.0, published under
-the `next` tag (`npm install decane-connect-kit@next`) until it moves to
-`latest`. Set `wallet: 'on-demand'` in the client config
+creating a wallet, Clerk-style. In `decane-connect-kit` 2.33.0 and later. Set `wallet: 'on-demand'` in the client config
 (or `config.social` for `<DecaneKit>`): sign-in gives a session
 (`getAccessToken()`, profile, renewals) and calls no enclave.
 - `isSignedIn()`, `hasWallet()`; `ConnectResult.hasWallet`; `getAddresses()`
@@ -571,7 +578,7 @@ await signInWithToken(phoneToken);
 - Use a stable id as the identity claim (`sub` = your user id), not the phone number itself: carriers recycle numbers, and an id lets a person change theirs without losing the wallet.
 - Whoever holds your issuer's signing key can sign in as any of those logins, and Decane provisions a new device from a sign-in alone. Keep the key in a secret manager and issue tokens that live minutes, not hours.
 
-### Which enclave, and how it is checked — since 2.33.0
+### Which enclave, and how it is checked — since 2.35.0
 
 The SDK no longer has the enclave's URL or measurements built in. They come
 from a **signed enclave manifest**: a small JSON document listing the enclave
@@ -593,7 +600,7 @@ signature chain and TCB status (DCAP, in the browser), the nonce, MRTD and
 RTMR0-2 against an approved OS, the enclave's dstack event log replayed to the
 quote's RTMR3, and the app-id and compose-hash recorded at boot against the
 manifest. The instance id, which changes on every restart, is not pinned.
-Before 2.33.0 the SDK compared a measurement string the enclave reported about
+Before 2.35.0 the SDK compared a measurement string the enclave reported about
 itself, which any TDX machine could claim.
 
 The verifier is one dependency-free file shared by every Decane client and

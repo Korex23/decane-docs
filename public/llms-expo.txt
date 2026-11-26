@@ -13,7 +13,7 @@ npx expo install decane-connect-kit-expo \
 
 ```yaml
 package: decane-connect-kit-expo
-version: 0.7.0
+version: 0.9.0
 document-revision: 2026-11-16
 canonical: https://kit.decane.app/llms-expo.txt
 web-sibling: https://kit.decane.app/llms.txt
@@ -119,7 +119,7 @@ interface DecaneConnectNativeConfig {
   persistSession?: boolean;           // default true
   requireAssertionPerSignature?: boolean;
   kingsChatScopes?: string[];         // default ['send_chat_message']
-  verifyAttestation?: (q: { quote: string; eventLog: unknown; measurement?: string; nonce: string }) => Promise<void>; // 0.8.0: eventLog added; measurement is the enclave's own claim, ignore it
+  verifyAttestation?: (q: { quote: string; eventLog: unknown; measurement?: string; nonce: string }) => Promise<void>; // 0.9.0: eventLog added; measurement is the enclave's own claim, ignore it
   rotateOnNewDeviceRecovery?: boolean;
 }
 ```
@@ -372,7 +372,7 @@ Standalone exports usable without a client:
 
 ---
 
-## Sign-in only, no wallet — `wallet: 'on-demand'` (since 0.8.0, `next` tag)
+## Sign-in only, no wallet — `wallet: 'on-demand'` (since 0.8.0)
 
 The same as the web SDK (see https://kit.decane.app/llms.txt, "Sign-in only"):
 every sign-in method gives a session with no wallet and no enclave call;
@@ -441,7 +441,7 @@ await decane.dismissRecoveryPrompt();
 ## Attestation
 
 Where the enclave is, and what it may run, come from a **signed enclave
-manifest** (0.8.0). The SDK fetches it from Decane's backend
+manifest** (0.9.0). The SDK fetches it from Decane's backend
 (`GET /attestation/manifest`), verifies its ECDSA P-256 signature **on the
 device** against public keys pinned in the package, and refuses one older than
 the newest this install has accepted (remembered in SecureStore). If the
@@ -460,7 +460,7 @@ posts the quote and the log to Decane's backend, which checks:
 - that the event log replays to the quote's RTMR3, and that the app-id and
   compose-hash dstack recorded at boot are approved in the signed manifest.
 
-An enclave that sends no event log is refused. Before 0.8.0 the SDK compared a
+An enclave that sends no event log is refused. Before 0.9.0 the SDK compared a
 measurement string the enclave reported about itself, which any TDX machine
 could claim; that check is gone.
 
