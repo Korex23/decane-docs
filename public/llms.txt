@@ -391,8 +391,8 @@ reading as signed out. `disconnect()` stops the renewal.
 
 ### Email + password — since 2.36.0
 
-Off until the project turns it on (dashboard: Settings → Password sign-in, or
-`PUT /dashboard/projects/:id/settings/password-sign-in`). Not offered in the
+Off until the project turns it on (an owner or admin calls
+`PUT /dashboard/projects/:id/settings/password-sign-in` with `{ "enabled": true }`). Not offered in the
 identity tier. The email address stays the identity: a password is a second
 way into the account an emailed code opens, so Google, email-code and password
 sign-ins for one verified address all reach the same wallet.
