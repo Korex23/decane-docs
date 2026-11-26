@@ -1,7 +1,7 @@
 {
   "$comment": "Freshness manifest for https://kit.decane.app/llms.txt — fetch this (small) document to check whether a cached copy of llms.txt is stale, instead of re-reading the full spec.",
   "package": "decane-connect-kit",
-  "version": "2.35.0",
+  "version": "2.36.0",
   "documentRevision": "2026-11-27",
   "$keys": "2026-11-16: one kind of project secret key with scopes (users:read, users:write, users:create, wallets:create, payments, rpc); llms.txt Part 5. RPC from a server: POST /rpc/v1/{chainId} with Authorization: Bearer.",
   "$payments": "2026-11-21: Decane Payments — checkout (pay-in) and cross-chain withdrawals over Dextopus. Merchants set one EVM address (all EVM chains) plus optional Solana/Tron; payers pick a network then any token Dextopus lists; refunds go to the merchant (no refund address asked of the payer); checkouts default to settling on Base. Server: decane-node 1.7.0+ (createCheckout, createWithdrawal, getPayment, listPayments, paymentOptions, createDepositAddress; payments scope), 1.8.0 adds getUserById. Web: decane-connect-kit 2.34.0+ (createCheckoutClient, <DecaneCheckout>, payCheckoutWithEvmWallet, formatCheckoutAmount). Public payer surface GET /checkout/:id (with merchant.name), /pay-options, POST /quote {payChainId, payAsset}, /status, /submit. Webhooks payment.completed|failed|expired, sent once. 2026-11-21: checkouts are non-strict (any amount settles; partial status and payment.partial when clearly short; late payments still settle); the hosted page carries the order reference, a dollar value, and a QR with the amount and network.",
@@ -9,6 +9,11 @@
   "npmRegistry": "https://registry.npmjs.org/decane-connect-kit/latest",
   "docs": "https://kit.decane.app/docs",
   "changelog": [
+    {
+      "version": "2.36.0",
+      "date": "2026-11-27",
+      "summary": "Email + password sign-in (off until the project turns it on; not in the identity tier): mountPasswordField puts Decane's hosted field in the page so the app never holds the password, a new device also proves the inbox with an emailed code then registers a key, completePasswordSignIn finishes; '<DecaneKit>' takes 'password' in authMethods. PasswordSignInError."
+    },
     {
       "version": "2.35.0",
       "date": "2026-11-25",
@@ -122,10 +127,15 @@
   ],
   "mobile": {
     "package": "decane-connect-kit-expo",
-    "version": "0.9.0",
+    "version": "0.10.0",
     "llmsTxt": "https://kit.decane.app/llms-expo.txt",
     "npmRegistry": "https://registry.npmjs.org/decane-connect-kit-expo/latest",
     "changelog": [
+      {
+        "version": "0.10.0",
+        "date": "2026-11-27",
+        "summary": "Email + password sign-in: connectWithPassword, setPassword, completePasswordSignIn, with a P-256 device key in expo-secure-store so a known device needs no code. Off until the project turns it on; not in the identity tier."
+      },
       {
         "version": "0.9.0",
         "date": "2026-11-25",

@@ -13,7 +13,7 @@ npx expo install decane-connect-kit-expo \
 
 ```yaml
 package: decane-connect-kit-expo
-version: 0.9.0
+version: 0.10.0
 document-revision: 2026-11-16
 canonical: https://kit.decane.app/llms-expo.txt
 web-sibling: https://kit.decane.app/llms.txt
@@ -371,6 +371,32 @@ Standalone exports usable without a client:
 `formatBalanceDisplay`, `evmToTronAddress`, `clearDeviceState`.
 
 ---
+
+## Email + password — since 0.10.0
+
+Off until the project turns it on; not in the identity tier. The email stays
+the identity, so the same verified address reaches the same wallet however the
+person signs in. React Native has no origin boundary, so the app collects the
+password itself and passes it in.
+
+```ts
+const step = await decane.connectWithPassword(email, password);
+if (step.status === "needs_email_code") {
+  // a device this account has not seen: prove the inbox once
+  await decane.completePasswordSignIn(step.attemptId, codeFromEmail);
+} // else step.result: this device signed the server's challenge, no code needed
+
+// Sign-up, "forgot password" and "add a password" are one call, always + the code:
+const s = await decane.setPassword(email, newPassword);
+await decane.completePasswordSignIn(s.attemptId, codeFromEmail);
+```
+
+After the code, the device keeps an ECDSA P-256 key in expo-secure-store
+(`WHEN_UNLOCKED_THIS_DEVICE_ONLY`, a software key, not Secure Enclave), and
+next time finishes with the password alone. Errors are `PasswordSignInError`
+with the same codes as the web SDK (`INVALID_CREDENTIALS`, `INVALID_CODE`,
+`ATTEMPT_EXPIRED`, `PASSWORD_TOO_SHORT`, `PASSWORD_BREACHED`, `RATE_LIMITED`,
+`NOT_FOUND`, ...). `forgetDeviceKey(appId)` makes the device ask for a code again.
 
 ## Sign-in only, no wallet — `wallet: 'on-demand'` (since 0.8.0)
 

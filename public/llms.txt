@@ -25,7 +25,7 @@ need it for a single product.
 ## Version and freshness
 
 ```yaml
-version: 2.35.0
+version: 2.36.0
 document-revision: 2026-11-27
 canonical: https://kit.decane.app/llms.txt
 version-manifest: https://kit.decane.app/llms-version.json
@@ -388,6 +388,50 @@ it lapses with the token still valid, `unlock()` reopens it without a sign-in
 (no prompt in the identity tier; the passkey/password in the device tier).
 With `resumeSessionAcrossTabs` a new tab resumes the live session instead of
 reading as signed out. `disconnect()` stops the renewal.
+
+### Email + password — since 2.36.0
+
+Off until the project turns it on (dashboard: Settings → Password sign-in, or
+`PUT /dashboard/projects/:id/settings/password-sign-in`). Not offered in the
+identity tier. The email address stays the identity: a password is a second
+way into the account an emailed code opens, so Google, email-code and password
+sign-ins for one verified address all reach the same wallet.
+
+- **The app never holds the password.** It is typed into Decane's hosted field,
+  an iframe on Decane's origin that only the key's allowlisted origins may
+  embed; the app's code cannot read it.
+- **A new device always also proves the inbox.** A correct password there is
+  followed by an emailed code; the device then registers a key (WebCrypto,
+  non-extractable) and next time finishes with the password alone by signing
+  the server's challenge.
+- **Setting a password is sign-up, reset and "add a password" in one**, and
+  always needs the emailed code. 10–128 characters; breached passwords are
+  refused.
+
+`<DecaneKit>`: add `"password"` to `authMethods`; the modal shows the field,
+set/reset and the code step, themed from the modal's own colours.
+
+Headless:
+
+```ts
+const field = client.mountPasswordField(container, { mode: "sign_in" }); // or "set"
+field.setEmail(email);                    // pairs the field with password managers
+const step = await field.submit(email);   // the password goes from the iframe to Decane
+if (step.status === "needs_email_code") {
+  const result = await client.completePasswordSignIn(step.attemptId, codeFromEmail);
+} else {
+  step.result;                            // ConnectResult: a known device, no code needed
+}
+// field.onEnter(cb), field.onInput(empty => ...), field.destroy()
+```
+
+`theme`: `{ background, text, border, focus }` (hex), `radius` (px), `font`
+(a font the device has; the field cannot load web fonts). Errors are
+`PasswordSignInError` with `code`: `INVALID_CREDENTIALS` (wrong email or
+password, never told apart), `INVALID_CODE`, `ATTEMPT_EXPIRED`,
+`PASSWORD_TOO_SHORT`, `PASSWORD_BREACHED`, `WALLET_FROZEN`, `RATE_LIMITED`,
+`NOT_FOUND` (off for the project), `NETWORK`. `forgetDeviceKey(appId)` makes
+this browser ask for a code again.
 
 ### Sign-in only, no wallet — `wallet: 'on-demand'` (since 2.33.0)
 
