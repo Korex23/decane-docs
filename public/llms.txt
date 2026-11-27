@@ -408,6 +408,16 @@ sign-ins for one verified address all reach the same wallet.
   always needs the emailed code. 10–128 characters; breached passwords are
   refused.
 
+**Forgotten passwords.** A password is only a way to sign in, never part of
+the wallet's key, so forgetting one never touches the funds. Reset is the set
+flow (`mountPasswordField(container, { mode: "set" })`, or "Forgot your password, or new here?" in `<DecaneKit>`): choose a new password, enter the emailed code. On success the
+new password is saved, every other session of the account is signed out, the
+owner gets a "your password was changed" email, and this device is remembered.
+Nobody has to reset to get in: an emailed code, or Google with the same
+verified address, reaches the same account and wallet. The only dead end is
+losing the inbox itself; then another linked login or the app's support is the
+way back.
+
 `<DecaneKit>`: add `"password"` to `authMethods`; the modal shows the field,
 set/reset and the code step, themed from the modal's own colours.
 

@@ -391,6 +391,16 @@ const s = await decane.setPassword(email, newPassword);
 await decane.completePasswordSignIn(s.attemptId, codeFromEmail);
 ```
 
+**Forgotten passwords.** A password is only a way to sign in, never part of
+the wallet's key, so forgetting one never touches the funds. Reset is the set
+flow (`setPassword(email, newPassword)` then `completePasswordSignIn`): choose a new password, enter the emailed code. On success the
+new password is saved, every other session of the account is signed out, the
+owner gets a "your password was changed" email, and this device is remembered.
+Nobody has to reset to get in: an emailed code, or Google with the same
+verified address, reaches the same account and wallet. The only dead end is
+losing the inbox itself; then another linked login or the app's support is the
+way back.
+
 After the code, the device keeps an ECDSA P-256 key in expo-secure-store
 (`WHEN_UNLOCKED_THIS_DEVICE_ONLY`, a software key, not Secure Enclave), and
 next time finishes with the password alone. Errors are `PasswordSignInError`
