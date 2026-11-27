@@ -374,7 +374,7 @@ Standalone exports usable without a client:
 
 ## Email + password — since 0.10.0
 
-Off until the project turns it on; not in the identity tier. The email stays
+On by default (a project can switch it off); not in the identity tier. The email stays
 the identity, so the same verified address reaches the same wallet however the
 person signs in. React Native has no origin boundary, so the app collects the
 password itself and passes it in.

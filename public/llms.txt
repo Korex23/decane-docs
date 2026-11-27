@@ -391,9 +391,11 @@ reading as signed out. `disconnect()` stops the renewal.
 
 ### Email + password — since 2.36.0
 
-Off until the project turns it on (an owner or admin calls
-`PUT /dashboard/projects/:id/settings/password-sign-in` with `{ "enabled": true }`). Not offered in the
-identity tier. The email address stays the identity: a password is a second
+On by default, like the other methods: an app offers it by adding
+`"password"` to `authMethods` (or calling `mountPasswordField`). A project can
+switch it off: an owner or admin calls
+`PUT /dashboard/projects/:id/settings/password-sign-in` with `{ "enabled": false }`.
+Not offered in the identity tier. The email address stays the identity: a password is a second
 way into the account an emailed code opens, so Google, email-code and password
 sign-ins for one verified address all reach the same wallet.
 
@@ -440,7 +442,7 @@ if (step.status === "needs_email_code") {
 `PasswordSignInError` with `code`: `INVALID_CREDENTIALS` (wrong email or
 password, never told apart), `INVALID_CODE`, `ATTEMPT_EXPIRED`,
 `PASSWORD_TOO_SHORT`, `PASSWORD_BREACHED`, `WALLET_FROZEN`, `RATE_LIMITED`,
-`NOT_FOUND` (off for the project), `NETWORK`. `forgetDeviceKey(appId)` makes
+`NOT_FOUND` (the project switched it off), `NETWORK`. `forgetDeviceKey(appId)` makes
 this browser ask for a code again.
 
 ### Sign-in only, no wallet — `wallet: 'on-demand'` (since 2.33.0)
